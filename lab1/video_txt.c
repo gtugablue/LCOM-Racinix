@@ -72,9 +72,34 @@ int vt_print_string(char *str, char attr, int r, int c) {
 }
 
 int vt_print_int(int num, char attr, int r, int c) {
+	if (num > 0)
+	{
+		int digitCounter = 1;
+		int tempnum = num;
+		while (tempnum > 9)
+		{
+			tempnum /= 10;
+			digitCounter++;
+		}
+		char texto[digitCounter + 1];
+		texto[digitCounter--] = '\0';
+		while (digitCounter >= 0)
+		{
+			texto[digitCounter--] = num % 10 + '0';
+			num /= 10;
+		}
+		vt_print_string(texto, attr, r, c);
 
-  /* To complete ... */
-
+	}
+	else if (num < 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 1;
+	}
+	return 0;
 }
 
 
