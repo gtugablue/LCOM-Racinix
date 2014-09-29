@@ -107,19 +107,19 @@ int vt_draw_frame(int width, int height, char attr, int r, int c) {
 	{
 		vt_print_char(UL_CORNER, attr, r, c);
 		size_t i;
-		for (i = c + 1; i < c + width; i++)
+		for (i = c + 1; i < c + width - 1; i++)
 		{
 			vt_print_char(HOR_BAR, attr, r, i);
-			vt_print_char(HOR_BAR, attr, r + height, i);
+			vt_print_char(HOR_BAR, attr, r + height - 1, i);
 		}
-		vt_print_char(UR_CORNER, attr, r, c + width);
-		for (i = r + 1; i < r + height; i++)
+		vt_print_char(UR_CORNER, attr, r, c + width - 1);
+		for (i = r + 1; i < r + height - 1; i++)
 		{
 			vt_print_char(VERT_BAR, attr, i, c);
-			vt_print_char(VERT_BAR, attr, i, c + width);
+			vt_print_char(VERT_BAR, attr, i, c + width - 1);
 		}
-		vt_print_char(LL_CORNER, attr, r + height, c);
-		vt_print_char(LR_CORNER, attr, r + height, c + width);
+		vt_print_char(LL_CORNER, attr, r + height - 1, c);
+		vt_print_char(LR_CORNER, attr, r + height - 1, c + width - 1);
 		return 0;
 	}
 	else
