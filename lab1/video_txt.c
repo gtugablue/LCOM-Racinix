@@ -89,14 +89,31 @@ int vt_print_int(int num, char attr, int r, int c) {
 			num /= 10;
 		}
 		vt_print_string(texto, attr, r, c);
-
+		return 1;
 	}
 	else if (num < 0)
 	{
+		int digitCounter = 1;
+		int tempnum = num;
+		while (tempnum < -9)
+		{
+			tempnum /= 10;
+			digitCounter++;
+		}
+		char texto[digitCounter + 2];
+		texto[digitCounter + 1] = '\0';
+		while (digitCounter > 0)
+		{
+			texto[digitCounter--] = abs(num) % 10 + '0';
+			num /= 10;
+		}
+		texto[digitCounter] = '-';
+		vt_print_string(texto, attr, r, c);
 		return 1;
 	}
 	else
 	{
+		vt_print_char(0, attr, r, c);
 		return 1;
 	}
 	return 0;
