@@ -113,7 +113,7 @@ int vt_print_int(int num, char attr, int r, int c) {
 	}
 	else
 	{
-		vt_print_char(0, attr, r, c);
+		vt_print_char('0', attr, r, c);
 		return 1;
 	}
 	return 0;
