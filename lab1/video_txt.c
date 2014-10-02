@@ -36,7 +36,7 @@ void vt_blank() {
 
 int vt_print_char(char ch, char attr, int r, int c) {
 
-	if (r >= scr_width || c >= scr_width)
+	if (r >= scr_width || c >= scr_width || r < 0 || c < 0)
 	{
 		return 1;
 	}
@@ -56,7 +56,7 @@ int vt_print_string(char *str, char attr, int r, int c) {
 		length++;
 		++strp;
 	}
-	if (r >= scr_width || c + length > scr_width)
+	if (r >= scr_width || c + length > scr_width || r < 0 || c < 0)
 	{
 		return 1;
 	}
