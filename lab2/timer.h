@@ -1,6 +1,10 @@
 #ifndef __TIMER_H
 #define __TIMER_H
 
+#include <minix/syslib.h>
+#include <minix/drivers.h>
+#include "i8254.h"
+
 /** @defgroup timer timer
  * @{
  *
@@ -49,6 +53,15 @@ void timer_int_handler();
 int timer_get_conf(unsigned long timer, unsigned char *st);
 
 /**
+ * @brief Reads the input timer counter value.
+ *
+ * @param timer		Timer whose counter to read (Ranges from 0 to 2)
+ * @param counter	Address of memory position to be filled with the timer counter
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int timer_get_counter(unsigned long timer, unsigned long *counter);
+
+/**
  * @brief Shows timer configuration
  * 
  * Displays in a human friendly way, the configuration of a timer
@@ -58,9 +71,7 @@ int timer_get_conf(unsigned long timer, unsigned char *st);
  * @param conf configuration to display in human friendly way
  * @return Return 0 upon success and non-zero otherwise
  */
-int timer_display_conf(unsigned char conf);
-
-
+int timer_display_conf(unsigned char conf, unsigned long counter);
 
 /**
  * @brief Tests programming timer in square wave mode
