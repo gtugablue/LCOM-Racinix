@@ -104,6 +104,12 @@ int timer_test_int(unsigned long time);
  */
 int timer_test_config(unsigned long timer);
 
+
+/**
+ * @brief Prints a byte in bynary
+ *
+ * @param number Number to print in binary
+ */
 void print_binary(unsigned char number);
 
 #endif /* __TIMER_H */
