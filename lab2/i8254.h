@@ -39,6 +39,7 @@
 
 /* Operating mode: bits 3, 2 and 1 */
 
+#define TIMER_OP_MODE		(BIT(3)|BIT(2)|BIT(1))
 #define TIMER_SQR_WAVE		(BIT(2)|BIT(1)) /**< @brief Mode 3: square wave generator */
 #define TIMER_RATE_GEN		BIT(2)          /**< @brief Mode 2: rate generator */
 

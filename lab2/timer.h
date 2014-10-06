@@ -59,7 +59,7 @@ int timer_get_conf(unsigned long timer, unsigned long *st);
  * @param counter	Address of memory position to be filled with the timer counter
  * @return Return 0 upon success and non-zero otherwise
  */
-int timer_get_counter(unsigned long timer, unsigned long *counter);
+int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *counter);
 
 /**
  * @brief Shows timer configuration
