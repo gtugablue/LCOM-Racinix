@@ -1,8 +1,37 @@
 #include "timer.h"
 
 int timer_set_square(unsigned long timer, unsigned long freq) {
-
-	return 1;
+	freq = TIMER_FREQ / freq;
+	unsigned char* value;
+	value = &freq;
+	unsigned char timer_bit, timer_port;
+	switch (timer)
+	{
+	case 0:
+		timer_bit = TIMER_SEL0;
+		timer_port = TIMER_0;
+		break;
+	case 1:
+		timer_bit = TIMER_SEL1;
+		timer_port = TIMER_1;
+		break;
+	case 2:
+		timer_bit = TIMER_SEL2;
+		timer_port = TIMER_2;
+		break;
+	}
+	if (sys_outb(TIMER_CTRL, timer_bit | TIMER_LSB_MSB | TIMER_SQR_WAVE))
+	{
+		return 1;
+	}
+	if (sys_outb(timer_port, value))
+	{
+		return 1;
+	}
+	if (sys_outb(timer_port, value))
+	{
+		return 1;
+	}
 }
 
 int timer_subscribe_int(void ) {
@@ -20,7 +49,7 @@ void timer_int_handler() {
 }
 
 int timer_get_conf(unsigned long timer, unsigned long *st) {
-	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_CMD))
+	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_CMD | TIMER_RB_COUNT_))
 	{
 		return 1;
 	}
@@ -37,22 +66,22 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 	}
 }
 
-int timer_get_counter(unsigned long timer, unsigned char conf, unsigned char *counter)
+int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *counter)
 {
-	unsigned char timer_addr;
+	unsigned char timer_bit;
 	switch (timer)
 	{
 	case 0:
-		timer_addr = TIMER_SEL0;
+		timer_bit = TIMER_SEL0;
 		break;
 	case 1:
-		timer_addr = TIMER_SEL1;
+		timer_bit = TIMER_SEL1;
 		break;
 	case 2:
-		timer_addr = TIMER_SEL2;
+		timer_bit = TIMER_SEL2;
 		break;
 	}
-	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE | TIMER_BCD)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_addr))
+	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE | TIMER_BCD)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_bit))
 	{
 		return 1;
 	}
@@ -70,12 +99,15 @@ int timer_get_counter(unsigned long timer, unsigned char conf, unsigned char *co
 	default:
 		return 1;
 	}
-	return *counter = sys_outb((unsigned char)timer, counter);
+	return *counter = sys_inb((unsigned char)timer, counter);
 }
 
-int timer_display_conf(unsigned char conf, unsigned char counter) {
+int timer_display_conf(unsigned char conf, unsigned long counter) {
+	printf("\n");
 	printf("Counter: %lu\n", counter);
-	printf("Status byte: %d\n", (int)conf);
+	printf("Status byte: ");
+	print_binary(conf);
+	printf("\n");
 	printf("Output: %d\n", (conf & TIMER_STATUS_OUTPUT) >> TIMER_STATUS_OUTPUT_BIT);
 	printf("Null count: %d\n", (conf & TIMER_STATUS_NULL) >> TIMER_STATUS_NULL_BIT);
 	printf("Type of access: ");
@@ -130,14 +162,34 @@ int timer_test_int(unsigned long time) {
 
 int timer_test_config(unsigned long timer) {
 	unsigned long *st;
-	unsigned char *counter;
+	unsigned long *counter;
 	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
 	{
-		if (timer_get_conf(timer, st) || timer_get_counter(timer, (unsigned char)*st, counter))
+		if (timer_get_conf(timer, st)
+				// || timer_get_counter(timer, (unsigned char)*st, counter)
+				)
 		{
 			return 1;
 		}
 		return timer_display_conf((unsigned char)*st, *counter);
 	}
 	return 1;
+}
+
+void print_binary(unsigned char number)
+{
+	size_t i;
+	for (i = 0; i < 8; ++i)
+	{
+		if (number & 10000000)
+		{
+			printf("1");
+		}
+		else
+		{
+			printf("0");
+		}
+		number = number << 1;
+	}
+	return;
 }
