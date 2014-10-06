@@ -20,7 +20,7 @@ void timer_int_handler() {
 }
 
 int timer_get_conf(unsigned long timer, unsigned long *st) {
-	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_COUNT_ | TIMER_RB_CMD))
+	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_CMD))
 	{
 		return 1;
 	}
@@ -37,7 +37,7 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 	}
 }
 
-int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *counter)
+int timer_get_counter(unsigned long timer, unsigned char conf, unsigned char *counter)
 {
 	unsigned char timer_addr;
 	switch (timer)
@@ -52,7 +52,7 @@ int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *co
 		timer_addr = TIMER_SEL2;
 		break;
 	}
-	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_addr))
+	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE | TIMER_BCD)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_addr))
 	{
 		return 1;
 	}
@@ -73,7 +73,7 @@ int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *co
 	return *counter = sys_outb((unsigned char)timer, counter);
 }
 
-int timer_display_conf(unsigned char conf, unsigned long counter) {
+int timer_display_conf(unsigned char conf, unsigned char counter) {
 	printf("Counter: %lu\n", counter);
 	printf("Status byte: %d\n", (int)conf);
 	printf("Output: %d\n", (conf & TIMER_STATUS_OUTPUT) >> TIMER_STATUS_OUTPUT_BIT);
@@ -130,7 +130,7 @@ int timer_test_int(unsigned long time) {
 
 int timer_test_config(unsigned long timer) {
 	unsigned long *st;
-	unsigned long *counter;
+	unsigned char *counter;
 	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
 	{
 		if (timer_get_conf(timer, st) || timer_get_counter(timer, (unsigned char)*st, counter))
