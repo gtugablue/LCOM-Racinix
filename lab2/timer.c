@@ -37,8 +37,25 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 	}
 }
 
-int timer_get_counter(unsigned long timer, unsigned long *counter)
+int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *counter)
 {
+	unsigned char timer_addr;
+	switch (timer)
+	{
+	case 0:
+		timer_addr = TIMER_SEL0;
+		break;
+	case 1:
+		timer_addr = TIMER_SEL1;
+		break;
+	case 2:
+		timer_addr = TIMER_SEL2;
+		break;
+	}
+	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_addr))
+	{
+		return 1;
+	}
 	switch (timer)
 	{
 	case 0:
@@ -116,7 +133,7 @@ int timer_test_config(unsigned long timer) {
 	unsigned long *counter;
 	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
 	{
-		if (timer_get_conf(timer, st) || timer_get_counter(timer, counter))
+		if (timer_get_conf(timer, st) || timer_get_counter(timer, (unsigned char)*st, counter))
 		{
 			return 1;
 		}
