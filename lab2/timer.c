@@ -19,19 +19,19 @@ void timer_int_handler() {
 
 }
 
-int timer_get_conf(unsigned long timer, unsigned char *st) {
-	if (sys_outb(TIMER_CTRL, TIMER_RB_CMD | TIMER_RB_STATUS_ | TIMER_RB_COUNT_| TIMER_RB_SEL(timer)))
+int timer_get_conf(unsigned long timer, unsigned long *st) {
+	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_COUNT_ | TIMER_RB_CMD))
 	{
 		return 1;
 	}
 	switch(timer)
 	{
 	case 0:
-		return sys_inb(TIMER_0, (long unsigned int*)st);
+		return sys_inb(TIMER_0, st);
 	case 1:
-		return sys_inb(TIMER_1, (long unsigned int*)st);
+		return sys_inb(TIMER_1, st);
 	case 2:
-		return sys_inb(TIMER_2, (long unsigned int*)st);
+		return sys_inb(TIMER_2, st);
 	default:
 		return 1;
 	}
@@ -112,7 +112,7 @@ int timer_test_int(unsigned long time) {
 }
 
 int timer_test_config(unsigned long timer) {
-	unsigned char *st;
+	unsigned long *st;
 	unsigned long *counter;
 	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
 	{
@@ -120,7 +120,7 @@ int timer_test_config(unsigned long timer) {
 		{
 			return 1;
 		}
-		return timer_display_conf(*st, *counter);
+		return timer_display_conf((unsigned char)*st, *counter);
 	}
 	return 1;
 }
