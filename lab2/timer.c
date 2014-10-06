@@ -2,6 +2,7 @@
 
 int timer_set_square(unsigned long timer, unsigned long freq) {
 	freq = TIMER_FREQ / freq;
+	printf("freq: %lu", freq);
 	unsigned char* value;
 	value = &freq;
 	unsigned char timer_bit, timer_port;
@@ -29,6 +30,14 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 		return 1;
 	}
 	if (sys_outb(timer_port, value))
+	{
+		return 1;
+	}
+	if (sys_inb(timer_port, value))
+	{
+		return 1;
+	}
+	if (sys_inb(timer_port, value + 1))
 	{
 		return 1;
 	}
@@ -151,7 +160,6 @@ int timer_display_conf(unsigned char conf, unsigned long counter) {
 }
 
 int timer_test_square(unsigned long freq) {
-	
 	return 1;
 }
 
@@ -166,7 +174,7 @@ int timer_test_config(unsigned long timer) {
 	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
 	{
 		if (timer_get_conf(timer, st)
-				// || timer_get_counter(timer, (unsigned char)*st, counter)
+				 //|| timer_get_counter(timer, (unsigned char)*st, counter)
 				)
 		{
 			return 1;
