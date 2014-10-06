@@ -50,7 +50,7 @@ void timer_int_handler();
  * @param st    Address of memory position to be filled with the timer config
  * @return Return 0 upon success and non-zero otherwise
  */
-int timer_get_conf(unsigned long timer, unsigned char *st);
+int timer_get_conf(unsigned long timer, unsigned long *st);
 
 /**
  * @brief Reads the input timer counter value.
