@@ -1,9 +1,20 @@
 #include "timer.h"
 
 int timer_set_square(unsigned long timer, unsigned long freq) {
+	if (freq == 0)
+	{
+		return 1; // The frequency can't be set to 0.
+	}
+	if (freq > TIMER_FREQ)
+	{
+		return 1; // The number to put in the counter can't be lower than 1. TIMER_FREQ + 1 doesn't cause problems because the result is truncated, but if the user/programmer uses that value he's probably doing something wrong. Also, setting the counter to '0' makes it
+	}
 	freq = TIMER_FREQ / freq;
-	printf("freq: %lu", freq);
-	unsigned char* value;
+	if (freq >= (1 << 16))
+	{
+		return 1; // The counter only accepts numbers with a maximum of 16 bits.
+	}
+	unsigned long* value;
 	value = &freq;
 	unsigned char timer_bit, timer_port;
 	switch (timer)
@@ -20,27 +31,17 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 		timer_bit = TIMER_SEL2;
 		timer_port = TIMER_2;
 		break;
-	}
-	if (sys_outb(TIMER_CTRL, timer_bit | TIMER_LSB_MSB | TIMER_SQR_WAVE))
-	{
+	default:
 		return 1;
 	}
-	if (sys_outb(timer_port, value))
+	if (sys_outb(TIMER_CTRL, timer_bit | TIMER_SQR_WAVE | TIMER_LSB_MSB) == OK)
 	{
-		return 1;
+		if (sys_outb(timer_port, *value & 11111111) == OK)
+		{
+			return sys_outb(timer_port, *value >> 8);
+		}
 	}
-	if (sys_outb(timer_port, value))
-	{
-		return 1;
-	}
-	if (sys_inb(timer_port, value))
-	{
-		return 1;
-	}
-	if (sys_inb(timer_port, value + 1))
-	{
-		return 1;
-	}
+	return 1;
 }
 
 int timer_subscribe_int(void ) {
@@ -75,45 +76,31 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 	}
 }
 
-int timer_get_counter(unsigned long timer, unsigned char conf, unsigned long *counter)
+int timer_enable_speaker()
 {
-	unsigned char timer_bit;
-	switch (timer)
+	unsigned long* speaker;
+	printf("penis\n");
+	if (speaker = malloc(sizeof(unsigned long)))
 	{
-	case 0:
-		timer_bit = TIMER_SEL0;
-		break;
-	case 1:
-		timer_bit = TIMER_SEL1;
-		break;
-	case 2:
-		timer_bit = TIMER_SEL2;
-		break;
+		if (sys_inb(0x61, speaker) == OK)
+		{
+			if (sys_outb(0x61, *speaker | (long unsigned int)3) == OK)
+			{
+				printf("\n");
+				printf("\n");
+				print_binary((char)*speaker);
+				printf("\n");
+				sys_inb(0x61, speaker);
+				print_binary((char)*speaker);
+				printf("\n");
+				printf("\n");
+			}
+		}
 	}
-	if (sys_outb(TIMER_CTRL, (conf & (TIMER_OP_MODE | TIMER_BCD)) | TIMER_LSB | TIMER_RB_SEL(timer) | timer_bit))
-	{
-		return 1;
-	}
-	switch (timer)
-	{
-	case 0:
-		timer = (unsigned long)TIMER_0;
-		break;
-	case 1:
-		timer = (unsigned long)TIMER_1;
-		break;
-	case 2:
-		timer = (unsigned long)TIMER_2;
-		break;
-	default:
-		return 1;
-	}
-	return *counter = sys_inb((unsigned char)timer, counter);
+	return 1;
 }
 
-int timer_display_conf(unsigned char conf, unsigned long counter) {
-	printf("\n");
-	printf("Counter: %lu\n", counter);
+int timer_display_conf(unsigned char conf) {
 	printf("Status byte: ");
 	print_binary(conf);
 	printf("\n");
@@ -159,7 +146,8 @@ int timer_display_conf(unsigned char conf, unsigned long counter) {
 	return 0;
 }
 
-int timer_test_square(unsigned long freq) {
+int timer_test_square(unsigned long timer, unsigned long freq) {
+	timer_set_square(timer, freq);
 	return 1;
 }
 
@@ -170,17 +158,17 @@ int timer_test_int(unsigned long time) {
 
 int timer_test_config(unsigned long timer) {
 	unsigned long *st;
-	unsigned long *counter;
-	if ((st = malloc(sizeof(unsigned char))) && (counter = malloc(sizeof(unsigned long))))
+	if (st = malloc(sizeof(unsigned char)))
 	{
-		if (timer_get_conf(timer, st)
-				 //|| timer_get_counter(timer, (unsigned char)*st, counter)
-				)
+		if (timer_get_conf(timer, st))
 		{
+			free(st);
 			return 1;
 		}
-		return timer_display_conf((unsigned char)*st, *counter);
+		timer_enable_speaker();
+		return timer_display_conf((unsigned char)*st);
 	}
+	free(st);
 	return 1;
 }
 
