@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
 static void print_usage(char *argv[]) {
   printf("Usage: one of the following:\n"
-	 "\t service run %s -args \"square <freq>\" \n"
+	 "\t service run %s -args \"square <timer> <freq>\" \n"
 	 "\t service run %s -args \"int <time>\" \n"
 	 "\t service run %s -args \"config <timer>\" \n" ,
 	 argv[0], argv[0], argv[0]);
@@ -37,15 +37,17 @@ static int proc_args(int argc, char *argv[]) {
 
   /* check the function to test: if the first characters match, accept it */
   if (strncmp(argv[1], "square", strlen("square")) == 0) {
-	  if( argc != 3 ) {
+	  if( argc != 4 ) {
 		  printf("timer: wrong no of arguments for test of timer_test_square() \n");
 		  return 1;
 	  }
+	  if( (timer = parse_ulong(argv[2], 10)) == ULONG_MAX )
+		  return 1;
 	  if( (freq = parse_ulong(argv[2], 10)) == ULONG_MAX )
 		  return 1;
-	  printf("timer:: timer_test_square(%ul)\n",
-			  freq);
-	  return timer_test_square(freq);
+	  printf("timer:: timer_test_square(%lu, %lu)\n",
+			  timer, freq);
+	  return timer_test_square(timer, freq);
   } else if (strncmp(argv[1], "int", strlen("int")) == 0) {
 	  if( argc != 3 ) {
 		  printf("timer: wrong no of arguments for test of timer_test_int() \n");
