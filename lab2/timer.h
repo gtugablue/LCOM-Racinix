@@ -130,7 +130,8 @@ void print_binary(unsigned char number);
  * Useful for timing frames
  *
  * @param freq Frequency of square wave to generate in Timer 0
- * @param func Function to call when an interrupt is received
+ * @param func Function (with no arguments) to call when an
+ * 	interrupt is received
  * @return Return 0 upon success and non-zero otherwise
  */
 int set_repetitive_task(unsigned long freq, void(*func)());
