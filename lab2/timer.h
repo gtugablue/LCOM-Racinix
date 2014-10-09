@@ -3,7 +3,11 @@
 
 #include <minix/syslib.h>
 #include <minix/drivers.h>
+#include <stdbool.h>
 #include "i8254.h"
+
+#define TIMER_INT_NUM_TESTS	60
+#define TIMER_DEFAULT_FREQ	60
 
 /** @defgroup timer timer
  * @{
@@ -52,7 +56,19 @@ void timer_int_handler();
  */
 int timer_get_conf(unsigned long timer, unsigned long *st);
 
+/**
+ * @brief Enables the speaker
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */
 int timer_enable_speaker();
+
+/**
+ * @brief Disables the speaker
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int timer_disable_speaker();
 
 /**
  * @brief Shows timer configuration
@@ -81,6 +97,7 @@ int timer_test_square(unsigned long timer, unsigned long freq);
  *
  * Subscribes Timer 0 interrupts and prints a message once
  *  per second for the specified time interval
+ *  Must not be used with set_repetitive_task()
  *
  * @param time Length of time interval while interrupts are subscribed
  * @return Return 0 upon success and non-zero otherwise
@@ -99,10 +116,32 @@ int timer_test_config(unsigned long timer);
 
 
 /**
- * @brief Prints a byte in bynary
+ * @brief Prints a byte in binary
  *
  * @param number Number to print in binary
  */
 void print_binary(unsigned char number);
+
+/**
+ * @brief Sets a repetitive task
+ *
+ * Sets Timer 0 with a given frequency and subscribes its interrupts
+ * When an interrupt is received a specific function is called
+ * Useful for timing frames
+ *
+ * @param freq Frequency of square wave to generate in Timer 0
+ * @param func Function to call when an interrupt is received
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int set_repetitive_task(unsigned long freq, void(*func)());
+
+/**
+ * @brief Stops the repetitive task
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int stop_repetitive_trask();
+
+void funcao();
 
 #endif /* __TIMER_H */
