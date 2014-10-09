@@ -1,5 +1,9 @@
 #include "timer.h"
 
+static unsigned long time_counter = 0;
+static int irq_hook_id;
+static int doing_task = false;
+
 int timer_set_square(unsigned long timer, unsigned long freq) {
 	if (freq == 0)
 	{
@@ -45,17 +49,28 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 }
 
 int timer_subscribe_int(void ) {
-
+		irq_hook_id = TIMER0_IRQ;
+		if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &irq_hook_id) == OK)
+		{
+			if (sys_irqenable(&irq_hook_id) == OK)
+			{
+				return 0;
+			}
+		}
 	return 1;
 }
 
 int timer_unsubscribe_int() {
-
+	if (sys_irqrmpolicy(&irq_hook_id) == OK)
+	{
+		return 0;
+	}
 	return 1;
 }
 
 void timer_int_handler() {
-
+	time_counter++; // If the counter overflows, it will start from 0 again.
+	return;
 }
 
 int timer_get_conf(unsigned long timer, unsigned long *st) {
@@ -78,23 +93,25 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 
 int timer_enable_speaker()
 {
-	unsigned long* speaker;
-	printf("penis\n");
-	if (speaker = malloc(sizeof(unsigned long)))
+	unsigned long speaker;
+	if (sys_inb(0x61, &speaker) == OK)
 	{
-		if (sys_inb(0x61, speaker) == OK)
+		if (sys_outb(0x61, speaker | (long unsigned int)3) == OK)
 		{
-			if (sys_outb(0x61, *speaker | (long unsigned int)3) == OK)
-			{
-				printf("\n");
-				printf("\n");
-				print_binary((char)*speaker);
-				printf("\n");
-				sys_inb(0x61, speaker);
-				print_binary((char)*speaker);
-				printf("\n");
-				printf("\n");
-			}
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int timer_disable_speaker()
+{
+	unsigned long speaker;
+	if (sys_inb(0x61, &speaker) == OK)
+	{
+		if (sys_outb(0x61, speaker & (char)(11111 << 3)) == OK)
+		{
+			return 0;
 		}
 	}
 	return 1;
@@ -148,12 +165,50 @@ int timer_display_conf(unsigned char conf) {
 
 int timer_test_square(unsigned long timer, unsigned long freq) {
 	timer_set_square(timer, freq);
-	return 1;
+	return 0;
 }
 
 int timer_test_int(unsigned long time) {
-
-	return 1;
+	if (timer_subscribe_int())
+	{
+		return 1;
+	}
+	if (timer_set_square(0, TIMER_DEFAULT_FREQ)) // Set timer 0 to the frequency Minix sets it by default (60Hz).
+	{
+		return 1;
+	}
+	unsigned i = 1;
+	int r, ipc_status;
+	message msg;
+	time_counter = 0;
+	while (i <= time)
+	{
+		/* Get a request message. */
+		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
+			printf("driver_receive failed with: %d", r);
+			continue;
+		}
+		if (is_ipc_notify(ipc_status)) { /* received notification */
+			switch (_ENDPOINT_P(msg.m_source)) {
+			case HARDWARE: /* hardware interrupt notification */
+				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /* subscribed interrupt */
+					timer_int_handler();
+					if(time_counter % TIMER_DEFAULT_FREQ == 0)
+					{
+						time_counter = 0;
+						printf("Segundos decorridos: %d\n", i);
+						++i;
+					}
+				}
+				break;
+			default:
+				break; /* no other notifications expected: do nothing */
+			}
+		} else { /* received a standard message, not a notification */
+			/* no standard messages expected: do nothing */
+		}
+	}
+	return timer_unsubscribe_int();
 }
 
 int timer_test_config(unsigned long timer) {
@@ -165,7 +220,6 @@ int timer_test_config(unsigned long timer) {
 			free(st);
 			return 1;
 		}
-		timer_enable_speaker();
 		return timer_display_conf((unsigned char)*st);
 	}
 	free(st);
@@ -188,4 +242,56 @@ void print_binary(unsigned char number)
 		number = number << 1;
 	}
 	return;
+}
+
+int set_repetitive_task(unsigned long freq, void(*func)())
+{
+	if (doing_task) // Current task must be stopped first
+	{
+		return 1;
+	}
+	if (timer_subscribe_int())
+	{
+		return 1;
+	}
+	if (timer_set_square(0, freq))
+	{
+		return 1;
+	}
+	int r, ipc_status;
+	message msg;
+	time_counter = 0;
+	doing_task = true;
+	while (doing_task)
+	{
+		/* Get a request message. */
+		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
+			continue;
+		}
+		if (is_ipc_notify(ipc_status)) { /* received notification */
+			switch (_ENDPOINT_P(msg.m_source)) {
+			case HARDWARE: /* hardware interrupt notification */
+				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /* subscribed interrupt */
+					timer_int_handler();
+					func();
+				}
+				break;
+			default:
+				break; /* no other notifications expected: do nothing */
+			}
+		} else { /* received a standard message, not a notification */
+			/* no standard messages expected: do nothing */
+		}
+	}
+	return 0;
+}
+
+int stop_repetitive_task()
+{
+	if (doing_task)
+	{
+		doing_task = false;
+		return timer_unsubscribe_int();
+	}
+	return 1; // Can't stop a non-started task
 }

@@ -43,7 +43,7 @@ static int proc_args(int argc, char *argv[]) {
 	  }
 	  if( (timer = parse_ulong(argv[2], 10)) == ULONG_MAX )
 		  return 1;
-	  if( (freq = parse_ulong(argv[2], 10)) == ULONG_MAX )
+	  if( (freq = parse_ulong(argv[3], 10)) == ULONG_MAX )
 		  return 1;
 	  printf("timer:: timer_test_square(%lu, %lu)\n",
 			  timer, freq);
