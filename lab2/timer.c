@@ -11,7 +11,7 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 	}
 	if (freq > TIMER_FREQ)
 	{
-		return 1; // The number to put in the counter can't be lower than 1. TIMER_FREQ + 1 doesn't cause problems because the result is truncated, but if the user/programmer uses that value he's probably doing something wrong. Also, setting the counter to '0' makes it
+		return 1; // The number to put in the counter can't be lower than 1. TIMER_FREQ + 1 doesn't cause problems because the result is truncated, but if the user/programmer uses that value he's probably doing something wrong.
 	}
 	freq = TIMER_FREQ / freq;
 	if (freq >= (1 << 16))
