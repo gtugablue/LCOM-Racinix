@@ -286,10 +286,22 @@ int set_repetitive_task(unsigned long freq, void(*func)())
 	return 0;
 }
 
-//imprimir n como bcd (4 bits por digito) unsigned long p bcd
+//imprimir n como bcd
+
+/* unsigned long bcd (unsigned int x)
+ {
+  unsigned long ret =0;
+  while(x>0)
+  {
+    unsigned d=x/10;
+    ret=(ret<<4)|(x-d*10);
+    x=d;
+  }
+  return ret;
+}
 
 
-
+*/
 
 int stop_repetitive_task()
 {
