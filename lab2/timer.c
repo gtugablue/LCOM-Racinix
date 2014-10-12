@@ -94,9 +94,9 @@ int timer_get_conf(unsigned long timer, unsigned long *st) {
 int timer_enable_speaker()
 {
 	unsigned long speaker;
-	if (sys_inb(0x61, &speaker) == OK)
+	if (sys_inb(SPEAKER_CTRL, &speaker) == OK)
 	{
-		if (sys_outb(0x61, speaker | (long unsigned int)3) == OK)
+		if (sys_outb(SPEAKER_CTRL, speaker | (long unsigned int)3) == OK)
 		{
 			return 0;
 		}
@@ -107,9 +107,9 @@ int timer_enable_speaker()
 int timer_disable_speaker()
 {
 	unsigned long speaker;
-	if (sys_inb(0x61, &speaker) == OK)
+	if (sys_inb(SPEAKER_CTRL, &speaker) == OK)
 	{
-		if (sys_outb(0x61, speaker & (char)(11111 << 3)) == OK)
+		if (sys_outb(SPEAKER_CTRL, speaker & (char)(11111 << 3)) == OK) ////
 		{
 			return 0;
 		}
@@ -191,7 +191,7 @@ int timer_test_int(unsigned long time) {
 		if (is_ipc_notify(ipc_status)) { /* received notification */
 			switch (_ENDPOINT_P(msg.m_source)) {
 			case HARDWARE: /* hardware interrupt notification */
-				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /* subscribed interrupt */
+				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /////// /* subscribed interrupt */
 					timer_int_handler();
 					if(time_counter % TIMER_DEFAULT_FREQ == 0)
 					{
@@ -285,6 +285,11 @@ int set_repetitive_task(unsigned long freq, void(*func)())
 	}
 	return 0;
 }
+
+//imprimir n como bcd (4 bits por digito) unsigned long p bcd
+
+
+
 
 int stop_repetitive_task()
 {
