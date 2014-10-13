@@ -173,10 +173,6 @@ int timer_test_int(unsigned long time) {
 	{
 		return 1;
 	}
-	if (timer_set_square(0, TIMER_DEFAULT_FREQ)) // Set timer 0 to the frequency Minix sets it by default (60Hz).
-	{
-		return 1;
-	}
 	int r, ipc_status;
 	message msg;
 	time_counter = 0;
