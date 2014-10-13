@@ -40,9 +40,9 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 	}
 	if (sys_outb(TIMER_CTRL, timer_bit | TIMER_SQR_WAVE | TIMER_LSB_MSB) == OK)
 	{
-		if (sys_outb(timer_port, *value & 11111111) == OK)
+		if (sys_outb(timer_port, WORD_LSB(*value)) == OK)
 		{
-			return sys_outb(timer_port, *value >> 8);
+			return sys_outb(timer_port, WORD_MSB(*value));
 		}
 	}
 	return 1;
@@ -54,7 +54,7 @@ int timer_subscribe_int(void ) {
 	{
 		if (sys_irqenable(&irq_hook_id) == OK)
 		{
-			return 0;
+			return TIMER0_HOOK_BIT;
 		}
 	}
 	return 1;
