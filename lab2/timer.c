@@ -49,7 +49,7 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 }
 
 int timer_subscribe_int(void ) {
-	irq_hook_id = TIMER0_IRQ;
+	irq_hook_id = TIMER0_HOOK_BIT;
 	if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &irq_hook_id) == OK)
 	{
 		if (sys_irqenable(&irq_hook_id) == OK)
@@ -268,7 +268,7 @@ int set_repetitive_task(unsigned long freq, void(*func)())
 		if (is_ipc_notify(ipc_status)) { /* received notification */
 			switch (_ENDPOINT_P(msg.m_source)) {
 			case HARDWARE: /* hardware interrupt notification */
-				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /* subscribed interrupt */
+				if (msg.NOTIFY_ARG & BIT(TIMER0_HOOK_BIT)) { /* subscribed interrupt */
 					timer_int_handler();
 					func();
 				}
