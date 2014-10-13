@@ -49,14 +49,14 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 }
 
 int timer_subscribe_int(void ) {
-		irq_hook_id = TIMER0_IRQ;
-		if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &irq_hook_id) == OK)
+	irq_hook_id = TIMER0_IRQ;
+	if (sys_irqsetpolicy(TIMER0_IRQ, IRQ_REENABLE, &irq_hook_id) == OK)
+	{
+		if (sys_irqenable(&irq_hook_id) == OK)
 		{
-			if (sys_irqenable(&irq_hook_id) == OK)
-			{
-				return 0;
-			}
+			return 0;
 		}
+	}
 	return 1;
 }
 
@@ -177,11 +177,10 @@ int timer_test_int(unsigned long time) {
 	{
 		return 1;
 	}
-	unsigned i = 1;
 	int r, ipc_status;
 	message msg;
 	time_counter = 0;
-	while (i <= time)
+	while (time_counter <= time * TIMER_DEFAULT_FREQ)
 	{
 		/* Get a request message. */
 		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
@@ -191,13 +190,11 @@ int timer_test_int(unsigned long time) {
 		if (is_ipc_notify(ipc_status)) { /* received notification */
 			switch (_ENDPOINT_P(msg.m_source)) {
 			case HARDWARE: /* hardware interrupt notification */
-				if (msg.NOTIFY_ARG & BIT(TIMER0_IRQ)) { /////// /* subscribed interrupt */
+				if (msg.NOTIFY_ARG & BIT(TIMER0_HOOK_BIT)) { /////// /* subscribed interrupt */
 					timer_int_handler();
 					if(time_counter % TIMER_DEFAULT_FREQ == 0)
 					{
-						time_counter = 0;
-						printf("Segundos decorridos: %d\n", i);
-						++i;
+						printf("Segundos decorridos: %d\n", time_counter / TIMER_DEFAULT_FREQ);
 					}
 				}
 				break;
@@ -285,23 +282,6 @@ int set_repetitive_task(unsigned long freq, void(*func)())
 	}
 	return 0;
 }
-
-//imprimir n como bcd
-
-/* unsigned long bcd (unsigned int x)
- {
-  unsigned long ret =0;
-  while(x>0)
-  {
-    unsigned d=x/10;
-    ret=(ret<<4)|(x-d*10);
-    x=d;
-  }
-  return ret;
-}
-
-
-*/
 
 int stop_repetitive_task()
 {
