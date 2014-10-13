@@ -9,6 +9,9 @@
 #define TIMER_INT_NUM_TESTS	60
 #define TIMER_DEFAULT_FREQ	60
 
+#define WORD_MSB(x)		(x) >> 8
+#define WORD_LSB(x)		(x) & 0xFF
+
 /** @defgroup timer timer
  * @{
  *
