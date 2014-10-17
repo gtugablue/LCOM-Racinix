@@ -138,6 +138,6 @@ int set_repetitive_task(unsigned long freq, void(*func)());
  *
  * @return Return 0 upon success and non-zero otherwise
  */
-int stop_repetitive_trask();
+int stop_repetitive_task();
 
 #endif /* __TIMER_H */
