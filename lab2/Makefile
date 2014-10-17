@@ -1,5 +1,3 @@
-# Makefile for the lab1 driver (based on that of hello).
-
 COMPILER_TYPE= gnu
 
 CC=gcc
