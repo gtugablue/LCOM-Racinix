@@ -4,6 +4,67 @@ static unsigned long time_counter = 0;
 static int irq_hook_id;
 static int doing_task = false;
 
+static void print_binary(unsigned char number)
+{
+	size_t i;
+	for (i = 0; i < 8; ++i)
+	{
+		if (number & 10000000)
+		{
+			printf("1");
+		}
+		else
+		{
+			printf("0");
+		}
+		number = number << 1;
+	}
+	return;
+}
+
+static unsigned long binary_to_BCD(unsigned long binary)
+{
+	unsigned long invertedBCD = 0;
+	unsigned long BCD = 0;
+	while (binary != 0)
+	{
+		invertedBCD <<= 4;
+		invertedBCD |= binary % 10;
+		binary /= 10;
+	}
+	while(invertedBCD != 0)
+	{
+		BCD <<= 4;
+		BCD |= invertedBCD % (1 << 4);
+		invertedBCD /= (1 << 4);
+	}
+	return BCD;
+}
+
+static int get_timer_BCD(unsigned long timer)
+{
+	if (sys_outb(TIMER_CTRL, TIMER_RB_SEL(timer) | TIMER_RB_CMD | TIMER_RB_COUNT_))
+	{
+		return -1;
+	}
+	unsigned long st;
+	switch(timer)
+	{
+	case 0:
+		if (sys_inb(TIMER_0, &st)) return -1;
+		break;
+	case 1:
+		if (sys_inb(TIMER_1, &st)) return -1;
+		break;
+	case 2:
+		if (sys_inb(TIMER_2, &st)) return -1;
+		break;
+	default:
+		return -1;
+	}
+	return (st & TIMER_BCD) == TIMER_BCD;
+}
+
 int timer_set_square(unsigned long timer, unsigned long freq) {
 	if (freq == 0)
 	{
@@ -14,12 +75,15 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 		return 1; // The number to put in the counter can't be lower than 1. TIMER_FREQ + 1 doesn't cause problems because the result is truncated, but if the user/programmer uses that value he's probably doing something wrong.
 	}
 	freq = TIMER_FREQ / freq;
-	if (freq >= (1 << 16))
+	int BCD;
+	if ((BCD = get_timer_BCD(timer)) == -1)
+	{
+		return 1; // Error obtaining the least significant bit from the status byte.
+	}
+	if (((BCD == TIMER_BCD) && freq > MAX_BCD_IN_WORD) || freq >= MAX_BINARY_IN_WORD)
 	{
 		return 1; // The counter only accepts numbers with a maximum of 16 bits.
 	}
-	unsigned long* value;
-	value = &freq;
 	unsigned char timer_bit, timer_port;
 	switch (timer)
 	{
@@ -38,14 +102,29 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 	default:
 		return 1;
 	}
-	if (sys_outb(TIMER_CTRL, timer_bit | TIMER_SQR_WAVE | TIMER_LSB_MSB) == OK)
+	switch (get_timer_BCD(timer))
 	{
-		if (sys_outb(timer_port, WORD_LSB(*value)) == OK)
+	case TIMER_BIN:
+		if (sys_outb(TIMER_CTRL, timer_bit | TIMER_SQR_WAVE | TIMER_LSB_MSB | TIMER_BIN) == OK)
 		{
-			return sys_outb(timer_port, WORD_MSB(*value));
+			if (sys_outb(timer_port, WORD_LSB((unsigned)freq)) == OK)
+			{
+				return sys_outb(timer_port, WORD_MSB((unsigned)(freq)));
+			}
 		}
+		return 1;
+	case TIMER_BCD:
+		if (sys_outb(TIMER_CTRL, timer_bit | TIMER_SQR_WAVE | TIMER_LSB_MSB | TIMER_BCD) == OK)
+		{
+			if (sys_outb(timer_port, WORD_LSB(binary_to_BCD((unsigned)freq))) == OK)
+			{
+				return sys_outb(timer_port, WORD_MSB(binary_to_BCD((unsigned)(freq))));
+			}
+		}
+		return 1;
+	default:	// -1
+		return 1;
 	}
-	return 1;
 }
 
 int timer_subscribe_int(void ) {
@@ -151,7 +230,7 @@ int timer_display_conf(unsigned char conf) {
 		printf("Unknown\n");
 	}
 	printf("Counting mode: ");
-	if ((conf & (TIMER_BCD | TIMER_BIN)) == TIMER_BCD)
+	if ((conf & TIMER_BCD) == TIMER_BCD)
 	{
 		printf("BCD\n");
 	}
@@ -217,24 +296,6 @@ int timer_test_config(unsigned long timer) {
 	}
 	free(st);
 	return 1;
-}
-
-void print_binary(unsigned char number)
-{
-	size_t i;
-	for (i = 0; i < 8; ++i)
-	{
-		if (number & 10000000)
-		{
-			printf("1");
-		}
-		else
-		{
-			printf("0");
-		}
-		number = number << 1;
-	}
-	return;
 }
 
 int set_repetitive_task(unsigned long freq, void(*func)())

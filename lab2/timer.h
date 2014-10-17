@@ -6,11 +6,12 @@
 #include <stdbool.h>
 #include "i8254.h"
 
-#define TIMER_INT_NUM_TESTS	60
 #define TIMER_DEFAULT_FREQ	60
 
-#define WORD_MSB(x)		(x) >> 8
-#define WORD_LSB(x)		(x) & 0xFF
+#define WORD_MSB(x)			((x) >> 8)
+#define WORD_LSB(x)			((x) & 0xFF)
+#define MAX_BCD_IN_WORD		9999
+#define MAX_BINARY_IN_WORD	(1 << 16)
 
 /** @defgroup timer timer
  * @{
@@ -100,7 +101,8 @@ int timer_test_square(unsigned long timer, unsigned long freq);
  *
  * Subscribes Timer 0 interrupts and prints a message once
  *  per second for the specified time interval
- *  Must not be used with set_repetitive_task()
+ * Must not be used with set_repetitive_task() and the timer 0
+ *  frequency must be set to the one Minix sets it by default
  *
  * @param time Length of time interval while interrupts are subscribed
  * @return Return 0 upon success and non-zero otherwise
@@ -116,14 +118,6 @@ int timer_test_int(unsigned long time);
  * @return Return 0 upon success and non-zero otherwise
  */
 int timer_test_config(unsigned long timer);
-
-
-/**
- * @brief Prints a byte in binary
- *
- * @param number Number to print in binary
- */
-void print_binary(unsigned char number);
 
 /**
  * @brief Sets a repetitive task
