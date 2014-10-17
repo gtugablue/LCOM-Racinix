@@ -80,7 +80,7 @@ int timer_set_square(unsigned long timer, unsigned long freq) {
 	{
 		return 1; // Error obtaining the least significant bit from the status byte.
 	}
-	if (((BCD == TIMER_BCD) && freq > MAX_BCD_IN_WORD) || freq >= MAX_BINARY_IN_WORD)
+	if (((BCD == TIMER_BCD) && freq > MAX_BCD_IN_WORD) || freq > MAX_BINARY_IN_WORD)
 	{
 		return 1; // The counter only accepts numbers with a maximum of 16 bits.
 	}
