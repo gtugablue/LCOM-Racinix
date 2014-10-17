@@ -11,7 +11,7 @@
 #define WORD_MSB(x)			((x) >> 8)
 #define WORD_LSB(x)			((x) & 0xFF)
 #define MAX_BCD_IN_WORD		9999
-#define MAX_BINARY_IN_WORD	(1 << 16)
+#define MAX_BINARY_IN_WORD	((1 << 16) - 1)
 
 /** @defgroup timer timer
  * @{
