@@ -3,7 +3,10 @@
 
 #include <minix/syslib.h>
 #include <minix/sysutil.h>
-#include "i8042.h"
+#include <minix/drivers.h>
+
+#define IS_BREAK_CODE(x)	((x) & (1 << I8042_BREAK_CODE_BIT))
+#define KBC_TRIES			10
 
 /** @defgroup test3 test3
  * @{
