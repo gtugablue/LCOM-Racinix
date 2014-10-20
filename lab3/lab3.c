@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
   sef_startup();
 
-  //printf("%d", kbd_test_scan(0));
+  printf("%d", kbd_test_scan(0));
 
   /*if ( argc == 1 ) {
       print_usage(argv);
