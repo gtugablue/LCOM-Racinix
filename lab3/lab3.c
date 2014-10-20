@@ -12,6 +12,9 @@ int main(int argc, char **argv) {
   sef_startup();
 
   printf("%d", kbd_test_scan(0));
+  kbd_toggle_led(0);
+  kbd_toggle_led(1);
+  kbd_toggle_led(2);
 
   /*if ( argc == 1 ) {
       print_usage(argv);
