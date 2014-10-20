@@ -4,6 +4,7 @@
 #include <minix/syslib.h>
 #include <minix/sysutil.h>
 #include <minix/drivers.h>
+#include "queue.h"
 
 #define IS_BREAK_CODE(x)	((x) & (1 << I8042_BREAK_CODE_BIT))
 #define KBC_TRIES			10
