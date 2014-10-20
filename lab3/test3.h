@@ -1,13 +1,9 @@
-#ifndef __TEST3_H
-#define __TEST3_H
+#ifndef _TEST3_H
+#define _TEST3_H
 
-#include <minix/syslib.h>
-#include <minix/sysutil.h>
-#include <minix/drivers.h>
-#include "queue.h"
+#include "kbd.h"
 
 #define IS_BREAK_CODE(x)	((x) & (1 << I8042_BREAK_CODE_BIT))
-#define KBC_TRIES			10
 
 /** @defgroup test3 test3
  * @{
