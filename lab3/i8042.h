@@ -6,13 +6,14 @@
 #define BIT(n) (0x01<<(n))
 
 #define I8042_IRQ					1		// Keyboard IRQ Line
-#define I8042_HOOK_BIT				2
 
 #define I8042_KBD_TIMEOUT			20000	// Wait time in microseconds
 
 // KBC registers
 #define I8042_STAT_REG				0x64
-#define I8042_IN_BUF				0x64
+#define I8042_IN_KBC_CMD_BUF		0x64
+#define I8042_IN_KBD_CMD_BUF		0x60
+#define I8042_IN_ARG_BUF			0x60
 #define I8042_OUT_BUF				0x60
 
 // C@KBD responses
@@ -27,6 +28,11 @@
 #define I8042_CLEAR_BUF_ENABLE_KBD	0xF4
 #define I8042_CHANGE_KBD_REPETITION	0xF3
 #define I8042_SWITCH_KBD_LEDS		0xED
+
+// LEDs
+#define I8042_LED_CAPSLOCK_BIT		2
+#define I8042_LED_NUMLOCK_BIT		1
+#define I8042_LED_SCROLL_BIT		0
 
 // KBC Status Register
 #define I8042_STATUS_PARITY_BIT		7

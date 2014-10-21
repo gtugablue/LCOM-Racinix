@@ -2,8 +2,7 @@
 #define _TEST3_H
 
 #include "kbd.h"
-
-#define IS_BREAK_CODE(x)	((x) & (1 << I8042_BREAK_CODE_BIT))
+#include "timer.h"
 
 /** @defgroup test3 test3
  * @{
@@ -30,11 +29,11 @@ int kbd_test_scan(unsigned short ass);
  *  arguments
  * 
  * @param n number of elements of the second argument
- * @param leds array with the LEDs to toggle (Ranges from 0 t0 2)
+ * @param leds array with the LEDs to toggle (Ranges from 0 to 2)
  * 
  * @return Return 0 upon success and non-zero otherwise
  */
-int kbd_test_leds(unsigned short n, unsigned short *leds);
+int kbd_test_leds(unsigned short n, unsigned char *leds);
 
 /** 
  * @brief To test handling of more than one interrupt
