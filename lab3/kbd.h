@@ -11,6 +11,7 @@
 
 #define KBC_TRIES			10
 #define KBD_HOOK_BIT		2
+#define TWO_BYTE_SCANCODE	0xE0
 
 /** @defgroup kbd kbd
  * @{
