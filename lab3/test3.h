@@ -3,6 +3,7 @@
 
 #include "kbd.h"
 #include "timer.h"
+#include <stdbool.h>
 
 /** @defgroup test3 test3
  * @{

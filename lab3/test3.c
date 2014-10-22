@@ -4,6 +4,7 @@ static int kbd_scan_int_handler();
 static void kbd_timer_int_handler();
 
 static unsigned long counter;
+static bool two_byte_scancode = 0;
 
 static void kbd_timer_int_handler()
 {
@@ -18,12 +19,22 @@ static int kbd_scan_int_handler()
 	{
 		return 1;
 	}
+	if (scancode == TWO_BYTE_SCANCODE)
+	{
+		two_byte_scancode = true;
+		return 0;
+	}
+	else if (two_byte_scancode)
+	{
+		scancode |= (TWO_BYTE_SCANCODE << 8);
+		two_byte_scancode = false;
+	}
 	if (IS_BREAK_CODE(scancode))
 	{
 		printf("breakcode: 0x%X\n", scancode);
 		if (scancode == (KEY_ESC | BIT(I8042_BREAK_CODE_BIT)))
 		{
-			return 1;
+			return -1;
 		}
 	}
 	else
@@ -130,9 +141,13 @@ int kbd_test_timed_scan(unsigned short n) {
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(KBD_HOOK_BIT)) {
-					if (kbd_scan_int_handler())
+					if (kbd_scan_int_handler() == -1)
 					{
 						break;
+					}
+					else if (kbd_scan_int_handler() != OK)
+					{
+						return 1;
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
