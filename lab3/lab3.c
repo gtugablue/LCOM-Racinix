@@ -11,6 +11,9 @@ int main(int argc, char **argv) {
 
 	sef_startup();
 
+	/* Enable IO-sensitive operations for ourselves */
+	//sys_iopenable(SELF);
+
 	if ( argc == 1 ) {
 		print_usage(argv);
 		return 0;

@@ -44,11 +44,6 @@ static int kbd_scan_int_handler()
 	return 0;
 }
 
-static int kbd_response_handler(unsigned long response)
-{
-	return 0;
-}
-
 static int kbd_test_timer_handler()
 {
 	return 0;
@@ -130,6 +125,7 @@ int kbd_test_timed_scan(unsigned short n) {
 	}
 	int r, ipc_status;
 	message msg;
+	int scan_result;
 	while (1)
 	{
 		/* Get a request message. */
@@ -141,11 +137,12 @@ int kbd_test_timed_scan(unsigned short n) {
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(KBD_HOOK_BIT)) {
-					if (kbd_scan_int_handler() == -1)
+					scan_result = kbd_scan_int_handler();
+					if (scan_result == -1)
 					{
 						break;
 					}
-					else if (kbd_scan_int_handler() != OK)
+					else if (scan_result != OK)
 					{
 						return 1;
 					}
