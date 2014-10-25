@@ -58,6 +58,15 @@ int kbd_toggle_leds(unsigned short leds);
 int kbd_read_status(unsigned long* status);
 
 /**
+ * @brief Read from the output port
+ *
+ * @param output memory address to write the 4-byte output at
+ *
+ * @return Return 0 upon success and non-zero otherwise
+ */
+int kbd_read_output(unsigned short ass, unsigned long* output);
+
+/**
  * @brief Unsubscribe the keyboard interrupts
  *
  * @return Return 0 upon success and non-zero otherwise
