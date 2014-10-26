@@ -13,7 +13,7 @@
 #define I8042_STAT_REG					0x64
 #define I8042_IN_KBC_CMD_BUF			0x64
 #define I8042_IN_KBD_CMD_BUF			0x60
-#define I8042_IN_ARG_BUF				0x60
+#define I8042_IN_ARG_REG				0x60
 #define I8042_OUT_BUF					0x60
 
 // C@KBD responses
