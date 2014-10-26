@@ -1,4 +1,5 @@
 #include <minix/drivers.h>
+#include <minix/com.h>
 
 #include "test3.h"
 
@@ -12,7 +13,7 @@ int main(int argc, char **argv) {
 	sef_startup();
 
 	/* Enable IO-sensitive operations for ourselves */
-	//sys_iopenable(SELF);
+	sys_enable_iop(SELF);
 
 	if ( argc == 1 ) {
 		print_usage(argv);

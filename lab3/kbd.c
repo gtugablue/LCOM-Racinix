@@ -77,7 +77,7 @@ int kbd_toggle_leds(unsigned short leds)
 		}
 
 		// Command sent successfully, send argument now
-		if (sys_outb(I8042_IN_ARG_BUF, leds))
+		if (sys_outb(I8042_IN_ARG_REG, leds))
 		{
 			return 1;
 		}
@@ -96,7 +96,7 @@ int kbd_toggle_leds(unsigned short leds)
 		}
 		else if (output == I8042_RESEND)
 		{
-			if (sys_outb(I8042_IN_ARG_BUF, leds))
+			if (sys_outb(I8042_IN_ARG_REG, leds))
 			{
 				return 1;
 			}
@@ -126,12 +126,7 @@ int kbd_read_status(unsigned long* status)
 
 int kbd_read_output(unsigned short ass, unsigned long* output)
 {
-	unsigned long* output;
-	if ((output == malloc(sizeof(unsigned long))) == NULL)
-	{
-		return 1;
-	}
-	if (sys_inb(I8042_OUT_REG, output) == OK)
+	if (sys_inb(I8042_OUT_BUF, output) == OK)
 	{
 		return 0;
 	}
