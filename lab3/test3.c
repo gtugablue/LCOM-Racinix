@@ -68,9 +68,19 @@ int kbd_test_scan(unsigned short ass)
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(KBD_HOOK_BIT)) {
-					if (kbd_scan_int_handler())
+					if (ass)
 					{
-						break;
+						if (printf("Return: %d\n", kbd_scan_int_handler_asm()))
+						{
+							break;
+						}
+					}
+					else
+					{
+						if (kbd_scan_int_handler())
+						{
+							break;
+						}
 					}
 				}
 			}
