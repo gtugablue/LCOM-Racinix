@@ -159,5 +159,9 @@ int kbd_test_timed_scan(unsigned short n) {
 			}
 		}
 	}
+	if (counter >= n * TIMER_DEFAULT_FREQ)
+	{
+		printf("Exiting due to timeout\n");
+	}
 	return 0;
 }
