@@ -44,11 +44,6 @@ static int kbd_scan_int_handler()
 	return 0;
 }
 
-static int kbd_test_timer_handler()
-{
-	return 0;
-}
-
 int kbd_test_scan(unsigned short ass)
 {
 	if (kbd_subscribe_int() == -1)
