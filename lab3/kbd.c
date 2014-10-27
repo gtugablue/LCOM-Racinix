@@ -2,7 +2,8 @@
 
 #define KBC_TRIES			10
 
-static int kbc_wait_for_input_buffer(unsigned long *status);
+static int kbd_wait_for_response(unsigned current_try);
+static int kbd_send_argument(unsigned long argument, unsigned current_try);
 
 static int irq_hook_id;
 static unsigned char led_status = 0;
@@ -53,6 +54,7 @@ int kbd_toggle_leds(unsigned short leds)
 {
 	// Wait for ACK
 	unsigned current_try = 0;
+	int result;
 	while (current_try < KBC_TRIES)
 	{
 		if (sys_outb(I8042_IN_KBD_CMD_BUF, I8042_SWITCH_KBD_LEDS) != OK)
@@ -71,13 +73,37 @@ int kbd_toggle_leds(unsigned short leds)
 		}
 		if (!(output == I8042_ACK))
 		{
-			printf("%d\n", output);
 			++current_try;
 			continue;
 		}
 
-		// Command sent successfully, send argument now
-		if (sys_outb(I8042_IN_ARG_REG, leds))
+		result = kbd_send_argument(leds, current_try);
+
+		if (result == -1)
+		{
+			continue;
+		}
+		else if (result == OK)
+		{
+			led_status = leds;
+			return 0;
+		}
+		else
+		{
+			return 1;
+		}
+
+		++current_try;
+	}
+	return 1;
+}
+
+static int kbd_send_argument(unsigned long argument, unsigned current_try)
+{
+	unsigned long output;
+	while (current_try < KBC_TRIES)
+	{
+		if (sys_outb(I8042_IN_ARG_REG, argument))
 		{
 			return 1;
 		}
@@ -91,30 +117,14 @@ int kbd_toggle_leds(unsigned short leds)
 		}
 		if (output == I8042_ACK)
 		{
-			led_status = leds;
 			return 0;
 		}
 		else if (output == I8042_RESEND)
 		{
-			if (sys_outb(I8042_IN_ARG_REG, leds))
-			{
-				return 1;
-			}
-			if (kbd_wait_for_response(current_try))
-			{
-				return 1;
-			}
-			if (sys_inb(I8042_OUT_BUF, &output) != OK)
-			{
-				return 1;
-			}
-			if (output == I8042_ACK)
-			{
-				led_status = leds;
-				return 0;
-			}
+			++current_try;
+			continue;
 		}
-		++current_try;
+		return -1;	// Error, repeat sequence
 	}
 	return 1;
 }
