@@ -134,15 +134,6 @@ int kbd_read_status(unsigned long* status)
 	return sys_inb(I8042_STAT_REG, status);
 }
 
-int kbd_read_output(unsigned short ass, unsigned long* output)
-{
-	if (sys_inb(I8042_OUT_BUF, output) == OK)
-	{
-		return 0;
-	}
-	return 1;
-}
-
 int kbd_unsubscribe_int()
 {
 	if (sys_irqrmpolicy(&irq_hook_id) == OK)
