@@ -3,8 +3,8 @@
 static int kbd_scan_int_handler();
 static void kbd_timer_int_handler();
 
-static unsigned long counter;
-static bool two_byte_scancode = 0;
+bool two_byte_scancode = 0;
+static unsigned long counter = 0;
 
 static void kbd_timer_int_handler()
 {
@@ -55,7 +55,7 @@ int kbd_test_scan(unsigned short ass)
 	{
 		return 1;
 	}
-	int r, ipc_status;
+	int r, ipc_status, scan_result;
 	message msg;
 	while (1)
 	{
@@ -70,17 +70,19 @@ int kbd_test_scan(unsigned short ass)
 				if (msg.NOTIFY_ARG & BIT(KBD_HOOK_BIT)) {
 					if (ass)
 					{
-						if (printf("Return: %d\n", kbd_scan_int_handler_asm()))
-						{
-							break;
-						}
+						scan_result = kbd_scan_int_handler_asm();
 					}
 					else
 					{
-						if (kbd_scan_int_handler())
-						{
-							break;
-						}
+						scan_result = kbd_scan_int_handler();
+					}
+					if (scan_result == -1)
+					{
+						break;
+					}
+					else if (scan_result != OK)
+					{
+						return 1;
 					}
 				}
 			}
@@ -97,7 +99,6 @@ int kbd_test_leds(unsigned short n, unsigned char *leds) {
 	}
 	int r, ipc_status;
 	message msg;
-	counter = 0;
 	while(counter < n * TIMER_DEFAULT_FREQ)
 	{
 		/* Get a request message. */
@@ -133,10 +134,9 @@ int kbd_test_timed_scan(unsigned short n) {
 	{
 		return 1;
 	}
-	int r, ipc_status;
+	int r, ipc_status, scan_result;
 	message msg;
-	int scan_result;
-	while (1)
+	while (counter < n * TIMER_DEFAULT_FREQ)
 	{
 		/* Get a request message. */
 		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
@@ -147,6 +147,7 @@ int kbd_test_timed_scan(unsigned short n) {
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(KBD_HOOK_BIT)) {
+					counter = 0;
 					scan_result = kbd_scan_int_handler();
 					if (scan_result == -1)
 					{
