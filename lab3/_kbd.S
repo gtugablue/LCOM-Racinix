@@ -14,7 +14,7 @@ breakcode_text:	.string "breakcode: 0x%X\n"
 
 .text
 _kbd_scan_int_handler_asm:
-		xor		%eax, %eax
+		xor		%eax, %eax											// set EAX register to 0
 		in		$I8042_OUT_BUF, %al									// read the output buffer (must be to the al register)
 		cmp		$TWO_BYTE_SCANCODE, %al								// check if it's a 2-byte scancode
 		jne		onebyte												// if it's a 1-byte scancode, jump to onebyte
