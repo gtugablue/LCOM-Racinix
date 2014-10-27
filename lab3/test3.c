@@ -105,7 +105,6 @@ int kbd_test_leds(unsigned short n, unsigned char *leds) {
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					kbd_timer_int_handler();
 					if ((counter % TIMER_DEFAULT_FREQ) == 0)
 					{
 						if (kbd_toggle_leds(TOGGLE_LED(leds[counter / TIMER_DEFAULT_FREQ], kbd_get_led_status())))
@@ -113,6 +112,7 @@ int kbd_test_leds(unsigned short n, unsigned char *leds) {
 							return 1;
 						}
 					}
+					kbd_timer_int_handler();
 				}
 			}
 		}
