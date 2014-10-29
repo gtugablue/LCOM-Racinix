@@ -5,8 +5,8 @@
 
 #define BIT(n) (0x01<<(n))
 
-#define I8042_KBD_IRQ						1		// Keyboard IRQ Line
-#define I8042_MOUSE_IRQ
+#define I8042_KBD_IRQ					1		// Keyboard IRQ Line
+#define I8042_MOUSE_IRQ					12		// Mouse IRQ Line
 
 #define I8042_KBD_TIMEOUT				20000	// Wait time in microseconds
 
@@ -17,9 +17,9 @@
 #define I8042_OUT_BUF					0x60
 
 // C@KBD responses
-#define I8042_CKBD_RESPONSE_ACK			0xFA
-#define I8042_CKBD_RESPONSE_RESEND		0xFE	// The latest byte should be written again
-#define I8042_CKBD_RESPONSE_ERROR		0xFC	// The entire input/output sequence should be restarted
+#define I8042_KBD_RESPONSE_ACK			0xFA
+#define I8042_KBD_RESPONSE_RESEND		0xFE	// The latest byte should be written again
+#define I8042_KBD_RESPONSE_ERROR		0xFC	// The entire input/output sequence should be restarted
 
 // Mouse responses
 #define I8042_MOUSE_RESPONSE_ACK		0xFA	// Everything OK
