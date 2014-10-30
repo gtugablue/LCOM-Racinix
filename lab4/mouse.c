@@ -1,4 +1,7 @@
 #include "mouse.h"
+#include "queue.h"
+
+static queue_t byte_queue;
 
 int mouse_subscribe_int(unsigned* hook_id)
 {
