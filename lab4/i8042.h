@@ -3,8 +3,6 @@
 
 #define I8042_TIMEOUT_US	20000
 
-#define BIT(n) (0x01<<(n))
-
 #define I8042_KBD_IRQ					1		// Keyboard IRQ Line
 #define I8042_MOUSE_IRQ					12		// Mouse IRQ Line
 
