@@ -1,3 +1,7 @@
 int main(int argc, char *argv[]) {
-    /* To be completed ... */
+
+	sef_startup();
+
+    test_packet(10);
+    return 0;
 }
