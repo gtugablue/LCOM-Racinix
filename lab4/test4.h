@@ -1,6 +1,11 @@
 #ifndef __TEST4_H
 #define __TEST4_H
 
+#include "mouse.h"
+
+#define MOUSE_HOOK_BIT	12
+#define NUM_TRIES		100
+
 /** @defgroup test4 test4
  * @{
  *
@@ -61,3 +66,5 @@ int test_config(void);
 
 
 int test_gesture(short length, unsigned short tolerance);
+
+#endif

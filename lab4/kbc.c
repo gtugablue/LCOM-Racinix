@@ -32,7 +32,7 @@ static int kbd_wait_for_in_buf(unsigned num_tries)
 		{
 			return 1;
 		}
-		if (status & BIT(I8042_STATUS_OBF_BIT))
+		if (!(status & BIT(I8042_STATUS_IBF_BIT)))
 		{
 			return 0;
 		}
@@ -51,7 +51,7 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 		{
 			return 1;
 		}
-		if (!(status & BIT(I8042_STATUS_IBF_BIT)))
+		if (status & BIT(I8042_STATUS_OBF_BIT))
 		{
 			return 0;
 		}
@@ -87,7 +87,7 @@ int kbc_send_data(unsigned num_tries, unsigned char argument)
 	{
 		return 1;
 	}
-
+	return 0;
 }
 
 int kbc_write_to_mouse()
@@ -99,17 +99,42 @@ int kbc_write_to_mouse()
 	return 1;
 }
 
-int kbc_read(unsigned num_tries, unsigned char* output)
+int kbc_read(unsigned num_tries, unsigned long* output)
 {
+	unsigned long status;
+	sys_inb(I8042_STAT_REG, &status);
+	printf("Status: 0x%X\n", status);
 	if (kbd_wait_for_out_buf(num_tries) != 0)
 	{
 		return 1;
 	}
-	if (sys_outb(I8042_OUT_BUF, output) != OK)
+	if (sys_inb(I8042_OUT_BUF, output) != OK)
 	{
 		return 1;
 	}
 	return 0;
+}
+
+int kbc_clean_output_buffer(unsigned num_tries)
+{
+	unsigned long status;
+	size_t i;
+	for (i = 0; i < num_tries; ++i)
+	{
+		if (kbc_read_status(&status))
+		{
+			return 1;
+		}
+		if (status & I8042_STATUS_OBF_BIT)
+		{
+			if (sys_inb(I8042_OUT_BUF, &status))
+			{
+				return 1;
+			}
+			continue;
+		}
+		return 0;
+	}
 }
 
 int kbc_unsubscribe_int(unsigned hook_id)

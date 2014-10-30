@@ -37,10 +37,21 @@
 
 int mouse_subscribe_int(unsigned *hook_id);
 
+bool mouse_get_packet(unsigned char return_packet[]);
+
 int mouse_write(unsigned num_tries, unsigned char command);
 
-int mouse_send_argument(unsigned num_tries, unsigned char argument);
+//int mouse_send_argument(unsigned num_tries, unsigned char argument);
+
+int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument);
+// TODO ^
 
 int mouse_int_handler(unsigned num_tries);
+
+int mouse_set_stream_mode(unsigned num_tries);
+
+int mouse_enable_stream_mode(unsigned num_tries);
+
+int mouse_disable_stream_mode(unsigned num_tries);
 
 int mouse_unsubscribe_int(unsigned hook_id);
