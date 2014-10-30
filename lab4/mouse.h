@@ -33,7 +33,7 @@
 
 #define MOUSE_PACKET_SIZE				3
 
-#define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & MOUSE_1ST_BYTE_ALWAYS_1_BIT)
+#define MOUSE_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
 
 int mouse_subscribe_int(unsigned *hook_id);
 
@@ -53,5 +53,7 @@ int mouse_set_stream_mode(unsigned num_tries);
 int mouse_enable_stream_mode(unsigned num_tries);
 
 int mouse_disable_stream_mode(unsigned num_tries);
+
+int mouse_reset(unsigned num_tries);
 
 int mouse_unsubscribe_int(unsigned hook_id);

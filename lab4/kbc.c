@@ -1,5 +1,7 @@
 #include "kbc.h"
 
+#define BIT(n) (0x01<<(n))
+
 static int kbd_wait_for_in_buf(unsigned num_tries);
 static int kbd_wait_for_out_buf(unsigned num_tries);
 
@@ -103,7 +105,6 @@ int kbc_read(unsigned num_tries, unsigned long* output)
 {
 	unsigned long status;
 	sys_inb(I8042_STAT_REG, &status);
-	printf("Status: 0x%X\n", status);
 	if (kbd_wait_for_out_buf(num_tries) != 0)
 	{
 		return 1;

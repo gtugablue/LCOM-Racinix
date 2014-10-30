@@ -2,6 +2,9 @@
 
 #define NDEBUG
 
+#define BIT(n) (0x01<<(n))
+#define IS_BIT_SET(n, bit)	(((n) & BIT(bit)) ? 1 : 0)
+
 static void print_packet_info(unsigned char packet[]);
 
 int test_packet(unsigned short cnt){
@@ -15,7 +18,6 @@ int test_packet(unsigned short cnt){
 	printf("hook_id = %d\n", hook_id);
 	printf("Setting stream mode...\n");
 #endif
-	kbc_clean_output_buffer(NUM_TRIES);
 	if (mouse_set_stream_mode(NUM_TRIES))
 	{
 		return 1;
@@ -82,6 +84,14 @@ int test_packet(unsigned short cnt){
 		}
 	}
 #ifndef NDEBUG
+	printf("Disabling stream mode...\n");
+#endif
+	if(mouse_disable_stream_mode(NUM_TRIES))
+	{
+		return 1;
+	}
+#ifndef NDEBUG
+	printf("Stream mode successfully disabled.\n");
 	printf("Unsubscribing mouse interrupts...\n");
 #endif
 	if (mouse_unsubscribe_int(hook_id))
@@ -99,7 +109,7 @@ int test_async(unsigned short idle_time) {
 }
 	
 int test_config(void) {
-    /* To be completed ... */
+	/* To be completed ... */
 }	
 	
 int test_gesture(short length, unsigned short tolerance) {
@@ -108,15 +118,16 @@ int test_gesture(short length, unsigned short tolerance) {
 
 static void print_packet_info(unsigned char packet[])
 {
-	printf("B1=0x%3x", packet[0]);
-	printf("B2=0x%3x", packet[1]);
-	printf("B3=0x%3x", packet[2]);
-	printf("LB=%2d", packet[0] & BIT(MOUSE_1ST_BYTE_LEFT_BTN_BIT));
-	printf("MB=%2d", packet[0] & BIT(MOUSE_1ST_BYTE_MIDDLE_BTN_BIT));
-	printf("RB=%2d", packet[0] & BIT(MOUSE_1ST_BYTE_RIGHT_BTN_BIT));
-	printf("XOV=%2d", packet[0] & BIT(MOUSE_1ST_BYTE_X_OF_BIT));
-	printf("YOV=%2d", packet[0] & BIT(MOUSE_1ST_BYTE_Y_OF_BIT));
-	printf("X=%3d", packet[1]);
-	printf("Y=%3d", packet[2]);
+	printf("B1=0x%X\t", packet[0]);
+	printf("B2=0x%X\t", packet[1]);
+	printf("B3=0x%X\t", packet[2]);
+	printf("LB=%d\t", IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_LEFT_BTN_BIT));
+	printf("MB=%d\t", IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_MIDDLE_BTN_BIT));
+	printf("RB=%d\t", IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_RIGHT_BTN_BIT));
+	printf("XOV=%d\t", IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_X_OF_BIT));
+	printf("YOV=%d\t", IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_Y_OF_BIT));
+	printf("X=%d\t", MOUSE_PACKET_COUNTER((short)packet[1], IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_X_SIGN_BIT)));
+	printf("Y=%d", MOUSE_PACKET_COUNTER((short)packet[2], IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_Y_SIGN_BIT)));
+	printf("\n");
 	return;
 }

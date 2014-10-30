@@ -1,9 +1,12 @@
 #include "mouse.h"
 
+#define BIT(n) (0x01<<(n))
+#define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & BIT(MOUSE_1ST_BYTE_ALWAYS_1_BIT))
+
 static unsigned char packet[MOUSE_PACKET_SIZE];
 static unsigned char next_byte;
 
-static bool mouse_check_synchronization();
+static bool mouse_synchronize();
 
 int mouse_subscribe_int(unsigned* hook_id)
 {
@@ -16,7 +19,6 @@ int mouse_subscribe_int(unsigned* hook_id)
 	{
 		memset(packet, 0, sizeof(packet));	// Clean the array to make sure bit 3 is off in all bytes
 		next_byte = 0;
-		printf("Finished subscription.\n");
 		return hook_bit;
 	}
 	return -1;
@@ -24,7 +26,7 @@ int mouse_subscribe_int(unsigned* hook_id)
 
 bool mouse_get_packet(unsigned char return_packet[])
 {
-	if (next_byte == 0 && mouse_check_synchronization())
+	if (mouse_synchronize() && next_byte == 0)
 	{
 		memcpy(return_packet, packet, sizeof(packet));
 		return true;
@@ -85,11 +87,10 @@ int mouse_int_handler(unsigned num_tries)
 	unsigned long output;
 	if (kbc_read(num_tries, &output))
 	{
-		printf("Error reading packet byte.\n");
 		return 1;
 	}
-	printf("BYTE READ: 0x%X\n", output);
-	packet[next_byte++] = output;
+	packet[next_byte] = output;
+	next_byte = (next_byte + 1) % MOUSE_PACKET_SIZE;
 	return 0;
 }
 
@@ -99,7 +100,6 @@ int mouse_set_stream_mode(unsigned num_tries)
 	{
 		return 1;
 	}
-	printf("Stream mode successfully set.\n");
 	return 0;
 }
 
@@ -124,25 +124,29 @@ int mouse_disable_stream_mode(unsigned num_tries)
 	next_byte = 0;
 }
 
+int mouse_reset(unsigned num_tries)
+{
+	return mouse_write(num_tries, MOUSE_RESET);
+}
+
 int mouse_unsubscribe_int(unsigned hook_id)
 {
 	return kbc_unsubscribe_int(hook_id);
 }
 
-static bool mouse_check_synchronization()
+static bool mouse_synchronize()
 {
-	size_t i, j;
 	if (MOUSE_IS_POSSIBLE_FIRST_BYTE(packet[0]))	// Most of the times this will be true, so it's a good idea to check it first to avoid entering the loop
 	{
 		return true;
 	}
+	size_t i, j;
 	for (i = 1; i < MOUSE_PACKET_SIZE; ++i)
 	{
 		if (MOUSE_IS_POSSIBLE_FIRST_BYTE(packet[i]))
 		{
 			for (j = 0; j < MOUSE_PACKET_SIZE; ++j)
 			{
-				printf("derp");
 				packet[j] = packet[(i + j) % MOUSE_PACKET_SIZE];
 				next_byte -= i;
 				return true;
