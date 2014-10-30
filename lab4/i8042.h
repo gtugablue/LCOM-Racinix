@@ -21,11 +21,6 @@
 #define I8042_KBD_RESPONSE_RESEND		0xFE	// The latest byte should be written again
 #define I8042_KBD_RESPONSE_ERROR		0xFC	// The entire input/output sequence should be restarted
 
-// Mouse responses
-#define I8042_MOUSE_RESPONSE_ACK		0xFA	// Everything OK
-#define I8042_MOUSE_RESPONSE_NACK		0xFE	// Invalid byte
-#define I8042_MOUSE_RESPONSE_ERROR		0xFC	// Second consecutive invalid byte
-
 // Keyboard Commands
 #define I8042_RESET_KBD					0xFF
 #define I8042_DEFAULT_ENABLE_KBD		0xF6
@@ -33,21 +28,6 @@
 #define I8042_CLEAR_BUF_ENABLE_KBD		0xF4
 #define I8042_CHANGE_KBD_REPETITION		0xF3
 #define I8042_SWITCH_KBD_LEDS			0xED
-
-// Mouse Commands
-#define I8042_MOUSE_RESET				0xFF
-#define I8042_MOUSE_RESEND				0xFE
-#define I8042_MOUSE_SET_DEFAULT			0xF6
-#define I8042_MOUSE_DISABLE_STREAM_MODE	0xF4
-#define I8042_MOUSE_ENABLE_DATA_PACKETS	0xF4
-#define I8042_MOUSE_SET_SAMPLE_RATE		0xF3
-#define I8042_MOUSE_SET_REMOTE_MODE		0xF0
-#define I8042_MOUSE_READ_DATA			0xEB
-#define I8042_MOUSE_SET_STREAM_MODE		0xEA
-#define I8042_MOUSE_STATUS_REQUEST		0xE9
-#define I8042_MOUSE_SET_RESOLUTION		0xE8
-#define I8042_MOUSE_SET_SCALING_2_1		0xE7
-#define I8042_MOUSE_SET_SCALING_1_1		0xE6
 
 // LEDs
 #define I8042_LED_CAPSLOCK_BIT			2
