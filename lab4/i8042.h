@@ -1,7 +1,7 @@
 #ifndef _I8042_H
 #define _I8042_H
 
-#define I8042_TIMEOUT_US	20000
+#define I8042_TIMEOUT_US				20000
 
 #define I8042_KBD_IRQ					1		// Keyboard IRQ Line
 #define I8042_MOUSE_IRQ					12		// Mouse IRQ Line

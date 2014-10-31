@@ -1,5 +1,7 @@
 #include "mouse.h"
 
+#define MOUSE_READ_STATUS_WAIT_TIME		10
+
 #define BIT(n) (0x01<<(n))
 #define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & BIT(MOUSE_1ST_BYTE_ALWAYS_1_BIT))
 
@@ -79,7 +81,29 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument)
 	{
 		return 0;
 	}
-	return -1;
+	return -1;	// NACK
+}
+
+int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument)
+{
+	// TODO
+}
+
+int mouse_read_status(unsigned num_tries, unsigned long status[])
+{
+	if (mouse_write(num_tries, MOUSE_READ_DATA))
+	{
+		return 1;
+	}
+	size_t i;
+	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
+	{
+		if (kbc_read(num_tries, &status[i]))
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int mouse_int_handler(unsigned num_tries)
