@@ -31,20 +31,84 @@
 #define MOUSE_1ST_BYTE_RIGHT_BTN_BIT	1
 #define MOUSE_1ST_BYTE_LEFT_BTN_BIT		0
 
+// Sample rates
+#define MOUSE_SAMPLE_RATE_1				10
+#define MOUSE_SAMPLE_RATE_2				20
+#define MOUSE_SAMPLE_RATE_3				40
+#define MOUSE_SAMPLE_RATE_4				60
+#define MOUSE_SAMPLE_RATE_5				80
+#define MOUSE_SAMPLE_RATE_6				100
+#define MOUSE_SAMPLE_RATE_7				200
+
 #define MOUSE_PACKET_SIZE				3
+#define MOUSE_STATUS_SIZE				3
 
 #define MOUSE_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
 
+/** @defgroup mouse mouse
+ * @{
+ *
+ * Functions for using the PS/2 mouse
+ */
+
+/**
+ * @brief Subscribe the mouse interrupts
+ *
+ * Subscribes the mouse interrupts with a specified hook bit and hook id
+ *
+ * @param hook_id address of memory where the hook bit is located and where to write the hook id
+ *
+ * @return Return 0 upon success, -1 on "Not acknowledge" or >0 otherwise
+ */
 int mouse_subscribe_int(unsigned *hook_id);
 
+/**
+ * @brief Get packet
+ *
+ * Checks if there is a synchronized packet ready and retrieves it
+ *
+ * @param return_packet[] array where to write the packet, if it is ready
+ *
+ * @return True if there is a synchronized packet ready, false otherwise
+ */
 bool mouse_get_packet(unsigned char return_packet[]);
 
+/**
+ * @brief Write to the mouse
+ *
+ * Writes the command specified in the arguments directly to the mouse.
+ *
+ * @param num_tries number of tries to make whenever something fails
+ * @param command command to send to the mouse
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_write(unsigned num_tries, unsigned char command);
 
-//int mouse_send_argument(unsigned num_tries, unsigned char argument);
+/**
+ * @brief Send argument to the mouse
+ *
+ * Sends an argument to the mouse (only 1 try).
+ * A command should be sent before invoking this function.
+ *
+ * @param num_tries number of tries to make whenever something fails
+ * @param argument argument to send to the mouse
+ */
+int mouse_send_argument(unsigned num_tries, unsigned char argument);
 
+/**
+ * @brief Send command and argument to the mouse
+ *
+ * Sends a command followed by an argument to the mouse
+ *
+ * @param num_tries number of tries to make whenever something fails
+ * @param command command to send to the mouse
+ * @param argument argument to send to the mouse
+ */
 int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument);
 // TODO ^
+
+int mouse_read_status(unsigned num_tries, unsigned long* status);
 
 int mouse_int_handler(unsigned num_tries);
 

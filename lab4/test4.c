@@ -6,6 +6,8 @@
 #define IS_BIT_SET(n, bit)	(((n) & BIT(bit)) ? 1 : 0)
 
 static void print_packet_info(unsigned char packet[]);
+static void print_config(unsigned long status[]);
+static int test_packet_mouse_int_handler(unsigned short* cnt);
 
 int test_packet(unsigned short cnt){
 	unsigned hook_id = MOUSE_HOOK_BIT;
@@ -55,30 +57,10 @@ int test_packet(unsigned short cnt){
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
-#ifndef NDEBUG
-					printf("\n-- MOUSE INTERRUPT START --\n");
-#endif
-					if(mouse_int_handler(NUM_TRIES))
+					if (test_packet_mouse_int_handler(&cnt))
 					{
-#ifndef NDEBUG
-						printf("Interrupt handler error.\n");
-#endif
 						return 1;
 					}
-					if(mouse_get_packet(packet))
-					{
-						--cnt;
-#ifndef NDEBUG
-						printf("Packet is ready, printing it...\n");
-#endif
-						print_packet_info(packet);
-#ifndef NDEBUG
-						printf("Packet successfully printed.\n");
-#endif
-					}
-#ifndef NDEBUG
-					printf("\n-- MOUSE INTERRUPT END --\n");
-#endif
 				}
 			}
 		}
@@ -107,13 +89,19 @@ int test_packet(unsigned short cnt){
 int test_async(unsigned short idle_time) {
 	/* To be completed ... */
 }
-	
+
 int test_config(void) {
-	/* To be completed ... */
+	unsigned long status[MOUSE_STATUS_SIZE];
+	if (mouse_read_status(NUM_TRIES, status))
+	{
+		return 1;
+	}
+	print_config(status);
+	return 0;
 }	
-	
+
 int test_gesture(short length, unsigned short tolerance) {
-    /* To be completed ... */
+	/* To be completed ... */
 }
 
 static void print_packet_info(unsigned char packet[])
@@ -130,4 +118,43 @@ static void print_packet_info(unsigned char packet[])
 	printf("Y=%d", MOUSE_PACKET_COUNTER((short)packet[2], IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_Y_SIGN_BIT)));
 	printf("\n");
 	return;
+}
+
+void print_config(unsigned long status[])
+{
+	// TODO
+	printf("0x%X\n", status[0]);
+	printf("0x%X\n", status[1]);
+	printf("0x%X\n", status[2]);
+	return;
+}
+
+static int test_packet_mouse_int_handler(unsigned short* cnt)
+{
+#ifndef NDEBUG
+	printf("\n-- MOUSE INTERRUPT START --\n");
+#endif
+	if(mouse_int_handler(NUM_TRIES))
+	{
+#ifndef NDEBUG
+		printf("Interrupt handler error.\n");
+#endif
+		return 1;
+	}
+	unsigned char packet[MOUSE_PACKET_SIZE];
+	if(mouse_get_packet(packet))
+	{
+		--*cnt;
+#ifndef NDEBUG
+		printf("Packet is ready, printing it...\n");
+#endif
+		print_packet_info(packet);
+#ifndef NDEBUG
+		printf("Packet successfully printed.\n");
+#endif
+	}
+#ifndef NDEBUG
+	printf("\n-- MOUSE INTERRUPT END --\n");
+#endif
+	return 0;
 }
