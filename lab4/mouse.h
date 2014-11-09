@@ -43,7 +43,19 @@
 #define MOUSE_PACKET_SIZE				3
 #define MOUSE_STATUS_SIZE				3
 
-#define MOUSE_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
+#define MOUSE_DATA_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
+
+typedef struct
+{
+	unsigned char bytes[3];
+	bool x_overflow;
+	bool y_overflow;
+	bool left_button;
+	bool middle_button;
+	bool right_button;
+	int x_delta;
+	int y_delta;
+} mouse_data_packet_t;
 
 /** @defgroup mouse mouse
  * @{
@@ -67,11 +79,11 @@ int mouse_subscribe_int(unsigned *hook_id);
  *
  * Checks if there is a synchronized packet ready and retrieves it
  *
- * @param return_packet[] array where to write the packet, if it is ready
+ * @param *mouse_data_packet where to write the packet, if it is ready
  *
  * @return True if there is a synchronized packet ready, false otherwise
  */
-bool mouse_get_packet(unsigned char return_packet[]);
+bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet);
 
 /**
  * @brief Write to the mouse
