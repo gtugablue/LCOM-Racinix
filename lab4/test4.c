@@ -81,6 +81,10 @@ int test_async(unsigned short idle_time) {
 }
 
 int test_config(void) {
+	if (mouse_subscribe_int(&hook_id) == -1)
+		{
+			return 1;
+		}
 	if (mouse_disable_stream_mode(NUM_TRIES))
 	{
 		return 1;
