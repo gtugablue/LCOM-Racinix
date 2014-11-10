@@ -51,8 +51,6 @@
 #define MOUSE_PACKET_SIZE				3
 #define MOUSE_STATUS_SIZE				3
 
-#define MOUSE_DATA_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
-
 typedef struct
 {
 	unsigned char bytes[3];
@@ -139,49 +137,16 @@ int mouse_write(unsigned num_tries, unsigned char command);
  */
 int mouse_send_argument(unsigned num_tries, unsigned char argument);
 
-/**
- * @brief Send command and argument to the mouse
- *
- * Sends a command followed by an argument to the mouse
- *
- * @param num_tries number of tries to make whenever something fails
- * @param command command to send to the mouse
- * @param argument argument to send to the mouse
- */
-int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument);
-// TODO ^
-
-
-//int mouse_read_status(unsigned num_tries, unsigned long* status);
-
+int mouse_read(unsigned num_tries, unsigned long* output);
 
 int mouse_int_handler(unsigned num_tries);
 
 int mouse_set_stream_mode(unsigned num_tries);
 
-/**
- * @brief Continuous sending of packet
- *
- * The mouse sends the packet all the time
- *
- * @param num_tries number of tries to make whenever something fails
- *
- * @return Return 0 upon success, non-zero otherwise
- */
 int mouse_enable_stream_mode(unsigned num_tries);
-
 
 int mouse_disable_stream_mode(unsigned num_tries);
 
-/**
- * @brief Resets the mouse configurations
- *
- * The mouse configurations are deleted when
- *
- * @param num_tries number of tries to make whenever something fails
- *
- * @return Return mouse write
- */
 int mouse_reset(unsigned num_tries);
 
 void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit);

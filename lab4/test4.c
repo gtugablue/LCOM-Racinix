@@ -152,7 +152,7 @@ int test_config(void) {
 	{
 		return 1;
 	}
-	if (mouse_disable_stream_mode(NUM_TRIES))
+	if (mouse_disable_stream_mode(NUM_TRIES))	// Because of this, when reading the mouse config the enabled bit will be always 0, but it's always a good idea to disable the stream mode to avoid receiving a data packet instead of a status byte
 	{
 		return 1;
 	}
@@ -295,7 +295,7 @@ static void print_packet_info(mouse_data_packet_t mouse_data_packet)
 	return;
 }
 
-void print_config(mouse_status_packet_t *mouse_status_packet)
+static void print_config(mouse_status_packet_t *mouse_status_packet)
 {
 	size_t i;
 	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
@@ -308,8 +308,28 @@ void print_config(mouse_status_packet_t *mouse_status_packet)
 	printf("Left button: %s\n", mouse_status_packet->left_button ? "pressed" : "released");
 	printf("Middle button: %s\n", mouse_status_packet->middle_button ? "pressed" : "released");
 	printf("Right button: %s\n", mouse_status_packet->right_button ? "pressed" : "released");
+	switch (mouse_status_packet->resolution)
+	{
+	case 0:
+		printf("Resolution: 1 unit per mm\n");
+		break;
+	case 1:
+		printf("Resolution: 2 units per mm\n");
+		break;
+	case 2:
+		printf("Resolution: 4 units per mm\n");
+		break;
+	case 3:
+		printf("Resolution: 8 units per mm\n");
+		break;
+	default:
+		printf("Resolution: unknown\n");
+		break;
+	}
+	printf("Sample rate: %d Hz\n", mouse_status_packet->sample_rate);
 	return;
 }
+
 
 static int test_packet_mouse_int_handler(unsigned short* cnt)
 {
@@ -326,6 +346,7 @@ static int test_packet_mouse_int_handler(unsigned short* cnt)
 	return 0;
 }
 
+
 static int test_async_mouse_int_handler()
 {
 	if(mouse_int_handler(NUM_TRIES))
@@ -340,10 +361,12 @@ static int test_async_mouse_int_handler()
 	return 0;
 }
 
+
 static void test_async_timer_int_handler(unsigned *timer_counter)
 {
 	++*timer_counter;
 }
+
 
 static int test_gesture_mouse_int_handler(short length, unsigned short tolerance)
 {
