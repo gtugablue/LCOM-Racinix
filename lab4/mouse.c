@@ -91,7 +91,7 @@ int mouse_write(unsigned num_tries, unsigned char command)
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
-		if (kbc_write_to_mouse())
+		if (kbc_write_to_mouse(num_tries))
 		{
 			return 1;
 		}
@@ -114,7 +114,7 @@ int mouse_write(unsigned num_tries, unsigned char command)
 int mouse_send_argument(unsigned num_tries, unsigned char argument)
 {
 	unsigned long response;
-	if (kbc_write_to_mouse())
+	if (kbc_write_to_mouse(num_tries))
 	{
 		return 1;
 	}
@@ -183,6 +183,27 @@ int mouse_disable_stream_mode(unsigned num_tries)
 int mouse_reset(unsigned num_tries)
 {
 	return mouse_write(num_tries, MOUSE_RESET);
+}
+
+void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit)
+{
+	int ipc_status;
+	message msg;
+	// Discard interrupts caused by command responses
+	/* Get a request message. */
+	while (num_tries > 0)
+	{
+		driver_receive(ANY, &msg, &ipc_status);
+		if (is_ipc_notify(ipc_status)) { /* received notification */
+			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
+			{
+				if (msg.NOTIFY_ARG & BIT(hook_bit)) {
+					break;
+				}
+			}
+		}
+		--num_tries;
+	}
 }
 
 int mouse_unsubscribe_int(unsigned hook_id)

@@ -93,8 +93,12 @@ int kbc_send_data(unsigned num_tries, unsigned char argument)
 	return 0;
 }
 
-int kbc_write_to_mouse()
+int kbc_write_to_mouse(unsigned num_tries)
 {
+	if (kbd_wait_for_in_buf(num_tries))
+	{
+		return 1;
+	}
 	if(sys_outb(I8042_CTRL_REG, I8042_WRITE_BYTE_TO_MOUSE) == OK)
 	{
 		return 0;

@@ -163,4 +163,6 @@ int mouse_disable_stream_mode(unsigned num_tries);
 
 int mouse_reset(unsigned num_tries);
 
+void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit);
+
 int mouse_unsubscribe_int(unsigned hook_id);

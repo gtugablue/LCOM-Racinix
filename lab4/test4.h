@@ -2,6 +2,7 @@
 #define __TEST4_H
 
 #include "mouse.h"
+#include "timer.h"
 
 #define MOUSE_HOOK_BIT	12
 #define NUM_TRIES		100
