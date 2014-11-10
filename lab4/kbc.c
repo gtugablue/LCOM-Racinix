@@ -2,8 +2,8 @@
 
 #define BIT(n) (0x01<<(n))
 
-static int kbd_wait_for_in_buf(unsigned num_tries);
-static int kbd_wait_for_out_buf(unsigned num_tries);
+static int kbd_wait_for_in_buf();
+static int kbd_wait_for_out_buf();
 
 int kbc_read_status(unsigned long* status)
 {
@@ -24,11 +24,11 @@ int kbc_subscribe_keyboard_int(unsigned* hook_id)
 	return hook_bit;
 }
 
-static int kbd_wait_for_in_buf(unsigned num_tries)
+static int kbd_wait_for_in_buf()
 {
 	unsigned long status;
 	size_t i;
-	for (i = 0; i < num_tries; ++i)
+	for (i = 0; i < KBC_NUM_TRIES; ++i)
 	{
 		if (kbc_read_status(&status))
 		{
@@ -43,11 +43,11 @@ static int kbd_wait_for_in_buf(unsigned num_tries)
 	return 1;
 }
 
-static int kbd_wait_for_out_buf(unsigned num_tries)
+static int kbd_wait_for_out_buf()
 {
 	unsigned long status;
 	size_t i;
-	for (i = 0; i < num_tries; ++i)
+	for (i = 0; i < KBC_NUM_TRIES; ++i)
 	{
 		if (kbc_read_status(&status))
 		{
@@ -62,13 +62,13 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 	return 1;
 }
 
-int kbc_write(unsigned num_tries, unsigned char command)
+int kbc_write(unsigned char command)
 {
 	if (sys_outb(I8042_CTRL_REG, I8042_WRITE_COMMAND_BYTE) != OK)
 	{
 		return 1;
 	}
-	if (kbd_wait_for_in_buf(num_tries) != 0)
+	if (kbd_wait_for_in_buf(KBC_NUM_TRIES) != 0)
 	{
 		return 1;
 	}
@@ -79,9 +79,9 @@ int kbc_write(unsigned num_tries, unsigned char command)
 	return 0;
 }
 
-int kbc_send_data(unsigned num_tries, unsigned char argument)
+int kbc_send_data(unsigned char argument)
 {
-	if (kbd_wait_for_in_buf(num_tries))
+	if (kbd_wait_for_in_buf(KBC_NUM_TRIES))
 	{
 		return 1;
 	}
@@ -101,11 +101,14 @@ int kbc_write_to_mouse()
 	return 1;
 }
 
-int kbc_read(unsigned num_tries, unsigned long* output)
+int kbc_read(unsigned long* output)
 {
 	unsigned long status;
-	sys_inb(I8042_STAT_REG, &status);
-	if (kbd_wait_for_out_buf(num_tries) != 0)
+	if (sys_inb(I8042_STAT_REG, &status))
+	{
+		return 1;
+	}
+	if (kbd_wait_for_out_buf(KBC_NUM_TRIES) != 0)
 	{
 		return 1;
 	}
@@ -116,11 +119,11 @@ int kbc_read(unsigned num_tries, unsigned long* output)
 	return 0;
 }
 
-int kbc_clean_output_buffer(unsigned num_tries)
+int kbc_clean_output_buffer()
 {
 	unsigned long status;
 	size_t i;
-	for (i = 0; i < num_tries; ++i)
+	for (i = 0; i < KBC_NUM_TRIES; ++i)
 	{
 		if (kbc_read_status(&status))
 		{
