@@ -31,6 +31,14 @@
 #define MOUSE_1ST_BYTE_RIGHT_BTN_BIT	1
 #define MOUSE_1ST_BYTE_LEFT_BTN_BIT		0
 
+// Status Packet
+#define MOUSE_STATUS_REMOTE_MODE_BIT	6
+#define MOUSE_STATUS_ENABLED_BIT		5
+#define MOUSE_STATUS_SCALING_2_1_BIT	4
+#define MOUSE_STATUS_LEFT_BTN_BIT		2
+#define MOUSE_STATUS_MIDDLE_BTN_BIT		1
+#define MOUSE_STATUS_RIGHT_BTN_BIT		0
+
 // Sample rates
 #define MOUSE_SAMPLE_RATE_1				10
 #define MOUSE_SAMPLE_RATE_2				20
@@ -56,6 +64,19 @@ typedef struct
 	int x_delta;
 	int y_delta;
 } mouse_data_packet_t;
+
+typedef struct
+{
+	unsigned char bytes[3];
+	bool remote_mode;
+	bool enabled;
+	bool scaling_2_1;
+	bool left_button;
+	bool middle_button;
+	bool right_button;
+	unsigned char resolution;
+	unsigned char sample_rate;
+} mouse_status_packet_t;
 
 /** @defgroup mouse mouse
  * @{
@@ -84,6 +105,16 @@ int mouse_subscribe_int(unsigned *hook_id);
  * @return True if there is a synchronized packet ready, false otherwise
  */
 bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet);
+
+/**
+ * @brief Get status packet
+ *
+ * @param num_tries number of tries to make whenever something fails
+ * @param *mouse_status_packet where to write the packet, if it is ready
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
+int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_packet);
 
 /**
  * @brief Write to the mouse

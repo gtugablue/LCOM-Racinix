@@ -23,7 +23,7 @@ typedef struct
 } event_t;
 
 static void print_packet_info(mouse_data_packet_t mouse_data_packet);
-static void print_config(unsigned long status[]);
+static void print_config(mouse_status_packet_t *mouse_status_packet);
 static int test_packet_mouse_int_handler(unsigned short* cnt);
 static int test_gesture_mouse_int_handler(short length, unsigned short tolerance);
 static bool check_horizontal_line(short length, unsigned short tolerance, event_t *event, int x_delta, int y_delta);
@@ -81,12 +81,16 @@ int test_async(unsigned short idle_time) {
 }
 
 int test_config(void) {
-	unsigned long status[MOUSE_STATUS_SIZE];
-	if (mouse_read_status(NUM_TRIES, status))
+	if (mouse_disable_stream_mode(NUM_TRIES))
 	{
 		return 1;
 	}
-	print_config(status);
+	mouse_status_packet_t mouse_status_packet;
+	if (mouse_get_status(NUM_TRIES, &mouse_status_packet))
+	{
+		return 1;
+	}
+	print_config(&mouse_status_packet);
 	return 0;
 }	
 
@@ -218,12 +222,10 @@ static void print_packet_info(mouse_data_packet_t mouse_data_packet)
 	return;
 }
 
-void print_config(unsigned long status[])
+void print_config(mouse_status_packet_t *mouse_status_packet_t)
 {
 	// TODO
-	printf("0x%X\n", status[0]);
-	printf("0x%X\n", status[1]);
-	printf("0x%X\n", status[2]);
+	printf("0x%X\n", mouse_status_packet_t->bytes[0]);
 	return;
 }
 
