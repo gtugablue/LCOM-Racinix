@@ -22,8 +22,8 @@ typedef struct
 	event_type_t type;
 } event_t;
 
-static void print_packet_info(mouse_data_packet_t mouse_data_packet);
-static void print_config(unsigned long status[]);
+static void print_packet_info(mouse_data_packet_t *mouse_data_packet);
+static void print_config(mouse_status_packet_t *mouse_status_packet);
 static int test_packet_mouse_int_handler(unsigned short* cnt);
 static int test_gesture_mouse_int_handler(short length, unsigned short tolerance);
 static bool check_horizontal_line(short length, unsigned short tolerance, event_t *event, int x_delta, int y_delta);
@@ -81,12 +81,12 @@ int test_async(unsigned short idle_time) {
 }
 
 int test_config(void) {
-	unsigned long status[MOUSE_STATUS_SIZE];
-	if (mouse_read_status(NUM_TRIES, status))
+	mouse_status_packet_t mouse_status_packet;
+	if (mouse_get_status(&mouse_status_packet))
 	{
 		return 1;
 	}
-	print_config(status);
+	print_config(&mouse_status_packet);
 	return 0;
 }	
 
@@ -96,11 +96,11 @@ int test_gesture(short length, unsigned short tolerance) {
 	{
 		return 1;
 	}
-	if (mouse_set_stream_mode(NUM_TRIES))
+	if (mouse_set_stream_mode())
 	{
 		return 1;
 	}
-	if (mouse_enable_stream_mode(NUM_TRIES))
+	if (mouse_enable_stream_mode())
 	{
 		return 1;
 	}
@@ -132,7 +132,7 @@ int test_gesture(short length, unsigned short tolerance) {
 		}
 	}
 	printf("Horizontal gesture detected. Exiting...\n");
-	if (mouse_disable_stream_mode(NUM_TRIES))
+	if (mouse_disable_stream_mode())
 	{
 		return 1;
 	}
@@ -202,29 +202,30 @@ static bool sameSign(int x, int y)
 	return (x ^ y) > 0;	// Efficient way of determining whether two numbers have the same sign (works in all architectures)
 }
 
-static void print_packet_info(mouse_data_packet_t mouse_data_packet)
+static void print_packet_info(mouse_data_packet_t *mouse_data_packet)
 {
-	printf("B1=0x%X\t", mouse_data_packet.bytes[0]);
-	printf("B2=0x%X\t", mouse_data_packet.bytes[1]);
-	printf("B3=0x%X\t", mouse_data_packet.bytes[2]);
-	printf("LB=%d\t", mouse_data_packet.left_button);
-	printf("MB=%d\t", mouse_data_packet.middle_button);
-	printf("RB=%d\t", mouse_data_packet.right_button);
-	printf("XOV=%d\t", mouse_data_packet.x_overflow);
-	printf("YOV=%d\t", mouse_data_packet.y_overflow);
-	printf("X=%d\t", mouse_data_packet.x_delta);
-	printf("Y=%d", mouse_data_packet.y_delta);
+	printf("B1=0x%X\t", mouse_data_packet->bytes[0]);
+	printf("B2=0x%X\t", mouse_data_packet->bytes[1]);
+	printf("B3=0x%X\t", mouse_data_packet->bytes[2]);
+	printf("LB=%d\t", mouse_data_packet->left_button);
+	printf("MB=%d\t", mouse_data_packet->middle_button);
+	printf("RB=%d\t", mouse_data_packet->right_button);
+	printf("XOV=%d\t", mouse_data_packet->x_overflow);
+	printf("YOV=%d\t", mouse_data_packet->y_overflow);
+	printf("X=%d\t", mouse_data_packet->x_delta);
+	printf("Y=%d", mouse_data_packet->y_delta);
 	printf("\n");
 	return;
 }
 
-void print_config(unsigned long status[])
+void print_config(mouse_status_packet_t *mouse_status_packet)
 {
 	// TODO
-	printf("0x%X\n", status[0]);
-	printf("0x%X\n", status[1]);
-	printf("0x%X\n", status[2]);
-	return;
+	size_t i;
+	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
+	{
+		printf("Status byte %d: 0x%X\n", i, mouse_status_packet->bytes[i]);
+	}
 }
 
 static int test_packet_mouse_int_handler(unsigned short* cnt)
@@ -237,7 +238,7 @@ static int test_packet_mouse_int_handler(unsigned short* cnt)
 	if(mouse_get_packet(&mouse_data_packet))
 	{
 		--*cnt;
-		print_packet_info(mouse_data_packet);
+		print_packet_info(&mouse_data_packet);
 	}
 	return 0;
 }

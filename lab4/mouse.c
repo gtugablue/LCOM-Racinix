@@ -1,7 +1,5 @@
 #include "mouse.h"
 
-#define MOUSE_READ_STATUS_WAIT_TIME		10
-
 #define BIT(n) (0x01<<(n))
 #define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & BIT(MOUSE_1ST_BYTE_ALWAYS_1_BIT))
 #define IS_BIT_SET(n, bit)	(((n) & BIT(bit)) ? 1 : 0)
@@ -10,6 +8,7 @@ static unsigned char packet[MOUSE_PACKET_SIZE];
 static unsigned char next_byte;
 
 static bool mouse_synchronize();
+static int mouse_read();
 
 int mouse_subscribe_int(unsigned* hook_id)
 {
@@ -68,21 +67,50 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 	return false;
 }
 
-int mouse_write(unsigned num_tries, unsigned char command)
+int mouse_get_status(mouse_status_packet_t *mouse_status_packet)
+{
+	if (mouse_write(MOUSE_DISABLE_STREAM_MODE))
+	{
+		return 1;
+	}
+	if (mouse_write(MOUSE_STATUS_REQUEST))
+	{
+		return 1;
+	}
+	size_t i;
+	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
+	{
+		if (mouse_read(&mouse_status_packet->bytes[i]))
+		{
+			return 1;
+		}
+	}
+	mouse_status_packet->remote_mode = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_REMOTE_BIT);
+	mouse_status_packet->enabled = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_ENABLED_BIT);
+	mouse_status_packet->scaling_2_1 = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_SCALING_2_1_BIT);
+	mouse_status_packet->left_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_LEFT_BTN_BIT);
+	mouse_status_packet->middle_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_MIDDLE_BTN_BIT);
+	mouse_status_packet->right_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_RIGHT_BTN_BIT);
+	mouse_status_packet->resolution_byte = mouse_status_packet->bytes[1];
+	mouse_status_packet->sample_rate = mouse_status_packet->bytes[2];
+	return 0;
+}
+
+int mouse_write(unsigned char command)
 {
 	unsigned long response;
 	size_t i;
-	for (i = 0; i < num_tries; ++i)
+	for (i = 0; i < MOUSE_NUM_TRIES; ++i)
 	{
 		if (kbc_write_to_mouse())
 		{
 			return 1;
 		}
-		if (kbc_send_data(num_tries, command))
+		if (kbc_send_data(command))
 		{
 			return 1;
 		}
-		if (kbc_read(num_tries, &response))
+		if (kbc_read(&response))
 		{
 			return 1;
 		}
@@ -94,18 +122,18 @@ int mouse_write(unsigned num_tries, unsigned char command)
 	return 1;
 }
 
-int mouse_send_argument(unsigned num_tries, unsigned char argument)
+int mouse_send_argument(unsigned char argument)
 {
 	unsigned long response;
 	if (kbc_write_to_mouse())
 	{
 		return 1;
 	}
-	if (kbc_send_data(num_tries, argument))
+	if (kbc_send_data(argument))
 	{
 		return 1;
 	}
-	if (kbc_read(num_tries, &response))
+	if (kbc_read(&response))
 	{
 		return 1;
 	}
@@ -116,32 +144,15 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument)
 	return -1;	// NACK
 }
 
-int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument)
+int mouse_write_and_argument(unsigned char command, unsigned char argument)
 {
 	// TODO
 }
 
-int mouse_read_status(unsigned num_tries, unsigned long status[])
-{
-	if (mouse_write(num_tries, MOUSE_READ_DATA))
-	{
-		return 1;
-	}
-	size_t i;
-	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
-	{
-		if (kbc_read(num_tries, &status[i]))
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
-int mouse_int_handler(unsigned num_tries)
+int mouse_int_handler()
 {
 	unsigned long output;
-	if (kbc_read(num_tries, &output))
+	if (kbc_read(&output))
 	{
 		return 1;
 	}
@@ -150,18 +161,18 @@ int mouse_int_handler(unsigned num_tries)
 	return 0;
 }
 
-int mouse_set_stream_mode(unsigned num_tries)
+int mouse_set_stream_mode()
 {
-	if(mouse_write(num_tries, MOUSE_SET_STREAM_MODE))
+	if(mouse_write(MOUSE_SET_STREAM_MODE))
 	{
 		return 1;
 	}
 	return 0;
 }
 
-int mouse_enable_stream_mode(unsigned num_tries)
+int mouse_enable_stream_mode()
 {
-	if(mouse_write(num_tries, MOUSE_ENABLE_DATA_PACKETS))
+	if(mouse_write(MOUSE_ENABLE_DATA_PACKETS))
 	{
 		return 1;
 	}
@@ -170,9 +181,9 @@ int mouse_enable_stream_mode(unsigned num_tries)
 	return 0;
 }
 
-int mouse_disable_stream_mode(unsigned num_tries)
+int mouse_disable_stream_mode()
 {
-	if(mouse_write(num_tries, MOUSE_DISABLE_STREAM_MODE))
+	if(mouse_write(MOUSE_DISABLE_STREAM_MODE))
 	{
 		return 1;
 	}
@@ -180,9 +191,9 @@ int mouse_disable_stream_mode(unsigned num_tries)
 	next_byte = 0;
 }
 
-int mouse_reset(unsigned num_tries)
+int mouse_reset()
 {
-	return mouse_write(num_tries, MOUSE_RESET);
+	return mouse_write(MOUSE_RESET);
 }
 
 int mouse_unsubscribe_int(unsigned hook_id)
@@ -210,4 +221,22 @@ static bool mouse_synchronize()
 		}
 	}
 	return false;	// Couldn't find a byte with bit 3 set
+}
+
+static int mouse_read(unsigned char *byte)
+{
+	// TODO
+	unsigned long status;
+	do
+	{
+		if (kbc_read_status(&status))
+		{
+			return 1;
+		}
+		if (kbc_read(byte))
+		{
+			return 1;
+		}
+	} while (!(status & BIT(I8042_STATUS_AUX_BIT)));
+	return 0;
 }
