@@ -49,7 +49,6 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
-		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
 		if (kbc_read_status(&status))
 		{
 			return 1;
@@ -58,6 +57,7 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 		{
 			return 0;
 		}
+		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
 	}
 	return 1;
 }
