@@ -151,7 +151,8 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument);
 int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument);
 // TODO ^
 
-int mouse_read_status(unsigned num_tries, unsigned long* status);
+
+//int mouse_read_status(unsigned num_tries, unsigned long* status);
 
 int mouse_int_handler(unsigned num_tries);
 
