@@ -223,7 +223,6 @@ bool check_horizontal_line(short length, unsigned short tolerance, event_t *even
 	static gesture_state_t gesture_state = GESTURE_INIT;
 	static int horizontal_status = 0;
 	static int vertical_status = 0;
-	printf("teste");
 	switch (gesture_state)
 	{
 	case GESTURE_INIT:
@@ -248,7 +247,7 @@ bool check_horizontal_line(short length, unsigned short tolerance, event_t *even
 		case MOVE:
 		{
 			vertical_status += y_delta;
-			if (sameSign(x_delta, length) && abs(vertical_status) <= tolerance)
+			if (sameSign(x_delta, length) && abs(vertical_status) <= tolerance / 2)
 			{
 				horizontal_status += x_delta;
 				if (abs(horizontal_status) > abs(length) && sameSign(horizontal_status, length))
@@ -260,6 +259,7 @@ bool check_horizontal_line(short length, unsigned short tolerance, event_t *even
 			else
 			{
 				// RESET
+				printf("Gesture detection reseted.\n");
 				horizontal_status = 0;
 				vertical_status = 0;
 			}

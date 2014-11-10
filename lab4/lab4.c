@@ -29,7 +29,8 @@ static void print_usage(char *argv[]) {
 
 static int proc_args(int argc, char *argv[]) {
 
-	unsigned long cnt, idle_time, length, tolerance;
+	unsigned long cnt, idle_time, tolerance;
+	long length;
 
 	/* check the function to test: if the first characters match, accept it */
 	if (strncmp(argv[1], "packet", strlen("packet")) == 0) {
@@ -64,11 +65,11 @@ static int proc_args(int argc, char *argv[]) {
 			printf("mouse: wrong no of arguments for test_gesture() \n");
 			return 1;
 		}
-		if( (length = parse_ulong(argv[2], 10)) == ULONG_MAX )
+		if( (length = parse_long(argv[2], 10)) == LONG_MAX )
 			return 1;
 		if( (tolerance = parse_ulong(argv[3], 10)) == ULONG_MAX )
 					return 1;
-		printf("mouse:: test_gesture(%lu, %lu)\n",
+		printf("mouse:: test_gesture(%ld, %lu)\n",
 				length, tolerance);
 		return test_gesture(length, tolerance);
 	} else {
