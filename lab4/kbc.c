@@ -45,7 +45,7 @@ static int kbd_wait_for_in_buf(unsigned num_tries)
 
 static int kbd_wait_for_out_buf(unsigned num_tries)
 {
-	unsigned long status;
+	unsigned long status, a;
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
@@ -53,10 +53,11 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 		{
 			return 1;
 		}
-		if (status & BIT(I8042_STATUS_OBF_BIT))
-		{
+		//if (status & BIT(I8042_STATUS_OBF_BIT))
+		//{
 			return 0;
-		}
+		//}
+		printf("status: 0x%X\n", a);
 		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
 	}
 	return 1;
@@ -103,8 +104,6 @@ int kbc_write_to_mouse()
 
 int kbc_read(unsigned num_tries, unsigned long* output)
 {
-	unsigned long status;
-	sys_inb(I8042_STAT_REG, &status);
 	if (kbd_wait_for_out_buf(num_tries) != 0)
 	{
 		return 1;
