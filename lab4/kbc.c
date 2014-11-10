@@ -51,7 +51,11 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 	{
 		if (kbc_read_status(&status))
 		{
-			return 1;
+			return -1; // Error
+		}
+		if (status & (BIT(I8042_STATUS_TIMEOUT_BIT) | BIT(I8042_STATUS_PARITY_BIT)))
+		{
+			return 1; // Try again
 		}
 		if (status & BIT(I8042_STATUS_OBF_BIT))
 		{
@@ -59,7 +63,7 @@ static int kbd_wait_for_out_buf(unsigned num_tries)
 		}
 		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
 	}
-	return 1;
+	return -1; // Error
 }
 
 int kbc_write(unsigned num_tries, unsigned char command)
@@ -107,9 +111,18 @@ int kbc_write_to_mouse(unsigned num_tries)
 
 int kbc_read(unsigned num_tries, unsigned long* output)
 {
-	if (kbd_wait_for_out_buf(num_tries) != 0)
+	size_t i;
+	for (i = 0; i < num_tries; ++i)
 	{
-		return 1;
+		int result = kbd_wait_for_out_buf(num_tries);
+		if (result == -1)
+		{
+			return 1;
+		}
+		else if (result == 0)
+		{
+			break;
+		}
 	}
 	if (sys_inb(I8042_OUT_BUF, output) != OK)
 	{

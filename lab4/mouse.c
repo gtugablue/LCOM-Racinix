@@ -39,8 +39,6 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 		mouse_data_packet->left_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_LEFT_BTN_BIT);
 		mouse_data_packet->middle_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_MIDDLE_BTN_BIT);
 		mouse_data_packet->right_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_RIGHT_BTN_BIT);
-		mouse_data_packet->x_delta = MOUSE_DATA_PACKET_COUNTER((short)packet[1], IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_X_SIGN_BIT));
-		mouse_data_packet->y_delta = MOUSE_DATA_PACKET_COUNTER((short)packet[2], IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_Y_SIGN_BIT));
 		if (mouse_data_packet->x_overflow)
 		{
 			if (packet[0] & BIT(MOUSE_1ST_BYTE_X_SIGN_BIT))
@@ -52,6 +50,10 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 				mouse_data_packet->x_delta = 1 << 8;
 			}
 		}
+		else
+		{
+			mouse_data_packet->x_delta = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_X_SIGN_BIT) ? ((-1 << 8) | packet[1]) : packet[1];
+		}
 		if (mouse_data_packet->y_overflow)
 		{
 			if (packet[0] & BIT(MOUSE_1ST_BYTE_Y_SIGN_BIT))
@@ -62,6 +64,10 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 			{
 				mouse_data_packet->y_delta = 1 << 8;
 			}
+		}
+		else
+		{
+			mouse_data_packet->y_delta = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_Y_SIGN_BIT) ? ((-1 << 8) | packet[2]) : packet[2];
 		}
 		return true;
 	}
