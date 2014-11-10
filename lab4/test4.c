@@ -147,6 +147,11 @@ int test_async(unsigned short idle_time) {
 }
 
 int test_config(void) {
+	unsigned hook_id = MOUSE_HOOK_BIT;
+	if (mouse_subscribe_int(&hook_id) == -1)
+	{
+		return 1;
+	}
 	if (mouse_disable_stream_mode(NUM_TRIES))
 	{
 		return 1;
@@ -289,10 +294,19 @@ static void print_packet_info(mouse_data_packet_t mouse_data_packet)
 	return;
 }
 
-void print_config(mouse_status_packet_t *mouse_status_packet_t)
+void print_config(mouse_status_packet_t *mouse_status_packet)
 {
-	// TODO
-	printf("0x%X\n", mouse_status_packet_t->bytes[0]);
+	size_t i;
+	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
+	{
+		printf("Status byte %d: 0x%X\n", i, mouse_status_packet->bytes[i]);
+	}
+	printf("Mode: %s\n", mouse_status_packet->remote_mode ? "remote" : "stream");
+	printf("Sending data packets: %s\n", mouse_status_packet->enabled ? "yes" : "no");
+	printf("Scaling: %s\n", mouse_status_packet->scaling_2_1 ? "2:1" : "1:1");
+	printf("Left button: %s\n", mouse_status_packet->left_button ? "pressed" : "released");
+	printf("Middle button: %s\n", mouse_status_packet->middle_button ? "pressed" : "released");
+	printf("Right button: %s\n", mouse_status_packet->right_button ? "pressed" : "released");
 	return;
 }
 

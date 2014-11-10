@@ -77,11 +77,18 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 	size_t i;
 	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
 	{
+		printf("DEBUG: reading byte #%d\n", i);
 		if (kbc_read(num_tries, &mouse_status_packet->bytes[i]))
 		{
 			return 1;
 		}
 	}
+	mouse_status_packet->remote_mode = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_REMOTE_MODE_BIT);
+	mouse_status_packet->enabled = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_ENABLED_BIT);
+	mouse_status_packet->scaling_2_1 = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_SCALING_2_1_BIT);
+	mouse_status_packet->left_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_LEFT_BTN_BIT);
+	mouse_status_packet->middle_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_MIDDLE_BTN_BIT);
+	mouse_status_packet->right_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_RIGHT_BTN_BIT);
 	return 0;
 }
 
@@ -178,6 +185,7 @@ int mouse_disable_stream_mode(unsigned num_tries)
 	}
 	memset(packet, 0, sizeof(packet));	// Clean the array to make sure bit 3 is off in all bytes
 	next_byte = 0;
+	return 0;
 }
 
 int mouse_reset(unsigned num_tries)
