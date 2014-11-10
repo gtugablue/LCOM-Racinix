@@ -154,14 +154,34 @@ int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned
 
 //int mouse_read_status(unsigned num_tries, unsigned long* status);
 
+
 int mouse_int_handler(unsigned num_tries);
 
 int mouse_set_stream_mode(unsigned num_tries);
 
+/**
+ * @brief Continuous sending of packet
+ *
+ * The mouse sends the packet all the time
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_enable_stream_mode(unsigned num_tries);
+
 
 int mouse_disable_stream_mode(unsigned num_tries);
 
+/**
+ * @brief Resets the mouse configurations
+ *
+ * The mouse configurations are deleted when
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return mouse write
+ */
 int mouse_reset(unsigned num_tries);
 
 void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit);
