@@ -45,20 +45,19 @@ static int kbd_wait_for_in_buf(unsigned num_tries)
 
 static int kbd_wait_for_out_buf(unsigned num_tries)
 {
-	unsigned long status, a;
+	unsigned long status;
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
+		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
 		if (kbc_read_status(&status))
 		{
 			return 1;
 		}
-		//if (status & BIT(I8042_STATUS_OBF_BIT))
-		//{
+		if (status & BIT(I8042_STATUS_OBF_BIT))
+		{
 			return 0;
-		//}
-		printf("status: 0x%X\n", a);
-		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
+		}
 	}
 	return 1;
 }
@@ -116,6 +115,16 @@ int kbc_read(unsigned num_tries, unsigned long* output)
 	{
 		return 1;
 	}
+
+	// DEBUG START
+	unsigned long status;
+	if (kbc_read_status(&status))
+	{
+		return 1;
+	}
+	printf("DEBUG: status = 0x%X \tleitura do kbc = 0x%X\n", status, *output);
+	// DEBUG END
+
 	return 0;
 }
 
