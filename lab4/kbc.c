@@ -116,15 +116,6 @@ int kbc_read(unsigned num_tries, unsigned long* output)
 		return 1;
 	}
 
-	// DEBUG START
-	unsigned long status;
-	if (kbc_read_status(&status))
-	{
-		return 1;
-	}
-	printf("DEBUG: status = 0x%X \tleitura do kbc = 0x%X\n", status, *output);
-	// DEBUG END
-
 	return 0;
 }
 
