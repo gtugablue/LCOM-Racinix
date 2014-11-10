@@ -77,7 +77,6 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 	size_t i;
 	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
 	{
-		printf("DEBUG: reading byte #%d\n", i);
 		if (kbc_read(num_tries, &mouse_status_packet->bytes[i]))
 		{
 			return 1;
