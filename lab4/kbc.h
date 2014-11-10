@@ -23,4 +23,8 @@ int kbc_read(unsigned num_tries, unsigned long* output);
 
 int kbc_clean_output_buffer(unsigned num_tries);
 
+int kbc_wait_for_in_buf(unsigned num_tries);
+
+int kbc_wait_for_out_buf(unsigned num_tries);
+
 int kbc_unsubscribe_int(unsigned hook_id);

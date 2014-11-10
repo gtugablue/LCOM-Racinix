@@ -1,7 +1,5 @@
 #include "mouse.h"
 
-#define MOUSE_READ_STATUS_WAIT_TIME		10
-
 #define BIT(n) (0x01<<(n))
 #define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & BIT(MOUSE_1ST_BYTE_ALWAYS_1_BIT))
 #define IS_BIT_SET(n, bit)	(((n) & BIT(bit)) ? 1 : 0)
@@ -83,7 +81,7 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 	size_t i;
 	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
 	{
-		if (kbc_read(num_tries, &mouse_status_packet->bytes[i]))
+		if (mouse_read(num_tries, &mouse_status_packet->bytes[i]))
 		{
 			return 1;
 		}
@@ -94,6 +92,8 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 	mouse_status_packet->left_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_LEFT_BTN_BIT);
 	mouse_status_packet->middle_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_MIDDLE_BTN_BIT);
 	mouse_status_packet->right_button = mouse_status_packet->bytes[0] & BIT(MOUSE_STATUS_RIGHT_BTN_BIT);
+	mouse_status_packet->resolution = mouse_status_packet->bytes[1];
+	mouse_status_packet->sample_rate = mouse_status_packet->bytes[2];
 	return 0;
 }
 
@@ -145,9 +145,39 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument)
 	return -1;	// NACK
 }
 
-int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument)
+int mouse_read(unsigned num_tries, unsigned long* output)
 {
-	// TODO
+	size_t i, j;
+	unsigned long status;
+	for (i = 0; i < num_tries; ++i)
+	{
+		for (j = 0; j < num_tries; ++j)
+		{
+			int result = kbc_wait_for_out_buf(num_tries);
+			if (result == -1)
+			{
+				return 1;
+			}
+			else if (result == 0)
+			{
+				break;
+			}
+		}
+		if (kbc_read_status(&status))
+		{
+			return 1;
+		}
+		if (sys_inb(I8042_OUT_BUF, output) != OK)
+		{
+			return 1;
+		}
+		if (status & BIT(I8042_STATUS_AUX_BIT))
+		{
+			break;
+		}
+		// Discard byte
+	}
+	return 0;
 }
 
 int mouse_int_handler(unsigned num_tries)
