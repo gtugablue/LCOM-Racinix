@@ -37,7 +37,7 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 		mouse_data_packet->left_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_LEFT_BTN_BIT);
 		mouse_data_packet->middle_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_MIDDLE_BTN_BIT);
 		mouse_data_packet->right_button = IS_BIT_SET(packet[0], MOUSE_1ST_BYTE_RIGHT_BTN_BIT);
-		if (!mouse_data_packet->x_overflow)
+		if (mouse_data_packet->x_overflow)
 		{
 			if (packet[0] & BIT(MOUSE_1ST_BYTE_X_SIGN_BIT))
 			{
