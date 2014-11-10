@@ -81,10 +81,6 @@ int test_async(unsigned short idle_time) {
 }
 
 int test_config(void) {
-	if (mouse_subscribe_int(&hook_id) == -1)
-		{
-			return 1;
-		}
 	if (mouse_disable_stream_mode(NUM_TRIES))
 	{
 		return 1;
@@ -173,6 +169,7 @@ bool check_horizontal_line(short length, unsigned short tolerance, event_t *even
 		case LUP:
 		{
 			horizontal_status = 0;
+			vertical_status = 0;
 			gesture_state = GESTURE_INIT;
 			break;
 		}
