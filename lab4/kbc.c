@@ -106,7 +106,7 @@ int kbc_write_to_mouse(unsigned num_tries)
 	return 1;
 }
 
-int kbc_read(unsigned num_tries, unsigned long* output)
+int kbc_read(unsigned num_tries, unsigned char* output)
 {
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
@@ -121,7 +121,7 @@ int kbc_read(unsigned num_tries, unsigned long* output)
 			break;
 		}
 	}
-	if (sys_inb(I8042_OUT_BUF, output) != OK)
+	if (sys_inb(I8042_OUT_BUF, (unsigned long *)output) != OK)
 	{
 		return 1;
 	}
