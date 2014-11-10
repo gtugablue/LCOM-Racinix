@@ -19,7 +19,7 @@ int kbc_send_data(unsigned num_tries, unsigned char argument);
 
 int kbc_write_to_mouse(unsigned num_tries);
 
-int kbc_read(unsigned num_tries, unsigned long* output);
+int kbc_read(unsigned num_tries, unsigned char* output);
 
 int kbc_clean_output_buffer(unsigned num_tries);
 

@@ -137,7 +137,7 @@ int mouse_write(unsigned num_tries, unsigned char command);
  */
 int mouse_send_argument(unsigned num_tries, unsigned char argument);
 
-int mouse_read(unsigned num_tries, unsigned long* output);
+int mouse_read(unsigned num_tries, unsigned char* output);
 
 int mouse_int_handler(unsigned num_tries);
 

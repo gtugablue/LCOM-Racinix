@@ -81,7 +81,7 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 	size_t i;
 	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
 	{
-		if (mouse_read(num_tries, (unsigned long *)&mouse_status_packet->bytes[i]))
+		if (mouse_read(num_tries, &mouse_status_packet->bytes[i]))
 		{
 			return 1;
 		}
@@ -99,7 +99,7 @@ int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_pac
 
 int mouse_write(unsigned num_tries, unsigned char command)
 {
-	unsigned long response;
+	unsigned char response;
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
@@ -125,7 +125,7 @@ int mouse_write(unsigned num_tries, unsigned char command)
 
 int mouse_send_argument(unsigned num_tries, unsigned char argument)
 {
-	unsigned long response;
+	unsigned char response;
 	if (kbc_write_to_mouse(num_tries))
 	{
 		return 1;
@@ -145,7 +145,7 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument)
 	return -1;	// NACK
 }
 
-int mouse_read(unsigned num_tries, unsigned long* output)
+int mouse_read(unsigned num_tries, unsigned char* output)
 {
 	size_t i, j;
 	unsigned long status;
@@ -167,7 +167,7 @@ int mouse_read(unsigned num_tries, unsigned long* output)
 		{
 			return 1;
 		}
-		if (sys_inb(I8042_OUT_BUF, output) != OK)
+		if (sys_inb(I8042_OUT_BUF, (unsigned long *)output) != OK)
 		{
 			return 1;
 		}
@@ -182,7 +182,7 @@ int mouse_read(unsigned num_tries, unsigned long* output)
 
 int mouse_int_handler(unsigned num_tries)
 {
-	unsigned long output;
+	unsigned char output;
 	if (kbc_read(num_tries, &output))
 	{
 		return 1;
