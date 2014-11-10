@@ -68,6 +68,23 @@ bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet)
 	return false;
 }
 
+int mouse_get_status(unsigned num_tries, mouse_status_packet_t *mouse_status_packet)
+{
+	if (mouse_write(num_tries, MOUSE_STATUS_REQUEST))
+	{
+		return 1;
+	}
+	size_t i;
+	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
+	{
+		if (kbc_read(num_tries, &mouse_status_packet->bytes[i]))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int mouse_write(unsigned num_tries, unsigned char command)
 {
 	unsigned long response;
@@ -119,23 +136,6 @@ int mouse_send_argument(unsigned num_tries, unsigned char argument)
 int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument)
 {
 	// TODO
-}
-
-int mouse_read_status(unsigned num_tries, unsigned long status[])
-{
-	if (mouse_write(num_tries, MOUSE_READ_DATA))
-	{
-		return 1;
-	}
-	size_t i;
-	for (i = 0; i < MOUSE_STATUS_SIZE; ++i)
-	{
-		if (kbc_read(num_tries, &status[i]))
-		{
-			return 1;
-		}
-	}
-	return 0;
 }
 
 int mouse_int_handler(unsigned num_tries)
