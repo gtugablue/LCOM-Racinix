@@ -31,14 +31,6 @@
 #define MOUSE_1ST_BYTE_RIGHT_BTN_BIT	1
 #define MOUSE_1ST_BYTE_LEFT_BTN_BIT		0
 
-// Status Packet
-#define MOUSE_STATUS_REMOTE_BIT			6
-#define MOUSE_STATUS_ENABLED_BIT		5
-#define MOUSE_STATUS_SCALING_2_1_BIT	4
-#define MOUSE_STATUS_LEFT_BTN_BIT		2
-#define MOUSE_STATUS_MIDDLE_BTN_BIT		1
-#define MOUSE_STATUS_RIGHT_BTN_BIT		0
-
 // Sample rates
 #define MOUSE_SAMPLE_RATE_1				10
 #define MOUSE_SAMPLE_RATE_2				20
@@ -51,13 +43,11 @@
 #define MOUSE_PACKET_SIZE				3
 #define MOUSE_STATUS_SIZE				3
 
-#define MOUSE_NUM_TRIES					KBC_NUM_TRIES
-
 #define MOUSE_DATA_PACKET_COUNTER(cnt, sign)	(((0 - (sign)) << 8) | (cnt))
 
 typedef struct
 {
-	unsigned char bytes[3]; // kept here for direct reading possibility
+	unsigned char bytes[3];
 	bool x_overflow;
 	bool y_overflow;
 	bool left_button;
@@ -66,19 +56,6 @@ typedef struct
 	int x_delta;
 	int y_delta;
 } mouse_data_packet_t;
-
-typedef struct
-{
-	unsigned char bytes[3]; // kept here for direct reading possibility
-	bool remote_mode;
-	bool enabled;
-	bool scaling_2_1;
-	bool left_button;
-	bool middle_button;
-	bool right_button;
-	unsigned char resolution_byte;
-	unsigned char sample_rate;
-} mouse_status_packet_t;
 
 /** @defgroup mouse mouse
  * @{
@@ -93,12 +70,12 @@ typedef struct
  *
  * @param hook_id address of memory where the hook bit is located and where to write the hook id
  *
- * @return Return hook bit upon success, -1 otherwise
+ * @return Return 0 upon success, -1 on "Not acknowledge" or >0 otherwise
  */
 int mouse_subscribe_int(unsigned *hook_id);
 
 /**
- * @brief Get data packet
+ * @brief Get packet
  *
  * Checks if there is a synchronized packet ready and retrieves it
  *
@@ -109,24 +86,16 @@ int mouse_subscribe_int(unsigned *hook_id);
 bool mouse_get_packet(mouse_data_packet_t *mouse_data_packet);
 
 /**
- * @brief Get status packet
- *
- * @param *mouse_status_packet where to write the status packet
- *
- * @return Return 0 upon success, non-zero otherwise
- */
-int mouse_get_status(mouse_status_packet_t *mouse_status_packet);
-
-/**
  * @brief Write to the mouse
  *
  * Writes the command specified in the arguments directly to the mouse.
  *
+ * @param num_tries number of tries to make whenever something fails
  * @param command command to send to the mouse
  *
  * @return Return 0 upon success, non-zero otherwise
  */
-int mouse_write(unsigned char command);
+int mouse_write(unsigned num_tries, unsigned char command);
 
 /**
  * @brief Send argument to the mouse
@@ -134,29 +103,33 @@ int mouse_write(unsigned char command);
  * Sends an argument to the mouse (only 1 try).
  * A command should be sent before invoking this function.
  *
+ * @param num_tries number of tries to make whenever something fails
  * @param argument argument to send to the mouse
  */
-int mouse_send_argument(unsigned char argument);
+int mouse_send_argument(unsigned num_tries, unsigned char argument);
 
 /**
  * @brief Send command and argument to the mouse
  *
  * Sends a command followed by an argument to the mouse
  *
+ * @param num_tries number of tries to make whenever something fails
  * @param command command to send to the mouse
  * @param argument argument to send to the mouse
  */
-int mouse_write_and_argument(unsigned char command, unsigned char argument);
+int mouse_write_and_argument(unsigned num_tries, unsigned char command, unsigned char argument);
 // TODO ^
 
-int mouse_int_handler();
+int mouse_read_status(unsigned num_tries, unsigned long* status);
 
-int mouse_set_stream_mode();
+int mouse_int_handler(unsigned num_tries);
 
-int mouse_enable_stream_mode();
+int mouse_set_stream_mode(unsigned num_tries);
 
-int mouse_disable_stream_mode();
+int mouse_enable_stream_mode(unsigned num_tries);
 
-int mouse_reset();
+int mouse_disable_stream_mode(unsigned num_tries);
+
+int mouse_reset(unsigned num_tries);
 
 int mouse_unsubscribe_int(unsigned hook_id);
