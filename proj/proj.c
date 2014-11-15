@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 	vector2D_t position;
 	position.x = 200;
 	position.y = 100;
-	vehicle_t *vehicle = vehicle_create(5, 3, &position, 100.0, 0);
+	vehicle_t *vehicle = vehicle_create(50, 10, &position, 0);
 
 	if (keyboard_subscribe_int() == -1)
 	{
@@ -57,7 +57,6 @@ int main(int argc, char **argv) {
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					vg_draw_circle(vehicle->position.x, vehicle->position.y, 7, 0x4);
 					vehicle_tick(vehicle, (double)1/60, 0);
 					++counter;
 				}
