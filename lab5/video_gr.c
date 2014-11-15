@@ -172,11 +172,6 @@ int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned 
 
 int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, unsigned long color)
 {
-	if (x0 >= h_res || y0 >= v_res)
-	{
-		return 1;
-	}
-
 	// Midpoint circle algorithm
 
 	int x = radius;

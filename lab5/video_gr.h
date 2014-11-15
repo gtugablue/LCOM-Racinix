@@ -55,7 +55,6 @@ int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
  */
 long vg_get_pixel(unsigned long x, unsigned long y);
 
-
 /**
  * @brief Draw line segment with specified end points and color
  * 
