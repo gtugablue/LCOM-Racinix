@@ -3,7 +3,7 @@
 
 #define WAIT_TIME_S 5
 
-/*static int proc_args(int argc, char *argv[]);
+static int proc_args(int argc, char *argv[]);
 static unsigned long parse_ulong(char *str, int base);
 static long parse_long(char *str, int base);
 static void print_usage(char *argv[]);*/
@@ -12,34 +12,25 @@ int main(int argc, char **argv) {
 
   sef_startup();
 
-  vg_init(0x105);
-  vg_fill(0x30);
-  vg_draw_line(690, 120, 826, 122, 0xCC);
-  vg_draw_line(826, 122, 837, 144, 0xCC);
-  vg_draw_line(837, 144, 932, 613, 0xCC);
-  vg_set_pixel(690, 120, 0x09);
-  vg_set_pixel(826, 122, 0x09);
-  vg_set_pixel(837, 144, 0x09);
-  vg_set_pixel(932, 613, 0x09);
-  sleep(WAIT_TIME_S);
-  vg_exit();
-
-/*  if ( argc == 1 ) {
+  if ( argc == 1 ) {
       print_usage(argv);
       return 0;
   } else {   
-      proc_args(argc, argv);
+	  proc_args(argc, argv);
   }*/
   return 0;
 
 }
 
-/*static void print_usage(char *argv[]) {
-  printf("Usage: one of the following:\n"
-	 "\t service run %s -args \"square <timer> <freq>\" \n"
-	 "\t service run %s -args \"int <time>\" \n"
-	 "\t service run %s -args \"config <timer>\" \n" ,
-	 argv[0], argv[0], argv[0]);
+static void print_usage(char *argv[]) {
+	printf("Usage: one of the following:\n"
+			"\t service run %s -args \"init <mode> <delay>\" \n"
+			"\t service run %s -args \"square <x> <y> <size> <color>\" \n"
+			"\t service run %s -args \"line <xi> <yi> <xf> <yf> <color>\" \n"
+			"\t service run %s -args \"xmp <xi> <yi> <*xpm[]>"
+			"\t service run %s -args \"move <xi> <yi> <*xmp[]> <hor> <delta> <time>"
+			"\t service run %s -args \"controller\" \n" ,
+			argv[0], argv[0], argv[0], argv[0], argv[0], argv[0]);
 }
 
 static int proc_args(int argc, char *argv[]) {
@@ -49,7 +40,7 @@ static int proc_args(int argc, char *argv[]) {
   long num;
 
   /* check the function to test: if the first characters match, accept it */
-  /*if (strncmp(argv[1], "square", strlen("square")) == 0) {
+  if (strncmp(argv[1], "init", strlen("init")) == 0) {
 	  if( argc != 4 ) {
 		  printf("timer: wrong no of arguments for test of timer_test_square() \n");
 		  return 1;
@@ -105,7 +96,7 @@ static unsigned long parse_ulong(char *str, int base) {
   }
 
   /* Successful conversion */
-  /*return val;
+  return val;
 }
 
 static long parse_long(char *str, int base) {
@@ -126,5 +117,5 @@ static long parse_long(char *str, int base) {
   }
 
   /* Successful conversion */
-  /*return val;
-}*/
+  return val;
+}
