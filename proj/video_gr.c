@@ -174,16 +174,15 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 {
 	// Midpoint circle algorithm
 
-	int x = radius;
 	int y = 0;
-	int error = 1 - x;
+	int error = 1 - radius;
 
-	while (x >= y)
+	while (radius >= y)
 	{
-		vg_draw_line(-x + x0, y + y0, x + x0, y + y0, color);
-		vg_draw_line(-y + x0, x + y0, y + x0, x + y0, color);
-		vg_draw_line(-x + x0, -y + y0, x + x0, -y + y0, color);
-		vg_draw_line(-y + x0, -x + y0, y + x0, -x + y0, color);
+		vg_draw_line(-radius + x0, y + y0, radius + x0, y + y0, color);
+		vg_draw_line(-y + x0, radius + y0, y + x0, radius + y0, color);
+		vg_draw_line(-radius + x0, -y + y0, radius + x0, -y + y0, color);
+		vg_draw_line(-y + x0, -radius + y0, y + x0, -radius + y0, color);
 		y++;
 		if (error < 0)
 		{
@@ -191,8 +190,8 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 		}
 		else
 		{
-			x--;
-			error += 2 * (y - x + 1);
+			radius--;
+			error += 2 * (y - radius + 1);
 		}
 	}
 

@@ -1,4 +1,5 @@
 #include "proj.h"
+#include <minix/sysutil.h>
 
 static int proc_args(int argc, char *argv[]);
 static unsigned long parse_ulong(char *str, int base);
@@ -20,12 +21,12 @@ int main(int argc, char **argv) {
 	racinix_start(&vmi);
 
 	vg_fill(0x02);
-	//generate_track(0, 0, vmi.XResolution, vmi.YResolution);
+	generate_track(0, 0, vmi.XResolution, vmi.YResolution);
 
 	vector2D_t position;
 	position.x = 200;
 	position.y = 100;
-	vehicle_t *vehicle = vehicle_create(50, 10, &position, 0);
+	vehicle_t *vehicle = vehicle_create(20, 50, &position, 0);
 
 	if (keyboard_subscribe_int() == -1)
 	{
@@ -89,62 +90,62 @@ int racinix_exit()
 
 void generate_track(unsigned x, unsigned y, unsigned width, unsigned height)
 {
-	 unsigned pointCount = rand() % 11 + 10; //we'll have a total of 10 to 20 points
-	 vector2D_t random_points[pointCount];
-	 size_t i;
+	unsigned pointCount = rand() % 11 + 10; //we'll have a total of 10 to 20 points
+	vector2D_t random_points[pointCount];
+	size_t i;
 
-	 for(i = 0; i < pointCount; ++i)
-	 {
-		 random_points[i].x = rand() % (int)(0.8 * width) + 0.1 * width;
-		 random_points[i].y = rand() % (int)(0.8 * height) + 0.1 * height;
-	 }
+	for(i = 0; i < pointCount; ++i)
+	{
+		random_points[i].x = rand() % (int)(0.8 * width) + 0.1 * width;
+		random_points[i].y = rand() % (int)(0.8 * height) + 0.1 * height;
+	}
 
-	 vector2D_t hull[pointCount];
-	 vector2D_t spline[(unsigned)ceil(pointCount * (1.0 / INTERP_PERIOD))];
-	 size_t hull_size = convexHull(random_points, pointCount, hull) - 1;
+	vector2D_t hull[pointCount];
+	vector2D_t spline[(unsigned)ceil(pointCount * (1.0 / INTERP_PERIOD))];
+	size_t hull_size = convexHull(random_points, pointCount, hull) - 1;
 
-	 pushApart(hull, hull_size);
-	 pushApart(hull, hull_size);
-	 pushApart(hull, hull_size);
+	pushApart(hull, hull_size);
+	pushApart(hull, hull_size);
+	pushApart(hull, hull_size);
 
-	 size_t spline_size = 0;
-	 double t;
-	 for(i = 0; i < hull_size; ++i)
-	 {
-		 vg_draw_circle(x + hull[i].x, y + hull[i].y, 10, 0x33);
-		 for(t = 0.0f; t <= 1.0f; t += INTERP_PERIOD)
-		 {
-			 spline[spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % hull_size], hull[(i + 2) % hull_size], hull[(i + 3) % hull_size], t);
-			 ++spline_size;
-		 }
-	 }
-	 double temp;
-	 vector2D_t normal, outside_spline[spline_size], inside_spline[spline_size];
-	 for (i = 0; i < spline_size; ++i)
-	 {
-		 // CALCULATE NORMAL
-		 normal.x = spline[(i + 1) % spline_size].x - spline[i].x;
-		 normal.y = spline[(i + 1) % spline_size].y - spline[i].y;
+	size_t spline_size = 0;
+	double t;
+	for(i = 0; i < hull_size; ++i)
+	{
+		vg_draw_circle(x + hull[i].x, y + hull[i].y, 10, 0x33);
+		for(t = 0.0f; t <= 1.0f; t += INTERP_PERIOD)
+		{
+			spline[spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % hull_size], hull[(i + 2) % hull_size], hull[(i + 3) % hull_size], t);
+			++spline_size;
+		}
+	}
+	double temp;
+	vector2D_t normal, outside_spline[spline_size], inside_spline[spline_size];
+	for (i = 0; i < spline_size; ++i)
+	{
+		// CALCULATE NORMAL
+		normal.x = spline[(i + 1) % spline_size].x - spline[i].x;
+		normal.y = spline[(i + 1) % spline_size].y - spline[i].y;
 
-		 // NORMALIZE NORMAL
-		 normal = vectorDivide(normal, vectorNorm(normal));
+		// NORMALIZE NORMAL
+		normal = vectorDivide(normal, vectorNorm(normal));
 
-		 // INSCREASE NORMAL
-		 normal = vectorMultiply(normal, 25.0);
+		// INSCREASE NORMAL
+		normal = vectorMultiply(normal, 50.0);
 
-		 // CALCULATE PERPENDICULAR TO THE SPLINE
-		 temp = normal.x;
-		 normal.x = -normal.y;
-		 normal.y = temp;
+		// CALCULATE PERPENDICULAR TO THE SPLINE
+		temp = normal.x;
+		normal.x = -normal.y;
+		normal.y = temp;
 
-		 // CALCULATE INSIDE SPLINE
-		 inside_spline[i] = vectorAdd(spline[i], normal);
+		// CALCULATE INSIDE SPLINE
+		inside_spline[i] = vectorAdd(spline[i], normal);
 
-		 // CALCULATE OUTSIDE SPLINE
-		 outside_spline[i] = vectorSubtract(spline[i], normal);
-	 }
+		// CALCULATE OUTSIDE SPLINE
+		outside_spline[i] = vectorSubtract(spline[i], normal);
+	}
 
-	 /*for (i = 0; i < spline_size; ++i)
+	/*for (i = 0; i < spline_size; ++i)
 	 {
 		 // DRAW CENTRAL SPLINE
 		 vg_draw_line(x + spline[i].x, y + spline[i].y, x + spline[(i + 1) % spline_size].x, y + spline[(i + 1) % spline_size].y, 0xCC);
@@ -155,7 +156,10 @@ void generate_track(unsigned x, unsigned y, unsigned width, unsigned height)
 		 // DRAW OUTSIDE SPLINE
 		 vg_draw_line(x + outside_spline[i].x, y + outside_spline[i].y, x + outside_spline[(i + 1) % spline_size].x, y + outside_spline[(i + 1) % spline_size].y, 0xCC);
 	 }*/
+
+	/*The following loop was too slow, so it was replaced by a faster one that generates the track at about twice the speed.
 	 size_t j;
+	 size_t counter = 0;
 	 vector2D_t point;
 	 for (i = 0; i < width; ++i)
 	 {
@@ -163,25 +167,50 @@ void generate_track(unsigned x, unsigned y, unsigned width, unsigned height)
 		 for (j = 0; j < height; ++j)
 		 {
 			 point.y = j;
-			 if (isPointInPolygon(outside_spline, spline_size, &point))
+			 counter++;
+			 if (isPointInPolygon(outside_spline, spline_size, &point) && !isPointInPolygon(spline, spline_size, &point))
 			 {
-				vg_set_pixel(x + i, y + j, 0xCC);
+				vg_set_pixel(x + i, y + j, 0x00);
 			 }
 		 }
 	 }
-	 for (i = 0; i < width; ++i)
-	 	 {
-	 		 point.x = i;
-	 		 for (j = 0; j < height; ++j)
-	 		 {
-	 			 point.y = j;
-	 			 if (isPointInPolygon(inside_spline, spline_size, &point))
-	 			 {
-	 				vg_set_pixel(x + i, y + j, 0x02);
-	 			 }
-	 		 }
-	 	 }
-	 return;
+	 printf("Method 1 iterations: %d\n", counter);*/
+
+	 size_t j, k;
+	 bool status[width][height];
+	 memset(&status, 0, sizeof(status));
+	 vector2D_t polygon[4];
+	 vector2D_t point;
+	 for (i = 0; i < spline_size; ++i)
+	 {
+		 polygon[0] = spline[i];
+		 polygon[1] = outside_spline[i];
+		 polygon[2] = outside_spline[(i + 1) % spline_size];
+		 polygon[3] = spline[(i + 1) % spline_size];
+		 for (j = spline[i].x - 71; j < spline[i].x + 71; ++j)
+		 {
+			 point.x = j;
+			 for (k = spline[i].y - 71; k < spline[i].y + 71; k++)
+			 {
+				 point.y = k;
+				 //if (status[j][k])
+				 //{
+				//	 break;
+				 //}
+				 //else
+				 //{
+					 //vg_set_pixel(x + j, y + k, 0x04);
+					// status[j][k] = true;
+				 //}
+				 if (isPointInPolygon(polygon, sizeof(polygon) / sizeof(vector2D_t), &point))
+				 {
+					 vg_set_pixel(x + j, y + k, 0x00);
+				 }
+			 }
+		 }
+	 }
+
+	return;
 }
 
 // Returns a list of points on the convex hull in counter-clockwise order.
