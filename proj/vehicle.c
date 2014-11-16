@@ -1,5 +1,6 @@
 #include "vehicle.h"
-#define PI 3.14159265358979323846
+#define PI 			3.14159265358979323846
+#define NUM_WHEELS	4
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading)
 {
@@ -20,11 +21,11 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 {
 	// TODO
 	double steering = 0.0;
-	if (kbd_keys[KEY_ARR_LEFT].pressed && !kbd_keys[KEY_ARR_RIGHT].pressed)
+	if ((kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed) && !(kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed))
 	{
 		steering = -(VEHICLE_STEER_ANGLE * vehicle->length) / abs(vehicle->speed);
 	}
-	else if (kbd_keys[KEY_ARR_RIGHT].pressed && !kbd_keys[KEY_ARR_LEFT].pressed)
+	else if ((kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed) && !(kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed))
 	{
 		steering = (VEHICLE_STEER_ANGLE * vehicle->length) / abs(vehicle->speed);
 	}
@@ -33,15 +34,23 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 	// Calculate axle positions
 	vector2D_t back_axle, front_axle;
 	vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
-	vector2D_t wheels[4];
+	vector2D_t wheels[NUM_WHEELS];
 	vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
 
-	vg_fill(0x0);
-	vg_draw_line(back_axle.x, back_axle.y, front_axle.x, front_axle.y, 0x4);
-	vg_draw_circle(wheels[0].x, wheels[0].y, 2, 0x4);
-	vg_draw_circle(wheels[1].x, wheels[1].y, 2, 0x4);
-	vg_draw_circle(wheels[2].x, wheels[2].y, 2, 0x4);
-	vg_draw_circle(wheels[3].x, wheels[3].y, 2, 0x4);
+	vg_fill(0x02);
+	size_t i;
+	for (i = 0; i < NUM_WHEELS; ++i)
+	{
+		vg_draw_circle(wheels[i].x, wheels[i].y, 2, 0x0);
+	}
+	for (i = 0; i < NUM_WHEELS; ++i)
+	{
+		vg_draw_line(wheels[i % NUM_WHEELS].x, wheels[i % NUM_WHEELS].y, wheels[(i + 1) % NUM_WHEELS].x, wheels[(i + 1) % NUM_WHEELS].y, 0x4);
+	}
+	for (i = 0; i < NUM_WHEELS / 2; ++i)
+	{
+		vg_draw_line(wheels[i % NUM_WHEELS].x, wheels[i % NUM_WHEELS].y, wheels[(i + 2) % NUM_WHEELS].x, wheels[(i + 2) % NUM_WHEELS].y, 0x4);
+	}
 
 	// Move axles
 	back_axle = vectorAdd(
@@ -78,7 +87,7 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 
 	double change;
 	vg_draw_line(0, 0, 500, 0, 0x33);
-	if (kbd_keys[KEY_ARR_DOWN].pressed)
+	if (kbd_keys[KEY_ARR_DOWN].pressed || kbd_keys[KEY_S].pressed)
 	{
 		if (vehicle->speed > 0)
 		{
@@ -89,7 +98,7 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 			vehicle->speed -= VEHICLE_REVERSE * delta_time;
 		}
 	}
-	else if (kbd_keys[KEY_ARR_UP].pressed)
+	else if (kbd_keys[KEY_ARR_UP].pressed || kbd_keys[KEY_W].pressed)
 	{
 		vehicle->speed += VEHICLE_ACCELERATE * delta_time;
 	}

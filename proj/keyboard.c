@@ -54,6 +54,10 @@ int keyboard_subscribe_int()
 		kbd_keys[KEY_ARR_DOWN].makecode = 0xE050;
 		kbd_keys[KEY_ARR_LEFT].makecode = 0xE04B;
 		kbd_keys[KEY_ARR_RIGHT].makecode = 0xE04D;
+		kbd_keys[KEY_W].makecode = 0x0011;
+		kbd_keys[KEY_A].makecode = 0x001E;
+		kbd_keys[KEY_S].makecode = 0x001F;
+		kbd_keys[KEY_D].makecode = 0x0020;
 		kbd_keys[KEY_ENTER].makecode = 0x001C;
 		kbd_keys[KEY_SPACE].makecode = 0x0039;
 		return KEYBOARD_HOOK_BIT;
