@@ -1,6 +1,5 @@
 #include "vehicle.h"
-#define PI 			3.14159265358979323846
-#define NUM_WHEELS	4
+#define PI 					3.14159265358979323846
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading)
 {
@@ -17,7 +16,7 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	return vehicle;
 }
 
-void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
+void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
 {
 	// TODO
 	double steering = 0.0;
@@ -34,22 +33,21 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 	// Calculate axle positions
 	vector2D_t back_axle, front_axle;
 	vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
-	vector2D_t wheels[NUM_WHEELS];
+	vector2D_t wheels[VEHICLE_NUM_WHEELS];
 	vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
 
-	vg_fill(0x02);
 	size_t i;
-	for (i = 0; i < NUM_WHEELS; ++i)
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 	{
 		vg_draw_circle(wheels[i].x, wheels[i].y, 2, 0x0);
 	}
-	for (i = 0; i < NUM_WHEELS; ++i)
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 	{
-		vg_draw_line(wheels[i % NUM_WHEELS].x, wheels[i % NUM_WHEELS].y, wheels[(i + 1) % NUM_WHEELS].x, wheels[(i + 1) % NUM_WHEELS].y, 0x4);
+		vg_draw_line(wheels[i % VEHICLE_NUM_WHEELS].x, wheels[i % VEHICLE_NUM_WHEELS].y, wheels[(i + 1) % VEHICLE_NUM_WHEELS].x, wheels[(i + 1) % VEHICLE_NUM_WHEELS].y, 0x4);
 	}
-	for (i = 0; i < NUM_WHEELS / 2; ++i)
+	for (i = 0; i < VEHICLE_NUM_WHEELS / 2; ++i)
 	{
-		vg_draw_line(wheels[i % NUM_WHEELS].x, wheels[i % NUM_WHEELS].y, wheels[(i + 2) % NUM_WHEELS].x, wheels[(i + 2) % NUM_WHEELS].y, 0x4);
+		vg_draw_line(wheels[i % VEHICLE_NUM_WHEELS].x, wheels[i % VEHICLE_NUM_WHEELS].y, wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
 	}
 
 	// Move axles
@@ -107,13 +105,13 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double max_velocity)
 		vehicle->speed = 0;
 	}
 
-	if (vehicle->speed > VEHICLE_DRAG * delta_time)
+	if (vehicle->speed > drag * delta_time)
 	{
-		vehicle->speed -= VEHICLE_DRAG * delta_time * vehicle->speed;
+		vehicle->speed -= drag * delta_time * vehicle->speed;
 	}
-	else if (vehicle->speed < -VEHICLE_DRAG * delta_time)
+	else if (vehicle->speed < -drag * delta_time)
 	{
-		vehicle->speed -= VEHICLE_DRAG * delta_time * vehicle->speed;
+		vehicle->speed -= drag * delta_time * vehicle->speed;
 	}
 	else
 	{
