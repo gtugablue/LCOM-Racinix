@@ -12,7 +12,7 @@
 #define VEHICLE_REVERSE		50.0
 #define VEHICLE_DRAG		0.5
 #define VEHICLE_BREAK		200.0
-#define VEHICLE_STEER_ANGLE	3.0
+#define VEHICLE_STEER_ANGLE	2.5
 #define VEHICLE_STOP_SPEED	10.0
 
 typedef struct

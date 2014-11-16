@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 	vector2D_t position;
 	position.x = 200;
 	position.y = 100;
-	vehicle_t *vehicle = vehicle_create(20, 50, &position, 0);
+	vehicle_t *vehicle = vehicle_create(20, 40, &position, 0);
 
 	if (keyboard_subscribe_int() == -1)
 	{
@@ -145,17 +145,17 @@ void generate_track(unsigned x, unsigned y, unsigned width, unsigned height)
 		outside_spline[i] = vectorSubtract(spline[i], normal);
 	}
 
-	/*for (i = 0; i < spline_size; ++i)
+	for (i = 0; i < spline_size; ++i)
 	 {
 		 // DRAW CENTRAL SPLINE
-		 vg_draw_line(x + spline[i].x, y + spline[i].y, x + spline[(i + 1) % spline_size].x, y + spline[(i + 1) % spline_size].y, 0xCC);
+		 vg_draw_line(x + spline[i].x, y + spline[i].y, x + spline[(i + 1) % spline_size].x, y + spline[(i + 1) % spline_size].y, 0x4);
 
 		 // DRAW INSIDE SPLINE
-		 vg_draw_line(x + inside_spline[i].x, y + inside_spline[i].y, x + inside_spline[(i + 1) % spline_size].x, y + inside_spline[(i + 1) % spline_size].y, 0xCC);
+		 //vg_draw_line(x + inside_spline[i].x, y + inside_spline[i].y, x + inside_spline[(i + 1) % spline_size].x, y + inside_spline[(i + 1) % spline_size].y, 0xCC);
 
 		 // DRAW OUTSIDE SPLINE
-		 vg_draw_line(x + outside_spline[i].x, y + outside_spline[i].y, x + outside_spline[(i + 1) % spline_size].x, y + outside_spline[(i + 1) % spline_size].y, 0xCC);
-	 }*/
+		 vg_draw_line(x + outside_spline[i].x, y + outside_spline[i].y, x + outside_spline[(i + 1) % spline_size].x, y + outside_spline[(i + 1) % spline_size].y, 0x4);
+	 }
 
 	/*The following loop was too slow, so it was replaced by a faster one that generates the track at about twice the speed.
 	 size_t j;
