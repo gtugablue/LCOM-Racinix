@@ -57,30 +57,29 @@ int main(int argc, char **argv) {
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					if (counter == 5)
+					if (counter >= TIMER_DEFAULT_FREQ / FPS)
 					{
-					vg_fill(0x02);
-					track_draw(track, vmi.XResolution, vmi.YResolution);
-					counter = 0;
-					}
-					track_draw(track, vmi.XResolution, vmi.YResolution);
+						vg_fill(0x02);
+						track_draw(track, vmi.XResolution, vmi.YResolution);
 
-					vector2D_t wheels[VEHICLE_NUM_WHEELS];
-					vector2D_t back_axle, front_axle;
-					vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
-					vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
-					double drag = 0.5;
-					size_t i;
-					for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-					{
-						if (!(*(track + (int)wheels[i].x + (int)wheels[i].y * vmi.XResolution)))
+						vector2D_t wheels[VEHICLE_NUM_WHEELS];
+						vector2D_t back_axle, front_axle;
+						vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
+						vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
+						double drag = 0.5;
+						size_t i;
+						for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 						{
-							drag += 0.5;
+							if (!(*(track + (int)wheels[i].x + (int)wheels[i].y * vmi.XResolution)))
+							{
+								drag += 0.5;
+							}
 						}
-					}
-					vehicle_tick(vehicle, (double)1/60, drag);
+						vehicle_tick(vehicle, (double)counter / TIMER_DEFAULT_FREQ, drag);
 
-					counter++;
+						counter = 0;
+					}
+					++counter;
 				}
 			}
 		}

@@ -14,7 +14,7 @@
 #include "timer.h"
 #include "track.h"
 
-#define FPS				12
+#define FPS				29.97
 #define INTERP_PERIOD	0.07f
 
 int racinix_start(vbe_mode_info_t *vmi);
