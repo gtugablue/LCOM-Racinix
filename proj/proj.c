@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	racinix_start(&vmi);
 
 	vg_fill(0x02);
-	track_generate(vmi.XResolution, vmi.YResolution, rand());
+	bool *track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
 	vector2D_t position;
 	position.x = 200;
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 
 	int r, ipc_status;
 	message msg;
-	unsigned long counter;
+	unsigned counter = 0;
 	while(!kbd_keys[KEY_ESC].pressed)
 	{
 		/* Get a request message. */
@@ -57,8 +57,30 @@ int main(int argc, char **argv) {
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					vehicle_tick(vehicle, (double)1/60, 0);
-					++counter;
+					if (counter == 5)
+					{
+					vg_fill(0x02);
+					track_draw(track, vmi.XResolution, vmi.YResolution);
+					counter = 0;
+					}
+					track_draw(track, vmi.XResolution, vmi.YResolution);
+
+					vector2D_t wheels[VEHICLE_NUM_WHEELS];
+					vector2D_t back_axle, front_axle;
+					vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
+					vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
+					double drag = 0.5;
+					size_t i;
+					for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+					{
+						if (!(*(track + (int)wheels[i].x + (int)wheels[i].y * vmi.XResolution)))
+						{
+							drag += 0.5;
+						}
+					}
+					vehicle_tick(vehicle, (double)1/60, drag);
+
+					counter++;
 				}
 			}
 		}

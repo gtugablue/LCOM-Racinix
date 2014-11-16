@@ -7,8 +7,9 @@ static void pushApart(vector2D_t hull[], unsigned hull_size);
 static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
 static unsigned long track_generate_random(unsigned long seed);
 
-void track_generate(unsigned width, unsigned height, unsigned long seed)
+bool *track_generate(unsigned width, unsigned height, unsigned long seed)
 {
+	bool *track = malloc(width * height * sizeof(bool));
 	unsigned pointCount = rand() % 11 + 10; //we'll have a total of 10 to 20 points
 	vector2D_t random_points[pointCount];
 	size_t i;
@@ -31,7 +32,7 @@ void track_generate(unsigned width, unsigned height, unsigned long seed)
 	double t;
 	for(i = 0; i < hull_size; ++i)
 	{
-		vg_draw_circle(hull[i].x, hull[i].y, 10, 0x33);
+		//vg_draw_circle(hull[i].x, hull[i].y, 10, 0x33);
 		for(t = 0.0f; t <= 1.0f; t += TRACK_INTERP_PERIOD)
 		{
 			spline[spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % hull_size], hull[(i + 2) % hull_size], hull[(i + 3) % hull_size], t);
@@ -64,17 +65,17 @@ void track_generate(unsigned width, unsigned height, unsigned long seed)
 		outside_spline[i] = vectorSubtract(spline[i], normal);
 	}
 
-	for (i = 0; i < spline_size; ++i)
+	/*for (i = 0; i < spline_size; ++i)
 	{
 		// DRAW CENTRAL SPLINE
 		vg_draw_line(spline[i].x, spline[i].y, spline[(i + 1) % spline_size].x, spline[(i + 1) % spline_size].y, 0x4);
 
 		// DRAW INSIDE SPLINE
-		//vg_draw_line(inside_spline[i].x, inside_spline[i].y, inside_spline[(i + 1) % spline_size].x, y + inside_spline[(i + 1) % spline_size].y, 0xCC);
+		vg_draw_line(inside_spline[i].x, inside_spline[i].y, inside_spline[(i + 1) % spline_size].x, y + inside_spline[(i + 1) % spline_size].y, 0xCC);
 
 		// DRAW OUTSIDE SPLINE
 		vg_draw_line(outside_spline[i].x, outside_spline[i].y, outside_spline[(i + 1) % spline_size].x, outside_spline[(i + 1) % spline_size].y, 0x4);
-	}
+	}*/
 
 	/*This loop was too slow, so it was replaced by a much faster one.
 		 size_t j;
@@ -95,7 +96,7 @@ void track_generate(unsigned width, unsigned height, unsigned long seed)
 		 }
 		 printf("Method 1 iterations: %d\n", counter);*/
 
-	size_t j, k;
+	size_t x, y;
 	bool status[width][height];
 	memset(&status, 0, sizeof(status));
 	vector2D_t polygon[4];
@@ -106,12 +107,12 @@ void track_generate(unsigned width, unsigned height, unsigned long seed)
 		polygon[1] = outside_spline[i];
 		polygon[2] = outside_spline[(i + 1) % spline_size];
 		polygon[3] = spline[(i + 1) % spline_size];
-		for (j = spline[i].x - 71; j < spline[i].x + 71; ++j)
+		for (x = spline[i].x - 71; x < spline[i].x + 71; ++x)
 		{
-			point.x = j;
-			for (k = spline[i].y - 71; k < spline[i].y + 71; k++)
+			point.x = x;
+			for (y = spline[i].y - 71; y < spline[i].y + 71; y++)
 			{
-				point.y = k;
+				point.y = y;
 				//if (status[j][k])
 					//{
 				//	 break;
@@ -123,13 +124,30 @@ void track_generate(unsigned width, unsigned height, unsigned long seed)
 				//}
 				if (isPointInPolygon(polygon, sizeof(polygon) / sizeof(vector2D_t), &point))
 				{
-					vg_set_pixel(j, k, 0x00);
+					//vg_set_pixel(j, k, 0x00);
+					*(track + y * width + x) = true;
 				}
 			}
 		}
 	}
 
-	return;
+	return track;
+}
+
+void track_draw(bool *track, unsigned width, unsigned height)
+{
+	size_t x, y;
+	for (x = 0; x < width; ++x)
+	{
+		for (y = 0; y < height; ++y)
+		{
+			if (*(track + x + y * width))
+			{
+				vg_set_pixel(x, y, 0x0);
+			}
+		}
+	}
+	printf("Tentei aceder a: 0x%X\n", track);
 }
 
 static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_t p2, vector2D_t p3, double t)
