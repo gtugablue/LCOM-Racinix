@@ -29,7 +29,6 @@ vector2D_t vectorSubtract(vector2D_t vector1, vector2D_t vector2)
 
 vector2D_t vectorMultiply(vector2D_t vector, double factor)
 {
-	printf("vector.x = %d, factor = %d, vector.x * factor = %d\n", (int)vector.x, (int)factor, (int)vector.x * factor);
 	vector.x *= factor;
 	vector.y *= factor;
 	return vector;

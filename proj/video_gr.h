@@ -93,7 +93,6 @@ int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsig
  */
 bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t* point);
 
-
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
  * 
