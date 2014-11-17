@@ -197,7 +197,7 @@ enum {
 
 /*enum {
     KEY_NONE = 0x0000,
-    KEY_ESC = 0x0001,
+    KEY_ESC = 0x0001;
     KEY_1 = 0x0002,
     KEY_2 = 0x0003,
     KEY_3 = 0x0004,
