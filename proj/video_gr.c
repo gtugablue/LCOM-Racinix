@@ -124,7 +124,6 @@ int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned 
 	{
 		return 1;
 	}
-
 	// Bresenham's line algorithm
 
 	// TODO ALTERAR ESTE CÓDIGO!!! ARRANJAR UM ALGORITMO MEU!!

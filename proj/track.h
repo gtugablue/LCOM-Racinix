@@ -11,7 +11,7 @@
 #define TRACK_INTERP_PERIOD	0.07
 
 // TODO - fazer esta função retornar uma array com os pontos pertencentes à pista, em vez de desenhar diretamente.
-bool *track_generate(unsigned width, unsigned height, unsigned long seed);
+bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector2D_t spline[], unsigned *spline_size);
 
 void track_draw(bool *track, unsigned width, unsigned height);
 

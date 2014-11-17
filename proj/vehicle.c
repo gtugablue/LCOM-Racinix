@@ -13,21 +13,13 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	vehicle->position = *position;
 	vehicle->speed = 0.0;
 	vehicle->heading = heading;
+	vehicle->steering;
 	return vehicle;
 }
 
 void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
 {
-	// TODO
-	double steering = 0.0;
-	if ((kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed) && !(kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed))
-	{
-		steering = -(VEHICLE_STEER_ANGLE * vehicle->length) / abs(vehicle->speed);
-	}
-	else if ((kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed) && !(kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed))
-	{
-		steering = (VEHICLE_STEER_ANGLE * vehicle->length) / abs(vehicle->speed);
-	}
+	vehicle_update_steering(vehicle, delta_time);
 	vector2D_t old_position = vehicle->position;
 
 	// Calculate axle positions
@@ -65,8 +57,8 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
 			front_axle,
 			vectorMultiply(
 					vectorCreate(
-							cos(vehicle->heading + steering),
-							sin(vehicle->heading + steering)
+							cos(vehicle->heading + vehicle->steering),
+							sin(vehicle->heading + vehicle->steering)
 					),
 					vehicle->speed * delta_time
 			)
@@ -83,8 +75,35 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
 
 	vehicle->heading = atan2(front_axle.y - back_axle.y, front_axle.x - back_axle.x);
 
-	double change;
-	vg_draw_line(0, 0, 500, 0, 0x33);
+	vehicle_update_speed(vehicle, delta_time, drag);
+}
+
+void vehicle_update_steering(vehicle_t *vehicle, double delta_time)
+{
+	if ((kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed) && !(kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed))
+	{
+		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
+	}
+	else if ((kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed) && !(kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed))
+	{
+		vehicle->steering += (VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
+	}
+	else
+	{
+		vehicle->steering = 0.0;
+	}
+	if (vehicle->steering > VEHICLE_MAX_STEER)
+	{
+		vehicle->steering = (VEHICLE_MAX_STEER * vehicle->length) / abs(vehicle->speed);
+	}
+	else if (vehicle->steering < -VEHICLE_MAX_STEER)
+	{
+		vehicle->steering = -(VEHICLE_MAX_STEER * vehicle->length) / abs(vehicle->speed);
+	}
+}
+
+void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag)
+{
 	if (kbd_keys[KEY_ARR_DOWN].pressed || kbd_keys[KEY_S].pressed)
 	{
 		if (vehicle->speed > 0)
@@ -117,7 +136,6 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
 	{
 		vehicle->speed = 0;
 	}
-	vg_draw_line(0, 0, vehicle->speed, 0, 0x00);
 }
 
 void vehicle_calculate_axle_position(vehicle_t *vehicle, vector2D_t *back_axle, vector2D_t *front_axle)
