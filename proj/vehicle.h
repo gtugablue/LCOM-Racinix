@@ -9,11 +9,12 @@
 #include "video_gr.h"
 
 #define VEHICLE_ACCELERATE	150.0
-#define VEHICLE_REVERSE		50.0
+#define VEHICLE_REVERSE		75.0
 #define VEHICLE_BREAK		200.0
-#define VEHICLE_STEER_ANGLE	2.5
+#define VEHICLE_STEER		0.3
 #define VEHICLE_STOP_SPEED	10.0
 #define VEHICLE_NUM_WHEELS	4
+#define VEHICLE_MAX_STEER	1.0
 
 typedef struct
 {
@@ -22,11 +23,16 @@ typedef struct
 	vector2D_t position;
 	double speed;
 	double heading;
+	double steering;
 } vehicle_t;
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading);
 
 void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag);
+
+void vehicle_update_steering(vehicle_t *vehicle, double delta_time);
+
+void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag);
 
 void vehicle_calculate_axle_position(vehicle_t *vehicle, vector2D_t *back_axle, vector2D_t *front_axle);
 

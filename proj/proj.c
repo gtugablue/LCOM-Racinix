@@ -20,7 +20,10 @@ int main(int argc, char **argv) {
 	racinix_start(&vmi);
 
 	vg_fill(0x02);
-	bool *track = track_generate(vmi.XResolution, vmi.YResolution, rand());
+
+	unsigned spline_size;
+	vector2D_t spline[(unsigned)ceil(20 * (1.0 / TRACK_INTERP_PERIOD))];
+	bool *track = track_generate(vmi.XResolution, vmi.YResolution, rand(), spline, &spline_size);
 
 	vector2D_t position;
 	position.x = 200;
@@ -76,7 +79,10 @@ int main(int argc, char **argv) {
 							}
 						}
 						vehicle_tick(vehicle, (double)counter / TIMER_DEFAULT_FREQ, drag);
-
+						for (i = 1; i < 10; ++i)
+						{
+							vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle->speed, vmi.YResolution - i, 0x0);
+						}
 						counter = 0;
 					}
 					++counter;
