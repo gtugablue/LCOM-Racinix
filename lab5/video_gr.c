@@ -93,7 +93,10 @@ int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 }
 
 long vg_get_pixel(unsigned long x, unsigned long y) {
-	// TODO
+	if (x <= h_res && y <= v_res)
+	{
+		return *(video_mem + x + y * h_res);
+	}
 	return 0;
 }
 
@@ -106,13 +109,10 @@ static void swap(unsigned long* a, unsigned long* b)
 
 int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned long yf, unsigned long color)
 {
-	if (xi >= h_res || xf >= h_res || yi >= v_res || yf >= v_res)
-	{
-		return 1;
-	}
 	// Bresenham's line algorithm
 
 	// TODO ALTERAR ESTE CÓDIGO!!! ARRANJAR UM ALGORITMO MEU!!
+	// TODO lidar com input negativo
 
 	unsigned long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
