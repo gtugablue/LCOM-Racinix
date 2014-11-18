@@ -12,7 +12,7 @@
 
 /* Private global variables */
 
-static char *video_mem;		/* Process address to which VRAM is mapped */
+static void *video_mem;		/* Process address to which VRAM is mapped */
 
 static unsigned h_res;		/* Horizontal screen resolution in pixels */
 static unsigned v_res;		/* Vertical screen resolution in pixels */
@@ -72,13 +72,8 @@ void *vg_init(unsigned short mode)
 	return NULL;
 }
 
-int vg_fill(unsigned long color) {
-
-	if (color >= (1 << 8))
-	{
-		return 1;
-	}
-
+int vg_fill(unsigned long color)
+{
 	char *pixel;
 	for (pixel = video_mem; pixel < video_mem + h_res * v_res; ++pixel)
 	{
