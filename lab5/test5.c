@@ -241,5 +241,19 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 
 int test_controller()
 {
-	/* To be completed */
+	vbe_info_block_t vbe_info_block;
+	if (vbe_get_info_block(&vbe_info_block))
+	{
+		return 1;
+	}
+	printf("Video modes:\n");
+
+	/*while(*(uint16_t *)vbe_info_block.VideoModePtr != VBE_VIDEO_MODE_PTR_TERMINATE)
+	{
+		printf("0x%X\n", *(uint16_t *)vbe_info_block.VideoModePtr);
+	}*/
+
+	printf("0x%X\n 0x%X", vbe_info_block.OemSoftwareRev);
+	printf("0x%X\n", *(uint16_t *)vbe_info_block.VideoModePtr);
+	return 0;
 }
