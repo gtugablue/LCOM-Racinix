@@ -18,6 +18,7 @@
  *  and the number of colors
  * 
  * @param mode 16-bit VBE mode to set
+ * @param PhysBasePtr address of memory where to write the mode info
  * @return Virtual address VRAM was mapped to. NULL, upon failure.
  */
 void *vg_init(unsigned short mode);
@@ -69,6 +70,8 @@ long vg_get_pixel(unsigned long x, unsigned long y);
  * @return 0 upon success, non-zero upon failure
  */
 int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned long yf, unsigned long color);
+
+int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigned long color);
 
 /**
  * @brief Draw circle with specified center, radius and color

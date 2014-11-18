@@ -6,19 +6,9 @@
 
 #include "vbe.h"
 
-/* Constants for VBE 0x105 mode */
+#define BIT(n) (0x01<<(n))
 
-/* The physical address may vary from VM to VM.
- * At one time it was 0xD0000000
- *  #define VRAM_PHYS_ADDR    0xD0000000 
- * Currently on lab B107 is 0xF0000000
- * Better run my version of lab5 as follows:
- *     service run `pwd`/lab5 -args "mode 0x105"
- */
-#define VRAM_PHYS_ADDR	0xF0000000
-#define H_RES             1024
-#define V_RES		  768
-#define BITS_PER_PIXEL	  8
+/* Constants for VBE 0x105 mode */
 
 /* Private global variables */
 
@@ -28,19 +18,22 @@ static unsigned h_res;		/* Horizontal screen resolution in pixels */
 static unsigned v_res;		/* Vertical screen resolution in pixels */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
-void * vg_init(unsigned short mode) {
+void *vg_init(unsigned short mode)
+{
 	struct reg86u reg86;
 
-	reg86.u.b.intno = 0x10; /* BIOS video services */
-	reg86.u.w.ax = 0x4F02;
-	reg86.u.w.bx = mode | (1 << 14);
+	reg86.u.b.intno = VBE_INTERRUPT_VECTOR; /* BIOS video services */
+	reg86.u.b.ah = VBE_FUNCTION;
+	reg86.u.b.al = VBE_SET_VBE_MODE;
+	reg86.u.w.bx = mode | BIT(VBE_MODE_NUMBER_LINEAR_FLAT_FRAME_BUFFER_BIT);
+
+	vbe_mode_info_t vbe_mode_info;
 
 	if (sys_int86(&reg86) == OK)
 	{
-		vbe_mode_info_t *vmi_p;
-		if (vmi_p = malloc(sizeof(vbe_mode_info_t)))
+		if (reg86.u.w.ax == VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL)
 		{
-			if(vbe_get_mode_info(mode, vmi_p))
+			if(vbe_get_mode_info(mode, &vbe_mode_info))
 			{
 				return NULL;
 			}
@@ -50,13 +43,13 @@ void * vg_init(unsigned short mode) {
 				struct mem_range mr;
 				unsigned mr_size;
 
-				h_res = vmi_p->XResolution;
-				v_res = vmi_p->YResolution;
-				bits_per_pixel = vmi_p->BitsPerPixel;
+				h_res = vbe_mode_info.XResolution;
+				v_res = vbe_mode_info.YResolution;
+				bits_per_pixel = vbe_mode_info.BitsPerPixel;
 
 				/* Allow memory mapping */
 
-				mr.mr_base = vmi_p->PhysBasePtr;
+				mr.mr_base = vbe_mode_info.PhysBasePtr;
 				mr_size = h_res * v_res * bits_per_pixel;
 				mr.mr_limit = mr.mr_base + mr_size;
 
@@ -69,12 +62,10 @@ void * vg_init(unsigned short mode) {
 
 				video_mem = vm_map_phys(SELF, (void *)mr.mr_base, mr_size);
 
-				if(video_mem == MAP_FAILED)
+				if(video_mem != MAP_FAILED)
 				{
-					return NULL;
+					return video_mem;
 				}
-
-				return video_mem;
 			}
 		}
 	}
@@ -166,6 +157,19 @@ int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned 
 			vg_set_pixel(xi,yi,color);
 	}
 
+	return 0;
+}
+
+int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigned long color)
+{
+	size_t i, j;
+	for (i = x; i < x + size; ++i)
+	{
+		for (j = y; j < y + size; ++j)
+		{
+			vg_set_pixel(i, j, color);
+		}
+	}
 	return 0;
 }
 
