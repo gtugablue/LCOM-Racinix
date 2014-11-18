@@ -78,13 +78,13 @@ static int proc_args(int argc, char *argv[]) {
 	  }
 	  if( (xi = parse_ushort(argv[2], 10)) == SHRT_MAX )
 		  return 1;
-	  if( (yi = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (yi = parse_ushort(argv[3], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (xf = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (xf = parse_ushort(argv[4], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (yf = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (yf = parse_ushort(argv[5], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (color = parse_ushort(argv[2], 16)) == SHRT_MAX )
+	  if( (color = parse_ushort(argv[6], 16)) == SHRT_MAX )
 		  return 1;
 	  printf("video_gr:: test_line(%lu, %lu, %lu, %lu, %lu)\n",
 			  xi, yi, xf, yf, color);
@@ -97,7 +97,7 @@ static int proc_args(int argc, char *argv[]) {
 	  }
 	  if( (xi = parse_char(argv[2], 10)) == CHAR_MAX )
 		  return 1;
-	  if( (yi = parse_char(argv[2], 10)) == CHAR_MAX )
+	  if( (yi = parse_char(argv[3], 10)) == CHAR_MAX )
 		  return 1;
 
 	  n = argc - 4;
@@ -123,7 +123,7 @@ static int proc_args(int argc, char *argv[]) {
 	  }
 	  if( (xi = parse_ushort(argv[2], 10)) == SHRT_MAX )
 		  return 1;
-	  if( (yi = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (yi = parse_ushort(argv[3], 10)) == SHRT_MAX )
 	  		  return 1;
 
 	  n = argc - 4;
@@ -140,9 +140,9 @@ static int proc_args(int argc, char *argv[]) {
 
 	  if( (hor = parse_ushort(argv[2], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (delta = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (delta = parse_ushort(argv[3], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (time = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (time = parse_ushort(argv[4], 10)) == SHRT_MAX )
 	  		  return 1;
 
 	  printf("video_gr:: test_move(%lu, %lu, &xpm, %lu, %lu, %lu)\n",
