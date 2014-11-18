@@ -53,3 +53,16 @@ void normalize(vector2D_t* vector)
 	vector->y /= norm;
 	return;
 }
+
+bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t* point)
+{
+	int i, j;
+	bool c = false;
+	for (i = 0, j = polygon_size - 1; i < polygon_size; j = i++) {
+		if (((polygon[i].y > point->y) != (polygon[j].y > point->y)) && (point->x < (polygon[j].x - polygon[i].x) * (point->y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x))
+		{
+			c = !c;
+		}
+	}
+	return c;
+}
