@@ -2,7 +2,6 @@
 #define __VIDEO_GR_H
 
 #include <stdbool.h>
-#include "vector2D.h"
 
 /** @defgroup video_gr video_gr
  * @{
@@ -19,6 +18,7 @@
  *  and the number of colors
  * 
  * @param mode 16-bit VBE mode to set
+ * @param PhysBasePtr address of memory where to write the mode info
  * @return Virtual address VRAM was mapped to. NULL, upon failure.
  */
 void *vg_init(unsigned short mode);
@@ -42,7 +42,7 @@ int vg_fill(unsigned long color);
  * @param color color to set the pixel
  * @return 0 on success, non-zero otherwise
  */
-int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
+inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
 
 /**
  * @brief Returns the color of the input pixel
@@ -54,8 +54,7 @@ int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
  * @param y vertical coordinate, starts at 0 (top pixel)
  * @return color of the pixel at coordinates (x,y), or -1 if some input argument is not valid
  */
-long vg_get_pixel(unsigned long x, unsigned long y);
-
+inline long vg_get_pixel(unsigned long x, unsigned long y);
 
 /**
  * @brief Draw line segment with specified end points and color
@@ -72,6 +71,8 @@ long vg_get_pixel(unsigned long x, unsigned long y);
  */
 int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned long yf, unsigned long color);
 
+int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigned long color);
+
 /**
  * @brief Draw circle with specified center, radius and color
  *
@@ -82,6 +83,8 @@ int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned 
  * @return 0 upon success, non-zero upon failure
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
+
+int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height);
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
