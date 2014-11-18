@@ -10,10 +10,6 @@ void *test_init(unsigned short mode, unsigned short delay)
 	{
 		return NULL;
 	}
-	if ((video_mem = vg_init(mode)) == NULL)
-	{
-		return NULL;
-	}
 
 	vbe_mode_info_t vbe_mode_info;
 	if (vbe_get_mode_info(mode, &vbe_mode_info)) // We are running this command again but this way we avoid having to pass a vbe_mode_info_t struct by reference to vg_init, which sometimes may not be needed
