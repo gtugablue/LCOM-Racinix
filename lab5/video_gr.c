@@ -83,7 +83,7 @@ int vg_fill(unsigned long color)
 	return 0;
 }
 
-int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
+inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	if(x <= h_res && y <= v_res)
 	{
 		*(video_mem + x + y * h_res) = (char)color;
@@ -92,7 +92,7 @@ int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	return 1;
 }
 
-long vg_get_pixel(unsigned long x, unsigned long y) {
+inline long vg_get_pixel(unsigned long x, unsigned long y) {
 	if (x <= h_res && y <= v_res)
 	{
 		return *(video_mem + x + y * h_res);
@@ -195,6 +195,18 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 	}
 
 	return 0;
+}
+
+int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height)
+{
+	size_t i, j;
+	for (i = 0; i < width; ++i)
+	{
+		for (j = 0; j < height; ++j)
+		{
+			vg_set_pixel(x + i, y + j, pixmap[i + width * j]);
+		}
+	}
 }
 
 int vg_exit() {
