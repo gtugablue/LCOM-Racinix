@@ -14,7 +14,6 @@
 #include "timer.h"
 #include "track.h"
 
-
 #define FPS				29.97
 #define INTERP_PERIOD	0.07f
 
@@ -23,7 +22,7 @@ int racinix_exit();
 int racinix_start_race();
 int orientation(vector2D_t p, vector2D_t q, vector2D_t r);
 int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[]);
-bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2 );
+bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
 void swapPoints(vector2D_t *a, int i, int j);
 int partition(vector2D_t *a, int left, int right, int pivot);
 void quickSort(vector2D_t *a, int left, int right);

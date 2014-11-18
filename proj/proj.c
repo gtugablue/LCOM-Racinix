@@ -1,10 +1,5 @@
 #include "proj.h"
 
-static int proc_args(int argc, char *argv[]);
-static unsigned long parse_ulong(char *str, int base);
-static long parse_long(char *str, int base);
-static void print_usage(char *argv[]);
-
 #define WAIT_TIME_S 1
 
 #define BIT(n) (0x01<<(n))
@@ -25,10 +20,9 @@ int main(int argc, char **argv) {
 	vector2D_t spline[(unsigned)ceil(20 * (1.0 / TRACK_INTERP_PERIOD))];
 	bool *track = track_generate(vmi.XResolution, vmi.YResolution, rand(), spline, &spline_size);
 
-	vector2D_t position;
-	position.x = 200;
-	position.y = 100;
-	vehicle_t *vehicle = vehicle_create(20, 40, &position, 0);
+	vehicle_keys_t vehicle_keys;
+	vehicle_t *vehicle1 = vehicle_create(20, 40, &spline[0], atan2(spline[1].y - spline[0].y, spline[1].x - spline[0].x));
+	vehicle_t *vehicle2 = vehicle_create(20, 40, &spline[5], atan2(spline[6].y - spline[5].y, spline[6].x - spline[5].x));
 
 	if (keyboard_subscribe_int() == -1)
 	{
@@ -62,28 +56,63 @@ int main(int argc, char **argv) {
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if (counter >= TIMER_DEFAULT_FREQ / FPS)
 					{
-						vg_fill(0x02);
+						vg_fill(0x2);
+						size_t l;
 						track_draw(track, vmi.XResolution, vmi.YResolution);
-
-						vector2D_t wheels[VEHICLE_NUM_WHEELS];
-						vector2D_t back_axle, front_axle;
-						vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
-						vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
+						// Vehicle 1
 						double drag = 0.5;
 						size_t i;
 						for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 						{
-							if (!(*(track + (int)wheels[i].x + (int)wheels[i].y * vmi.XResolution)))
+							if (!(*(track + (int)vehicle1->wheels[i].x + (int)vehicle1->wheels[i].y * vmi.XResolution)))
 							{
 								drag += 0.5;
 							}
 						}
-						vehicle_tick(vehicle, (double)counter / TIMER_DEFAULT_FREQ, drag);
-						for (i = 1; i < 10; ++i)
+						vehicle_keys.accelerate = kbd_keys[KEY_W].pressed;
+						vehicle_keys.brake = kbd_keys[KEY_S].pressed;
+						vehicle_keys.turn_left = kbd_keys[KEY_A].pressed;
+						vehicle_keys.turn_right = kbd_keys[KEY_D].pressed;
+						vehicle_tick(vehicle1, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys, vmi.XResolution, vmi.YResolution);
+						for (i = 1; i < 5; ++i)
 						{
-							vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle->speed, vmi.YResolution - i, 0x0);
+							vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle1->speed, vmi.YResolution - i, 0x0);
+						}
+
+						// Vehicle 2
+						drag = 0.5;
+						for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+						{
+							if (!(*(track + (int)vehicle2->wheels[i].x + (int)vehicle2->wheels[i].y * vmi.XResolution)))
+							{
+								drag += 0.5;
+							}
+						}
+						vehicle_keys.accelerate = kbd_keys[KEY_ARR_UP].pressed;
+						vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
+						vehicle_keys.turn_left = kbd_keys[KEY_ARR_LEFT].pressed;
+						vehicle_keys.turn_right = kbd_keys[KEY_ARR_RIGHT].pressed;
+						vehicle_tick(vehicle2, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys, vmi.XResolution, vmi.YResolution);
+						for (i = 5; i < 10; ++i)
+						{
+							vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle2->speed, vmi.YResolution - i, 0x0);
 						}
 						counter = 0;
+
+						if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
+						{
+							vg_draw_circle(10, 10, 5, 0x0);
+							vehicle_vehicle_collision_handler(vehicle1, vehicle2);
+						}
+						else
+						{
+							vg_draw_circle(10, 10, 5, 0x11);
+						}
+						if (vehicle_check_vehicle_collision(vehicle2, vehicle1))
+						{
+							vg_draw_circle(10, 10, 5, 0x0);
+							vehicle_vehicle_collision_handler(vehicle2, vehicle1);
+						}
 					}
 					++counter;
 				}

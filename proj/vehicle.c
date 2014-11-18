@@ -1,4 +1,5 @@
 #include "vehicle.h"
+
 #define PI 					3.14159265358979323846
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading)
@@ -13,78 +14,40 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	vehicle->position = *position;
 	vehicle->speed = 0.0;
 	vehicle->heading = heading;
-	vehicle->steering;
+	vehicle->steering = 0.0;
+	vehicle_calculate_axle_position(vehicle);
+	vehicle_calculate_wheel_position(vehicle);
 	return vehicle;
 }
 
-void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag)
+void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys, unsigned width, unsigned height)
 {
-	vehicle_update_steering(vehicle, delta_time);
-	vector2D_t old_position = vehicle->position;
+	vehicle_update_steering(vehicle, delta_time, vehicle_keys);
 
-	// Calculate axle positions
-	vector2D_t back_axle, front_axle;
-	vehicle_calculate_axle_position(vehicle, &back_axle, &front_axle);
-	vector2D_t wheels[VEHICLE_NUM_WHEELS];
-	vehicle_calculate_wheel_position(vehicle, &back_axle, &front_axle, wheels);
+	vehicle_calculate_axle_position(vehicle);
 
-	size_t i;
-	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-	{
-		vg_draw_circle(wheels[i].x, wheels[i].y, 2, 0x0);
-	}
-	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-	{
-		vg_draw_line(wheels[i % VEHICLE_NUM_WHEELS].x, wheels[i % VEHICLE_NUM_WHEELS].y, wheels[(i + 1) % VEHICLE_NUM_WHEELS].x, wheels[(i + 1) % VEHICLE_NUM_WHEELS].y, 0x4);
-	}
-	for (i = 0; i < VEHICLE_NUM_WHEELS / 2; ++i)
-	{
-		vg_draw_line(wheels[i % VEHICLE_NUM_WHEELS].x, wheels[i % VEHICLE_NUM_WHEELS].y, wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
-	}
+	vehicle_update_axles(vehicle, delta_time);
 
-	// Move axles
-	back_axle = vectorAdd(
-			back_axle,
-			vectorMultiply(
-					vectorCreate(
-							cos(vehicle->heading),
-							sin(vehicle->heading)
-					),
-					vehicle->speed * delta_time
-			)
-	);
-	front_axle = vectorAdd(
-			front_axle,
-			vectorMultiply(
-					vectorCreate(
-							cos(vehicle->heading + vehicle->steering),
-							sin(vehicle->heading + vehicle->steering)
-					),
-					vehicle->speed * delta_time
-			)
-	);
+	vehicle_update_position(vehicle);
 
-	// Move vehicle
-	vehicle->position = vectorDivide(
-			vectorAdd(
-					back_axle,
-					front_axle
-			),
-			2
-	);
+	vehicle_update_heading(vehicle);
 
-	vehicle->heading = atan2(front_axle.y - back_axle.y, front_axle.x - back_axle.x);
+	vehicle_update_speed(vehicle, delta_time, drag, vehicle_keys);
 
-	vehicle_update_speed(vehicle, delta_time, drag);
+	vehicle_calculate_wheel_position(vehicle);
+
+	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, width, height), width, height);
+
+	vehicle_draw(vehicle);
 }
 
-void vehicle_update_steering(vehicle_t *vehicle, double delta_time)
+void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys)
 {
-	if ((kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed) && !(kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed))
+	if (vehicle_keys.turn_left && !vehicle_keys.turn_right)
 	{
 		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
 	}
-	else if ((kbd_keys[KEY_ARR_RIGHT].pressed || kbd_keys[KEY_D].pressed) && !(kbd_keys[KEY_ARR_LEFT].pressed || kbd_keys[KEY_A].pressed))
+	else if (vehicle_keys.turn_right && !vehicle_keys.turn_left)
 	{
 		vehicle->steering += (VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
 	}
@@ -102,9 +65,9 @@ void vehicle_update_steering(vehicle_t *vehicle, double delta_time)
 	}
 }
 
-void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag)
+void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys)
 {
-	if (kbd_keys[KEY_ARR_DOWN].pressed || kbd_keys[KEY_S].pressed)
+	if (vehicle_keys.brake)
 	{
 		if (vehicle->speed > 0)
 		{
@@ -115,7 +78,7 @@ void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag)
 			vehicle->speed -= VEHICLE_REVERSE * delta_time;
 		}
 	}
-	else if (kbd_keys[KEY_ARR_UP].pressed || kbd_keys[KEY_W].pressed)
+	else if (vehicle_keys.accelerate)
 	{
 		vehicle->speed += VEHICLE_ACCELERATE * delta_time;
 	}
@@ -138,9 +101,50 @@ void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag)
 	}
 }
 
-void vehicle_calculate_axle_position(vehicle_t *vehicle, vector2D_t *back_axle, vector2D_t *front_axle)
+void vehicle_update_axles(vehicle_t *vehicle, double delta_time)
 {
-	*back_axle = vectorSubtract(
+	vehicle->back_axle = vectorAdd(
+			vehicle->back_axle,
+			vectorMultiply(
+					vectorCreate(
+							cos(vehicle->heading),
+							sin(vehicle->heading)
+					),
+					vehicle->speed * delta_time
+			)
+	);
+	vehicle->front_axle = vectorAdd(
+			vehicle->front_axle,
+			vectorMultiply(
+					vectorCreate(
+							cos(vehicle->heading + vehicle->steering),
+							sin(vehicle->heading + vehicle->steering)
+					),
+					vehicle->speed * delta_time
+			)
+	);
+}
+
+void vehicle_update_position(vehicle_t *vehicle)
+{
+	vehicle->oldPosition = vehicle->position;
+	vehicle->position = vectorDivide(
+			vectorAdd(
+					vehicle->back_axle,
+					vehicle->front_axle
+			),
+			2
+	);
+}
+
+void vehicle_update_heading(vehicle_t *vehicle)
+{
+	vehicle->heading = atan2(vehicle->front_axle.y - vehicle->back_axle.y, vehicle->front_axle.x - vehicle->back_axle.x);
+}
+
+void vehicle_calculate_axle_position(vehicle_t *vehicle)
+{
+	vehicle->back_axle = vectorSubtract(
 			vehicle->position,
 			vectorMultiply(
 					vectorCreate(
@@ -150,7 +154,7 @@ void vehicle_calculate_axle_position(vehicle_t *vehicle, vector2D_t *back_axle, 
 					vehicle->length / 2
 			)
 	);
-	*front_axle = vectorAdd(
+	vehicle->front_axle = vectorAdd(
 			vehicle->position,
 			vectorMultiply(
 					vectorCreate(
@@ -162,10 +166,10 @@ void vehicle_calculate_axle_position(vehicle_t *vehicle, vector2D_t *back_axle, 
 	);
 }
 
-void vehicle_calculate_wheel_position(vehicle_t *vehicle, vector2D_t *back_axle, vector2D_t *front_axle, vector2D_t wheels[])
+void vehicle_calculate_wheel_position(vehicle_t *vehicle)
 {
-	wheels[0] = vectorSubtract(
-			*back_axle,
+	vehicle->wheels[0] = vectorSubtract(
+			vehicle->back_axle,
 			vectorMultiply(
 					vectorCreate(
 							cos(vehicle->heading + PI / 2),
@@ -174,8 +178,8 @@ void vehicle_calculate_wheel_position(vehicle_t *vehicle, vector2D_t *back_axle,
 					vehicle->width / 2
 			)
 	);
-	wheels[1] = vectorSubtract(
-			*back_axle,
+	vehicle->wheels[1] = vectorSubtract(
+			vehicle->back_axle,
 			vectorMultiply(
 					vectorCreate(
 							cos(vehicle->heading - PI / 2),
@@ -184,8 +188,8 @@ void vehicle_calculate_wheel_position(vehicle_t *vehicle, vector2D_t *back_axle,
 					vehicle->width / 2
 			)
 	);
-	wheels[2] = vectorAdd(
-			*front_axle,
+	vehicle->wheels[2] = vectorAdd(
+			vehicle->front_axle,
 			vectorMultiply(
 					vectorCreate(
 							cos(vehicle->heading + PI / 2),
@@ -194,8 +198,8 @@ void vehicle_calculate_wheel_position(vehicle_t *vehicle, vector2D_t *back_axle,
 					vehicle->width / 2
 			)
 	);
-	wheels[3] = vectorAdd(
-			*front_axle,
+	vehicle->wheels[3] = vectorAdd(
+			vehicle->front_axle,
 			vectorMultiply(
 					vectorCreate(
 							cos(vehicle->heading - PI / 2),
@@ -204,6 +208,114 @@ void vehicle_calculate_wheel_position(vehicle_t *vehicle, vector2D_t *back_axle,
 					vehicle->width / 2
 			)
 	);
+}
+
+int vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height)
+{
+	size_t i;
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+	{
+		if (vehicle->wheels[i].x < 0)
+		{
+			return VEHICLE_LEFT_COLLISION;
+		}
+		else if (vehicle->wheels[i].x >= width)
+		{
+			return VEHICLE_RIGHT_COLLISION;
+		}
+		else if (vehicle->wheels[i].y < 0)
+		{
+			return VEHICLE_TOP_COLLISION;
+		}
+		else if (vehicle->wheels[i].y >= height)
+		{
+			return VEHICLE_BOTTOM_COLLISION;
+		}
+	}
+	return VEHICLE_NO_COLLISION;
+}
+
+bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
+{
+	if (vectorDistance(vehicle->position, vehicle2->position) < MIN(vehicle->length, vehicle->width) / 2 + MIN(vehicle2->length, vehicle2->width) / 2)
+	{
+		return true; // Inside smaller bounding box
+	}
+	if (vectorDistance(vehicle->position, vehicle2->position) > MAX(vehicle->length, vehicle->width) / 2 + MAX(vehicle2->length, vehicle2->width) / 2)
+	{
+		return false; // Outside larger bounding box
+	}
+
+	// Outside smaller bounding box but inside larger bounding box
+	size_t i;
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+	{
+		if (isPointInPolygon(vehicle2->wheels, VEHICLE_NUM_WHEELS, &vehicle->wheels[i]))
+		{
+			return true; // Wheel inside the other vehicle
+		}
+	}
+}
+
+void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2)
+{
+	// TODO
+	vehicle->speed = 0.0;
+	vehicle->position = vehicle->oldPosition;
+	vehicle2->speed = 0.0;
+	vehicle2->position = vehicle2->oldPosition;
+}
+
+void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, int collision, unsigned width, unsigned height)
+{
+	switch(collision)
+	{
+	case VEHICLE_LEFT_COLLISION:
+	{
+		vehicle->heading -= (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		//vehicle->position.x = oldPosition.x + VEHICLE_COLLISION_POS_FIX;
+		vehicle->position.x -= MIN(MIN(vehicle->wheels[0].x, vehicle->wheels[1].x), MIN(vehicle->wheels[2].x, vehicle->wheels[3].x));
+		break;
+	}
+	case VEHICLE_RIGHT_COLLISION:
+	{
+		vehicle->heading += (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		//vehicle->position.x = oldPosition.x - VEHICLE_COLLISION_POS_FIX;
+		vehicle->position.x -= MAX(MAX(vehicle->wheels[0].x, vehicle->wheels[1].x), MAX(vehicle->wheels[2].x, vehicle->wheels[3].x)) - width;
+		break;
+	}
+	case VEHICLE_TOP_COLLISION:
+	{
+		vehicle->heading += (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		//vehicle->position.y = oldPosition.y + VEHICLE_COLLISION_POS_FIX;
+		vehicle->position.y -= MIN(MIN(vehicle->wheels[0].y, vehicle->wheels[1].y), MIN(vehicle->wheels[2].y, vehicle->wheels[3].y));
+		break;
+	}
+	case VEHICLE_BOTTOM_COLLISION:
+	{
+		vehicle->heading -= (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		//vehicle->position.y = oldPosition.y - VEHICLE_COLLISION_POS_FIX;
+		vehicle->position.y -= MAX(MAX(vehicle->wheels[0].y, vehicle->wheels[1].y), MAX(vehicle->wheels[2].y, vehicle->wheels[3].y)) - height;
+		break;
+	}
+	}
+}
+
+void vehicle_draw(vehicle_t *vehicle)
+{
+	size_t i;
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+	{
+		vg_draw_circle(vehicle->wheels[i].x, vehicle->wheels[i].y, 2, 0x0);
+	}
+	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+	{
+		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 1) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 1) % VEHICLE_NUM_WHEELS].y, 0x4);
+	}
+	for (i = 0; i < VEHICLE_NUM_WHEELS / 2; ++i)
+	{
+		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
+	}
 }
 
 void vehicle_delete(vehicle_t *vehicle)
