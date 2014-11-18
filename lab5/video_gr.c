@@ -12,7 +12,7 @@
 
 /* Private global variables */
 
-static void *video_mem;		/* Process address to which VRAM is mapped */
+static char *video_mem;		/* Process address to which VRAM is mapped */
 
 static unsigned h_res;		/* Horizontal screen resolution in pixels */
 static unsigned v_res;		/* Vertical screen resolution in pixels */
