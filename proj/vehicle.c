@@ -210,29 +210,31 @@ void vehicle_calculate_wheel_position(vehicle_t *vehicle)
 	);
 }
 
-int vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height)
+vehicle_limits_collision_t vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height)
 {
+	vehicle_limits_collision_t vehicle_limits_collision;
+	vehicle_limits_collision.all = 0;
 	size_t i;
 	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 	{
 		if (vehicle->wheels[i].x < 0)
 		{
-			return VEHICLE_LEFT_COLLISION;
+			vehicle_limits_collision.left = true;
 		}
 		else if (vehicle->wheels[i].x >= width)
 		{
-			return VEHICLE_RIGHT_COLLISION;
+			vehicle_limits_collision.right = true;
 		}
-		else if (vehicle->wheels[i].y < 0)
+		if (vehicle->wheels[i].y < 0)
 		{
-			return VEHICLE_TOP_COLLISION;
+			vehicle_limits_collision.top = true;
 		}
 		else if (vehicle->wheels[i].y >= height)
 		{
-			return VEHICLE_BOTTOM_COLLISION;
+			vehicle_limits_collision.bottom = true;
 		}
 	}
-	return VEHICLE_NO_COLLISION;
+	return vehicle_limits_collision;
 }
 
 bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
@@ -266,38 +268,39 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2)
 	vehicle2->position = vehicle2->oldPosition;
 }
 
-void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, int collision, unsigned width, unsigned height)
+void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, vehicle_limits_collision_t vehicle_limits_collision, unsigned width, unsigned height)
 {
-	switch(collision)
-	{
-	case VEHICLE_LEFT_COLLISION:
+	if (vehicle_limits_collision.left)
 	{
 		vehicle->heading -= (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
-		//vehicle->position.x = oldPosition.x + VEHICLE_COLLISION_POS_FIX;
+		vehicle_calculate_axle_position(vehicle);
+		vehicle_update_position(vehicle);
+		vehicle_calculate_wheel_position(vehicle);
 		vehicle->position.x -= MIN(MIN(vehicle->wheels[0].x, vehicle->wheels[1].x), MIN(vehicle->wheels[2].x, vehicle->wheels[3].x));
-		break;
 	}
-	case VEHICLE_RIGHT_COLLISION:
+	if (vehicle_limits_collision.right)
 	{
 		vehicle->heading += (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
-		//vehicle->position.x = oldPosition.x - VEHICLE_COLLISION_POS_FIX;
+		vehicle_calculate_axle_position(vehicle);
+		vehicle_update_position(vehicle);
+		vehicle_calculate_wheel_position(vehicle);
 		vehicle->position.x -= MAX(MAX(vehicle->wheels[0].x, vehicle->wheels[1].x), MAX(vehicle->wheels[2].x, vehicle->wheels[3].x)) - width;
-		break;
 	}
-	case VEHICLE_TOP_COLLISION:
+	if (vehicle_limits_collision.top)
 	{
 		vehicle->heading += (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
-		//vehicle->position.y = oldPosition.y + VEHICLE_COLLISION_POS_FIX;
+		vehicle_calculate_axle_position(vehicle);
+		vehicle_update_position(vehicle);
+		vehicle_calculate_wheel_position(vehicle);
 		vehicle->position.y -= MIN(MIN(vehicle->wheels[0].y, vehicle->wheels[1].y), MIN(vehicle->wheels[2].y, vehicle->wheels[3].y));
-		break;
 	}
-	case VEHICLE_BOTTOM_COLLISION:
+	if (vehicle_limits_collision.bottom)
 	{
 		vehicle->heading -= (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
-		//vehicle->position.y = oldPosition.y - VEHICLE_COLLISION_POS_FIX;
+		vehicle_calculate_axle_position(vehicle);
+		vehicle_update_position(vehicle);
+		vehicle_calculate_wheel_position(vehicle);
 		vehicle->position.y -= MAX(MAX(vehicle->wheels[0].y, vehicle->wheels[1].y), MAX(vehicle->wheels[2].y, vehicle->wheels[3].y)) - height;
-		break;
-	}
 	}
 }
 

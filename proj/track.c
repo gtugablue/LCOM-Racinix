@@ -240,3 +240,15 @@ static unsigned long track_generate_random(unsigned long seed)
 {
 	return ((seed * 1103515245 + 12345)/65536) % 32768;
 }
+
+double track_get_point_drag(bool *track, int x, int y, unsigned width, unsigned height)
+{
+	if (x >= 0 && x < width & y >= 0 && y < height)
+	{
+		if (track[x + y * width])
+		{
+			return 0;
+		}
+	}
+	return 0.5;
+}
