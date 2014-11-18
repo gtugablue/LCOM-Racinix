@@ -10,44 +10,53 @@ static void pushApart(vector2D_t hull[], unsigned hull_size);
 static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
 static unsigned long track_generate_random(unsigned long seed);
 
-bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector2D_t spline[], unsigned *spline_size)
+track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 {
-	bool *track = malloc(width * height * sizeof(bool));
+	track_t *track;
+	if ((track = malloc(sizeof(track_t))) == NULL)
+	{
+		return NULL;
+	}
+
+	if ((track->track_points = malloc(width * height * sizeof(bool))) == NULL)
+	{
+		return NULL;
+	}
 	unsigned pointCount = rand() % 11 + 10; //we'll have a total of 10 to 20 points
 	vector2D_t random_points[pointCount];
 	size_t i;
 
 	for(i = 0; i < pointCount; ++i)
 	{
-		random_points[i].x = rand() % (int)(0.8 * width) + 0.1 * width;
-		random_points[i].y = rand() % (int)(0.8 * height) + 0.1 * height;
+		random_points[i].x = rand() % (int)(0.7 * width) + 0.15 * width;
+		random_points[i].y = rand() % (int)(0.7 * height) + 0.15 * height;
 	}
 
 	vector2D_t hull[pointCount];
-	size_t hull_size = convexHull(random_points, pointCount, hull) - 1;
+	track->num_control_points = convexHull(random_points, pointCount, hull) - 1;
 
-	pushApart(hull, hull_size);
-	pushApart(hull, hull_size);
-	pushApart(hull, hull_size);
-
-	*spline_size = 0;
+	pushApart(hull, track->num_control_points);
+	pushApart(hull, track->num_control_points);
+	pushApart(hull, track->num_control_points);
+	track->spline_size = 0;
 	double t;
-	for(i = 0; i < hull_size; ++i)
+	track->spline = malloc((unsigned)ceil(20 * (1.0 / TRACK_INTERP_PERIOD)) * sizeof(vector2D_t));
+	for(i = 0; i < track->num_control_points; ++i)
 	{
 		//vg_draw_circle(hull[i].x, hull[i].y, 10, 0x33);
 		for(t = 0.0f; t <= 1.0f; t += TRACK_INTERP_PERIOD)
 		{
-			spline[*spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % hull_size], hull[(i + 2) % hull_size], hull[(i + 3) % hull_size], t);
-			++*spline_size;
+			track->spline[track->spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % track->num_control_points], hull[(i + 2) % track->num_control_points], hull[(i + 3) % track->num_control_points], t);
+			++track->spline_size;
 		}
 	}
 	double temp;
-	vector2D_t normal, outside_spline[*spline_size], inside_spline[*spline_size];
-	for (i = 0; i < *spline_size; ++i)
+	vector2D_t normal, outside_spline[track->spline_size], inside_spline[track->spline_size];
+	for (i = 0; i < track->spline_size; ++i)
 	{
 		// CALCULATE NORMAL
-		normal.x = spline[(i + 1) % *spline_size].x - spline[i].x;
-		normal.y = spline[(i + 1) % *spline_size].y - spline[i].y;
+		normal.x = track->spline[(i + 1) % track->spline_size].x - track->spline[i].x;
+		normal.y = track->spline[(i + 1) % track->spline_size].y - track->spline[i].y;
 
 		// NORMALIZE NORMAL
 		normal = vectorDivide(normal, vectorNorm(normal));
@@ -61,10 +70,10 @@ bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector
 		normal.y = temp;
 
 		// CALCULATE INSIDE SPLINE
-		inside_spline[i] = vectorAdd(spline[i], normal);
+		inside_spline[i] = vectorAdd(track->spline[i], normal);
 
 		// CALCULATE OUTSIDE SPLINE
-		outside_spline[i] = vectorSubtract(spline[i], normal);
+		outside_spline[i] = vectorSubtract(track->spline[i], normal);
 	}
 
 	/*for (i = 0; i < spline_size; ++i)
@@ -102,24 +111,24 @@ bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector
 	vector2D_t polygon[4];
 	vector2D_t point;
 	bool found;
-	for (i = 0; i < *spline_size; ++i)
+	for (i = 0; i < track->spline_size; ++i)
 	{
 		polygon[0] = inside_spline[i];
 		polygon[1] = outside_spline[i];
-		polygon[2] = outside_spline[(i + 1) % *spline_size];
-		polygon[3] = inside_spline[(i + 1) % *spline_size];
-		for (x = MAX(spline[i].x - 71, 0); x < MIN(spline[i].x + 71, width); ++x)
+		polygon[2] = outside_spline[(i + 1) % track->spline_size];
+		polygon[3] = inside_spline[(i + 1) % track->spline_size];
+		for (x = MAX(track->spline[i].x - 71, 0); x < MIN(track->spline[i].x + 71, width); ++x)
 		{
 			point.x = x;
 			found = false;
-			for (y = MAX(spline[i].y - 71, 0); y < MIN(spline[i].y + 71, height); y++)
+			for (y = MAX(track->spline[i].y - 71, 0); y < MIN(track->spline[i].y + 71, height); y++)
 			{
 				point.y = y;
-				if (!*(track + y * width + x))
+				if (!*(track->track_points + y * width + x))
 				{
 					if (isPointInPolygon(polygon, sizeof(polygon) / sizeof(vector2D_t), &point))
 					{
-						*(track + y * width + x) = true;
+						*(track->track_points + y * width + x) = true;
 					}
 				}
 			}
@@ -129,14 +138,14 @@ bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector
 	return track;
 }
 
-void track_draw(bool *track, unsigned width, unsigned height)
+void track_draw(track_t *track, unsigned width, unsigned height)
 {
 	size_t x, y;
 	for (x = 0; x < width; ++x)
 	{
 		for (y = 0; y < height; ++y)
 		{
-			if (*(track + x + y * width))
+			if (*(track->track_points + x + y * width))
 			{
 				vg_set_pixel(x, y, 0x0);
 			}
@@ -241,14 +250,19 @@ static unsigned long track_generate_random(unsigned long seed)
 	return ((seed * 1103515245 + 12345)/65536) % 32768;
 }
 
-double track_get_point_drag(bool *track, int x, int y, unsigned width, unsigned height)
+double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsigned height)
 {
 	if (x >= 0 && x < width & y >= 0 && y < height)
 	{
-		if (track[x + y * width])
+		if (track->track_points[x + y * width])
 		{
 			return 0;
 		}
 	}
 	return 0.5;
+}
+
+void track_delete(track_t *track)
+{
+	// TODO
 }
