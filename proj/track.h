@@ -15,4 +15,6 @@ bool *track_generate(unsigned width, unsigned height, unsigned long seed, vector
 
 void track_draw(bool *track, unsigned width, unsigned height);
 
+double track_get_point_drag(bool *track, int x, int y, unsigned width, unsigned height);
+
 #endif

@@ -16,7 +16,6 @@
 #define VEHICLE_NUM_WHEELS			4
 #define VEHICLE_MAX_STEER			1.0
 #define VEHICLE_COLLISION_FRICTION	200.0
-//#define VEHICLE_COLLISION_POS_FIX	0.2
 
 typedef struct
 {
@@ -52,6 +51,7 @@ typedef union
 		bool top : 1;
 		bool bottom : 1;
 	};
+	char all;
 } vehicle_limits_collision_t;
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading);
@@ -86,9 +86,9 @@ void vehicle_calculate_axle_position(vehicle_t *vehicle);
  */
 void vehicle_calculate_wheel_position(vehicle_t *vehicle);
 
-int vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height);
+vehicle_limits_collision_t vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height);
 
-void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, int collision, unsigned width, unsigned height);
+void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, vehicle_limits_collision_t vehicle_limits_collision, unsigned width, unsigned height);
 
 bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 

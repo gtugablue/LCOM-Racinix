@@ -62,12 +62,9 @@ int main(int argc, char **argv) {
 						// Vehicle 1
 						double drag = 0.5;
 						size_t i;
-						for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+					    for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 						{
-							if (!(*(track + (int)vehicle1->wheels[i].x + (int)vehicle1->wheels[i].y * vmi.XResolution)))
-							{
-								drag += 0.5;
-							}
+							drag += track_get_point_drag(track, (int)vehicle1->wheels[i].x, (int)vehicle1->wheels[i].y, vmi.XResolution, vmi.YResolution);
 						}
 						vehicle_keys.accelerate = kbd_keys[KEY_W].pressed;
 						vehicle_keys.brake = kbd_keys[KEY_S].pressed;
@@ -83,10 +80,7 @@ int main(int argc, char **argv) {
 						drag = 0.5;
 						for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 						{
-							if (!(*(track + (int)vehicle2->wheels[i].x + (int)vehicle2->wheels[i].y * vmi.XResolution)))
-							{
-								drag += 0.5;
-							}
+							drag += track_get_point_drag(track, (int)vehicle2->wheels[i].x, (int)vehicle2->wheels[i].y, vmi.XResolution, vmi.YResolution);
 						}
 						vehicle_keys.accelerate = kbd_keys[KEY_ARR_UP].pressed;
 						vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
@@ -101,16 +95,10 @@ int main(int argc, char **argv) {
 
 						if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
 						{
-							vg_draw_circle(10, 10, 5, 0x0);
 							vehicle_vehicle_collision_handler(vehicle1, vehicle2);
-						}
-						else
-						{
-							vg_draw_circle(10, 10, 5, 0x11);
 						}
 						if (vehicle_check_vehicle_collision(vehicle2, vehicle1))
 						{
-							vg_draw_circle(10, 10, 5, 0x0);
 							vehicle_vehicle_collision_handler(vehicle2, vehicle1);
 						}
 					}
