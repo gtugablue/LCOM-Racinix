@@ -83,16 +83,6 @@ int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned 
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
 
-/**
- * @brief Tests if a given point is inside a given polygon
- *
- * @param polygon array of points defining a polygon
- * @param polygon_size number of edges of the polygon
- * @param point point to be tested
- * @return true if point is inside the polygon, false otherwise
- */
-bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t* point);
-
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
  * 
