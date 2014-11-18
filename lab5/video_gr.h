@@ -42,7 +42,7 @@ int vg_fill(unsigned long color);
  * @param color color to set the pixel
  * @return 0 on success, non-zero otherwise
  */
-int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
+inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
 
 /**
  * @brief Returns the color of the input pixel
@@ -54,7 +54,7 @@ int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
  * @param y vertical coordinate, starts at 0 (top pixel)
  * @return color of the pixel at coordinates (x,y), or -1 if some input argument is not valid
  */
-long vg_get_pixel(unsigned long x, unsigned long y);
+inline long vg_get_pixel(unsigned long x, unsigned long y);
 
 /**
  * @brief Draw line segment with specified end points and color
@@ -83,6 +83,8 @@ int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigne
  * @return 0 upon success, non-zero upon failure
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
+
+int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height);
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)

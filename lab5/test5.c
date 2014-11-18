@@ -1,7 +1,10 @@
 #include "test5.h"
 #include <stdlib.h>
+#include "xpm.h"
 
-#define BIT(n) (0x01<<(n))
+#define TEST_MODE		VBE_MODE_GRAPHICS_1024_786_256
+
+#define BIT(n) 			(0x01<<(n))
 
 void *test_init(unsigned short mode, unsigned short delay)
 {
@@ -66,7 +69,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 	{
 		return 1;
 	}
-	if ((video_mem = vg_init(VBE_MODE_GRAPHICS_1024_786_256)) == NULL)
+	if ((video_mem = vg_init(TEST_MODE)) == NULL)
 	{
 		return 1;
 	}
@@ -121,7 +124,7 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 		return 1;
 	}
 	char *video_mem;
-	if ((video_mem = vg_init(VBE_MODE_GRAPHICS_1024_786_256)) == NULL)
+	if ((video_mem = vg_init(TEST_MODE)) == NULL)
 	{
 		return 1;
 	}
@@ -172,7 +175,62 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 
 int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 {
-	/* To be completed */
+	char *video_mem;
+	if ((video_mem = vg_init(TEST_MODE)) == NULL)
+	{
+		return 1;
+	}
+	vbe_mode_info_t vbe_mode_info;
+	if (vbe_get_mode_info(TEST_MODE, &vbe_mode_info)) // We are running this command again but this way we avoid having to pass a vbe_mode_info_t struct by reference to vg_init, which sometimes may not be needed
+	{
+		return 1;
+	}
+	int width, height;
+	char* pixmap = read_xpm(xpm, &width, &height, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
+	vg_draw_pixmap(xi, yi, pixmap, width, height);
+	size_t i;
+
+	if (keyboard_subscribe_int() == -1)
+	{
+		return 1;
+	}
+	int r, ipc_status, scan_result;
+	message msg;
+	bool pressed = false;
+	while (1)
+	{
+		/* Get a request message. */
+		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
+			// Driver receive fail
+			continue;
+		}
+		if (is_ipc_notify(ipc_status)) { /* received notification */
+			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
+			{
+				if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
+					if (keyboard_int_handler())
+					{
+						return 1;
+					}
+					if (kbd_keys[KEY_ESC].pressed)
+					{
+						pressed = true;
+						continue;
+					}
+					if (!kbd_keys[KEY_ESC].pressed && pressed)
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+	if (keyboard_unsubscribe_int())
+	{
+		return 1;
+	}
+
+	return vg_exit();
 }	
 
 int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short hor, short delta, unsigned short time)
