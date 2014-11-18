@@ -107,12 +107,11 @@ static void swap(unsigned long* a, unsigned long* b)
 	*b=t;
 }
 
-int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned long yf, unsigned long color)
+int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 {
 	// Bresenham's line algorithm
 
 	// TODO ALTERAR ESTE CÓDIGO!!! ARRANJAR UM ALGORITMO MEU!!
-	// TODO lidar com input negativo
 
 	unsigned long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
