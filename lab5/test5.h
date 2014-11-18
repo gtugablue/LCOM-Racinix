@@ -1,6 +1,11 @@
 #ifndef __TEST5_H
 #define __TEST5_H
 
+#include "video_gr.h"
+#include "vbe.h"
+#include "timer.h"
+#include "keyboard.h"
+
 /** @defgroup video_gr video_gr
  * @{
  *

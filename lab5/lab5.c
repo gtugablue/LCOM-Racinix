@@ -29,8 +29,8 @@ static void print_usage(char *argv[]) {
 			"\t service run %s -args \"init <mode> <delay>\" \n"
 			"\t service run %s -args \"square <x> <y> <size> <color>\" \n"
 			"\t service run %s -args \"line <xi> <yi> <xf> <yf> <color>\" \n"
-			"\t service run %s -args \"xpm <xi> <yi> <xpm[]>"
-			"\t service run %s -args \"move <xi> <yi> <xpm[]> <hor> <delta> <time>"
+			"\t service run %s -args \"xpm <xi> <yi> <xpm[]>\" \n"
+			"\t service run %s -args \"move <xi> <yi> <xpm[]> <hor> <delta> <time>\" \n"
 			"\t service run %s -args \"controller\" \n" ,
 			argv[0], argv[0], argv[0], argv[0], argv[0], argv[0]);
 }
@@ -47,7 +47,7 @@ static int proc_args(int argc, char *argv[]) {
 		  printf("video_gr: wrong no of arguments for test of test_init() \n");
 		  return 1;
 	  }
-	  if( (mode = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (mode = parse_ushort(argv[2], 16)) == SHRT_MAX )
 		  return 1;
 	  if( (delay = parse_ushort(argv[3], 10)) == SHRT_MAX )
 		  return 1;
@@ -66,7 +66,7 @@ static int proc_args(int argc, char *argv[]) {
 	  		  return 1;
 	  if( (size = parse_ushort(argv[4], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (color = parse_ushort(argv[5], 10)) == SHRT_MAX )
+	  if( (color = parse_ushort(argv[5], 16)) == SHRT_MAX )
 	  		  return 1;
 	  printf("video_gr:: test_square(%lu, %lu, %lu, %lu)\n",
 			  x, y, size, color);
@@ -84,7 +84,7 @@ static int proc_args(int argc, char *argv[]) {
 	  		  return 1;
 	  if( (yf = parse_ushort(argv[2], 10)) == SHRT_MAX )
 	  		  return 1;
-	  if( (color = parse_ushort(argv[2], 10)) == SHRT_MAX )
+	  if( (color = parse_ushort(argv[2], 16)) == SHRT_MAX )
 		  return 1;
 	  printf("video_gr:: test_line(%lu, %lu, %lu, %lu, %lu)\n",
 			  xi, yi, xf, yf, color);
