@@ -25,6 +25,21 @@ int main(int argc, char **argv) {
 	vehicle_t *vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
 	vehicle_t *vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
 
+	/*unsigned mouse_hook_id = MOUSE_HOOK_BIT;
+	if (mouse_subscribe_int(&mouse_hook_id) == -1)
+	{
+		return 1;
+	}
+	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
+	{
+		//return 1;
+	}
+	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
+	{
+		//return 1;
+	}
+	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);*/
+
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
@@ -32,20 +47,6 @@ int main(int argc, char **argv) {
 
 	unsigned char timer_hook_bit;
 	if ((timer_hook_bit = timer_subscribe_int()) < 0)
-	{
-		return 1;
-	}
-
-	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
-	if (mouse_subscribe_int(&mouse_hook_id))
-	{
-		return 1;
-	}
-	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
-	{
-		return 1;
-	}
-	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
@@ -76,18 +77,15 @@ int main(int argc, char **argv) {
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
-					if (racinix_mouse_int_handler())
-					{
-						return 1;
-					}
+					racinix_mouse_int_handler();
 				}
 			}
 		}
 	}
 
 	keyboard_unsubscribe_int();
-	mouse_disable_stream_mode(MOUSE_NUM_TRIES);
-	mouse_unsubscribe_int(mouse_hook_id);
+	/*mouse_disable_stream_mode(MOUSE_NUM_TRIES);
+	mouse_unsubscribe_int(mouse_hook_id);*/
 	racinix_exit();
 
 	return 0;
@@ -178,6 +176,7 @@ int racinix_mouse_int_handler(unsigned width, unsigned height)
 	if (mouse_get_packet(&mouse_data_packet))
 	{
 		// TODO
+		printf("pintando...\n");
 		mouse_position = vectorAdd(mouse_position, vectorCreate(mouse_data_packet.x_delta, mouse_data_packet.y_delta));
 		vg_set_pixel(mouse_position.x, mouse_position.y, 0x11);
 		return 0;

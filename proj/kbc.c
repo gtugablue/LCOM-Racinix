@@ -35,7 +35,7 @@ int kbc_wait_for_in_buf(unsigned num_tries)
 		{
 			return 0;
 		}
-		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
+		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT * 2 / num_tries));
 	}
 	return 1;
 }
@@ -58,7 +58,7 @@ int kbc_wait_for_out_buf(unsigned num_tries)
 		{
 			return 0;
 		}
-		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT));
+		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT * 2 / num_tries));
 	}
 	return -1; // Error
 }

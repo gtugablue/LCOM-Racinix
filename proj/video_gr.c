@@ -3,8 +3,11 @@
 #include <machine/int86.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-
+#include "math.h"
 #include "vbe.h"
+#include "video_gr.h"
+
+#define PI	3.141592653589793238463
 
 #define BIT(n) (0x01<<(n))
 
@@ -86,6 +89,7 @@ int vg_fill(unsigned long color)
 inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	if(x <= h_res && y <= v_res)
 	{
+		if (color != VIDEO_GR_TRANSPARENT)
 		*(video_mem + x + y * h_res) = (char)color;
 		return 0;
 	}
@@ -196,29 +200,58 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 	return 0;
 }
 
-int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height)
+int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height)
 {
 	size_t i, j;
 	for (i = 0; i < width; ++i)
 	{
 		for (j = 0; j < height; ++j)
 		{
-			vg_set_pixel(x + i, y + j, pixmap[i + width * j]);
+			vg_set_pixel(x + i, y + j, *(pixmap + i + j * width));
 		}
 	}
 }
 
+char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle)
+{
+	double angle_cos = cos(angle);
+	double angle_sin = sin(angle);
+	double transform_x, transform_y;
+	int old_x, old_y;
+	unsigned short old_width = *width;
+	unsigned short old_height = *height;
+	*width = *height = sqrt(old_width * old_width + old_height * old_height);
+	char *new_pixmap = malloc(*width * *height * sizeof(char));
+	memset(new_pixmap, VIDEO_GR_TRANSPARENT, *width * *height * sizeof(char));
+	int x, y;
+	for (x = 0; x < *width; ++x)
+	{
+		for (y = 0; y < *height; ++y)
+		{
+			transform_x = (double)(x - *width / 2);
+			transform_y = (double)(y - *height / 2);
+			old_x = ((int)(transform_x * angle_cos + transform_y * angle_sin)) + old_width / 2;
+			old_y = ((int)(transform_y * angle_cos - transform_x * angle_sin)) + old_height / 2;
+			if (old_x >= 0 && old_x < old_width && old_y >= 0 && old_y < old_height)
+			{
+				*(new_pixmap + x + y * *width) = *(pixmap + old_x + old_y * old_width);
+			}
+		}
+	}
+	return new_pixmap;
+}
+
 int vg_exit() {
-  struct reg86u reg86;
+	struct reg86u reg86;
 
-  reg86.u.b.intno = 0x10; /* BIOS video services */
+	reg86.u.b.intno = 0x10; /* BIOS video services */
 
-  reg86.u.b.ah = 0x00;    /* Set Video Mode function */
-  reg86.u.b.al = 0x03;    /* 80x25 text mode*/
+	reg86.u.b.ah = 0x00;    /* Set Video Mode function */
+	reg86.u.b.al = 0x03;    /* 80x25 text mode*/
 
-  if( sys_int86(&reg86) != OK ) {
-      printf("\tvg_exit(): sys_int86() failed \n");
-      return 1;
-  } else
-      return 0;
+	if( sys_int86(&reg86) != OK ) {
+		printf("\tvg_exit(): sys_int86() failed \n");
+		return 1;
+	} else
+		return 0;
 }

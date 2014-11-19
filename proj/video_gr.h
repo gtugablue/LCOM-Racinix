@@ -1,6 +1,8 @@
 #ifndef __VIDEO_GR_H
 #define __VIDEO_GR_H
 
+#define VIDEO_GR_TRANSPARENT		0x00
+
 #include <stdbool.h>
 
 /** @defgroup video_gr video_gr
@@ -69,7 +71,7 @@ inline long vg_get_pixel(unsigned long x, unsigned long y);
  * @param color color of the line segment to draw
  * @return 0 upon success, non-zero upon failure
  */
-int vg_draw_line(unsigned long xi, unsigned long yi, unsigned long xf, unsigned long yf, unsigned long color);
+int vg_draw_line(long xi, long yi, long xf, long yf, long color);
 
 int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigned long color);
 
@@ -84,7 +86,9 @@ int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigne
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
 
-int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height);
+int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
+
+char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle);
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
