@@ -84,7 +84,18 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[]);
  */
 int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short hor, short delta, unsigned short time);
 
+/**
+ * @brief Tests retrieving VBE controller information  (VBE function 0x0)
+ *
+ * Tests retrieving VBE controller information (VBE function 0x0) and its parsing.
+ * Upon its invocation it should provide at least the following information:
+ * 	- Capabilities
+ * 	- List of mode numbers supported
+ * 	- Total memory
+ *
+ * @return 0 upon success, non-zero upon failure
+ */
 int test_controller();
- /** @} end of video_gr */
- 
+/** @} end of video_gr */
+
 #endif /* __TEST5_H */

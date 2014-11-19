@@ -21,6 +21,8 @@ static unsigned h_res;		/* Horizontal screen resolution in pixels */
 static unsigned v_res;		/* Vertical screen resolution in pixels */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
+static char *double_buffer;
+
 void *vg_init(unsigned short mode)
 {
 	struct reg86u reg86;
@@ -242,6 +244,7 @@ char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *heig
 }
 
 int vg_exit() {
+	free(double_buffer);
 	struct reg86u reg86;
 
 	reg86.u.b.intno = 0x10; /* BIOS video services */

@@ -176,6 +176,8 @@ int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
 
 int vbe_get_info_block(vbe_info_block_t *vib_p);
 
+void *vbe_farptr(uint32_t farptr);
+
  /** @} end of vbe */
 
 #endif /* __VBE_H */
