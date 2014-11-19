@@ -16,6 +16,8 @@ typedef struct
 	unsigned width;
 	unsigned height;
 	vector2D_t* spline;
+	vector2D_t* inside_spline;
+	vector2D_t* outside_spline;
 	unsigned spline_size;
 	vector2D_t* control_points;
 	unsigned num_control_points;

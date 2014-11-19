@@ -4,6 +4,7 @@
 #define VIDEO_GR_TRANSPARENT		0x00
 
 #include <stdbool.h>
+#include "vector2D.h"
 
 /** @defgroup video_gr video_gr
  * @{
@@ -88,7 +89,9 @@ int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsig
 
 int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
 
-char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle);
+int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
+
+void vg_swap_buffer();
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
