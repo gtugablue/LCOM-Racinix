@@ -94,7 +94,7 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2);
 
-void vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height);
+int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height);
 
 void vehicle_delete(vehicle_t *vehicle);
 

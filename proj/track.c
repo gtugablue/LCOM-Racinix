@@ -51,7 +51,15 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		}
 	}
 	double temp;
-	vector2D_t normal, outside_spline[track->spline_size], inside_spline[track->spline_size];
+	vector2D_t normal;
+	if ((track->inside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
+	{
+		return NULL;
+	}
+	if ((track->outside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
+	{
+		return NULL;
+	}
 	for (i = 0; i < track->spline_size; ++i)
 	{
 		// CALCULATE NORMAL
@@ -70,10 +78,10 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		normal.y = temp;
 
 		// CALCULATE INSIDE SPLINE
-		inside_spline[i] = vectorAdd(track->spline[i], normal);
+		track->inside_spline[i] = vectorAdd(track->spline[i], normal);
 
 		// CALCULATE OUTSIDE SPLINE
-		outside_spline[i] = vectorSubtract(track->spline[i], normal);
+		track->outside_spline[i] = vectorSubtract(track->spline[i], normal);
 	}
 
 	/*for (i = 0; i < spline_size; ++i)
@@ -113,14 +121,17 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 	bool found;
 	for (i = 0; i < track->spline_size; ++i)
 	{
-		polygon[0] = inside_spline[i];
-		polygon[1] = outside_spline[i];
-		polygon[2] = outside_spline[(i + 1) % track->spline_size];
-		polygon[3] = inside_spline[(i + 1) % track->spline_size];
+		polygon[0] = track->inside_spline[i];
+		polygon[1] = track->outside_spline[i];
+		polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
+		polygon[3] = track->inside_spline[(i + 1) % track->spline_size];
+
+		// TODO CHANGE THESE CONSTS
 		for (x = MAX(track->spline[i].x - 71, 0); x < MIN(track->spline[i].x + 71, width); ++x)
 		{
 			point.x = x;
 			found = false;
+			// TODO CHANGE THESE CONSTS
 			for (y = MAX(track->spline[i].y - 71, 0); y < MIN(track->spline[i].y + 71, height); y++)
 			{
 				point.y = y;
@@ -151,6 +162,7 @@ void track_draw(track_t *track, unsigned width, unsigned height)
 			}
 		}
 	}
+	vg_draw_line(track->inside_spline[0].x, track->inside_spline[0].y, track->outside_spline[0].x, track->outside_spline[0].y, 0x4);
 }
 
 static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_t p2, vector2D_t p3, double t)
@@ -245,6 +257,7 @@ static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_
 	normal.x = calculateCatmullDerivativeCoordinate(P0.y, P1.y, P2.y, P3.y, t);
 	return normal;
 }
+
 static unsigned long track_generate_random(unsigned long seed)
 {
 	return ((seed * 1103515245 + 12345)/65536) % 32768;
