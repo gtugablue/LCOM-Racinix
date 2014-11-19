@@ -1,6 +1,8 @@
 #ifndef __VIDEO_GR_H
 #define __VIDEO_GR_H
 
+#define VIDEO_GR_TRANSPARENT		0x00
+
 #include <stdbool.h>
 
 /** @defgroup video_gr video_gr
