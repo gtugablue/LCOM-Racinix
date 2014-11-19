@@ -80,7 +80,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 		return 1;
 	}
 	vg_draw_square(x, y, size, color);
-
+	vg_swap_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
@@ -135,7 +135,7 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 		return 1;
 	}
 	vg_draw_line(xi, yi, xf, yf, color);
-
+	vg_swap_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
@@ -194,8 +194,7 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 	int width, height;
 	char* pixmap = read_xpm(xpm, &width, &height, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
 	vg_draw_pixmap(xi, yi, pixmap, width, height);
-	size_t i;
-
+	vg_swap_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;

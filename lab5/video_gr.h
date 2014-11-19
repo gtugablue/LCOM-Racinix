@@ -88,7 +88,7 @@ int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsig
 
 int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
 
-char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle);
+void vg_swap_buffer();
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)
