@@ -69,7 +69,10 @@ void *vg_init(unsigned short mode)
 
 				if(video_mem != MAP_FAILED)
 				{
-					return video_mem;
+					if ((double_buffer = malloc(h_res * v_res * bits_per_pixel / 8)) != NULL)
+					{
+						return video_mem;
+					}
 				}
 			}
 		}
@@ -80,7 +83,7 @@ void *vg_init(unsigned short mode)
 int vg_fill(unsigned long color)
 {
 	char *pixel;
-	for (pixel = video_mem; pixel < video_mem + h_res * v_res; ++pixel)
+	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res; ++pixel)
 	{
 		*pixel = color;
 	}
@@ -92,7 +95,7 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	if(x <= h_res && y <= v_res)
 	{
 		if (color != VIDEO_GR_TRANSPARENT)
-		*(video_mem + x + y * h_res) = (char)color;
+		*(double_buffer + x + y * h_res) = (char)color;
 		return 0;
 	}
 	return 1;
@@ -101,7 +104,7 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 inline long vg_get_pixel(unsigned long x, unsigned long y) {
 	if (x <= h_res && y <= v_res)
 	{
-		return *(video_mem + x + y * h_res);
+		return *(double_buffer + x + y * h_res);
 	}
 	return 0;
 }
@@ -214,33 +217,9 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 	}
 }
 
-char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle)
+void vg_swap_buffer()
 {
-	double angle_cos = cos(angle);
-	double angle_sin = sin(angle);
-	double transform_x, transform_y;
-	int old_x, old_y;
-	unsigned short old_width = *width;
-	unsigned short old_height = *height;
-	*width = *height = sqrt(old_width * old_width + old_height * old_height);
-	char *new_pixmap = malloc(*width * *height * sizeof(char));
-	memset(new_pixmap, VIDEO_GR_TRANSPARENT, *width * *height * sizeof(char));
-	int x, y;
-	for (x = 0; x < *width; ++x)
-	{
-		for (y = 0; y < *height; ++y)
-		{
-			transform_x = (double)(x - *width / 2);
-			transform_y = (double)(y - *height / 2);
-			old_x = ((int)(transform_x * angle_cos + transform_y * angle_sin)) + old_width / 2;
-			old_y = ((int)(transform_y * angle_cos - transform_x * angle_sin)) + old_height / 2;
-			if (old_x >= 0 && old_x < old_width && old_y >= 0 && old_y < old_height)
-			{
-				*(new_pixmap + x + y * *width) = *(pixmap + old_x + old_y * old_width);
-			}
-		}
-	}
-	return new_pixmap;
+	memcpy(video_mem, double_buffer, h_res * v_res * bits_per_pixel / 8);
 }
 
 int vg_exit() {
