@@ -1,6 +1,12 @@
 #include "test5.h"
 #include <stdlib.h>
 #include "xpm.h"
+#include <sys/types.h>
+#include <minix/syslib.h>
+#include <minix/drivers.h>
+#include <machine/int86.h>
+#include <sys/mman.h>
+#include "vbe.h"
 
 #define TEST_MODE		VBE_MODE_GRAPHICS_1024_786_256
 
@@ -248,12 +254,22 @@ int test_controller()
 	}
 	printf("Video modes:\n");
 
+	struct mem_range mr;
+	mr.mr_base = vbe_info_block.VideoModePtr;
+	mr.mr_limit = mr.mr_base + 100 * 8;
+
+	char result[100];
+	sys_physcopy(SYSTEM, PHYS_SEG, vbe_info_block.VideoModePtr, SELF, LOCAL_SEG, result, 100);
+
+	//sys_readbios(vbe_info_block.VideoModePtr, result, 100);
 	/*while(*(uint16_t *)vbe_info_block.VideoModePtr != VBE_VIDEO_MODE_PTR_TERMINATE)
 	{
 		printf("0x%X\n", *(uint16_t *)vbe_info_block.VideoModePtr);
 	}*/
-
-	printf("0x%X\n 0x%X", vbe_info_block.OemSoftwareRev);
-	printf("0x%X\n", *(uint16_t *)vbe_info_block.VideoModePtr);
+	size_t i;
+	for (i = 0; i < 10; ++i)
+	{
+		printf("0x%X\n", *(uint16_t *)result[i]);
+	}
 	return 0;
 }
