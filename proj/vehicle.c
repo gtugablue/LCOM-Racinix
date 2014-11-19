@@ -323,16 +323,13 @@ void vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
 	}
 
 	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(1), &xpm_width, &xpm_height, width, height);
-	printf("0x%X\n", xpm);
+	char *xpm = read_xpm(pixmap_get(0), &xpm_width, &xpm_height, width, height);
 	unsigned short xpm_width2 = xpm_width;
 	unsigned short xpm_height2 = xpm_height;
 	char *pixmap = vg_rotate_pixmap(xpm, &xpm_width2, &xpm_height2, vehicle->heading + PI / 2);
-	printf("2\n");
 	xpm_width = xpm_width2;
 	xpm_height = xpm_height2;
 	vg_draw_pixmap(vehicle->position.x - xpm_width / 2, vehicle->position.y - xpm_height / 2, pixmap, (unsigned short)xpm_width, (unsigned short)xpm_height);
-	printf("3\n");
 }
 
 void vehicle_delete(vehicle_t *vehicle)
