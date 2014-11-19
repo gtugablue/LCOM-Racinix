@@ -254,22 +254,11 @@ int test_controller()
 	}
 	printf("Video modes:\n");
 
-	struct mem_range mr;
-	mr.mr_base = vbe_info_block.VideoModePtr;
-	mr.mr_limit = mr.mr_base + 100 * 8;
-
-	char result[100];
-	sys_physcopy(SYSTEM, PHYS_SEG, vbe_info_block.VideoModePtr, SELF, LOCAL_SEG, result, 100);
-
-	//sys_readbios(vbe_info_block.VideoModePtr, result, 100);
-	/*while(*(uint16_t *)vbe_info_block.VideoModePtr != VBE_VIDEO_MODE_PTR_TERMINATE)
-	{
-		printf("0x%X\n", *(uint16_t *)vbe_info_block.VideoModePtr);
-	}*/
+	void *farptr = vbe_farptr(vbe_info_block.VideoModePtr);
 	size_t i;
-	for (i = 0; i < 10; ++i)
+	for (i = 0; *((uint16_t *)farptr + i) != VBE_VIDEO_MODE_PTR_TERMINATE; ++i)
 	{
-		printf("0x%X\n", *(uint16_t *)result[i]);
+		printf("0x%X\n", *((uint16_t *)farptr + i));
 	}
 	return 0;
 }
