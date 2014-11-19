@@ -147,7 +147,7 @@ void track_draw(track_t *track, unsigned width, unsigned height)
 		{
 			if (*(track->track_points + x + y * width))
 			{
-				vg_set_pixel(x, y, 0x0);
+				vg_set_pixel(x, y, 0xFF);
 			}
 		}
 	}

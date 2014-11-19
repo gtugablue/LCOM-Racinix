@@ -15,7 +15,7 @@
 #include "track.h"
 #include "mouse.h"
 
-#define FPS				29.97
+#define FPS				15
 #define INTERP_PERIOD	0.07f
 
 int racinix_start(vbe_mode_info_t *vmi);

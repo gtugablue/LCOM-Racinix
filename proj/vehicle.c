@@ -1,4 +1,6 @@
 #include "vehicle.h"
+#include "xpm.h"
+#include "pixmap.h"
 
 #define PI 					3.14159265358979323846
 
@@ -38,7 +40,7 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag, vehicle_ke
 
 	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, width, height), width, height);
 
-	vehicle_draw(vehicle);
+	vehicle_draw(vehicle, width, height);
 }
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys)
@@ -304,7 +306,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 }
 
-void vehicle_draw(vehicle_t *vehicle)
+void vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
 {
 	size_t i;
 	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
@@ -319,6 +321,18 @@ void vehicle_draw(vehicle_t *vehicle)
 	{
 		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
 	}
+
+	int xpm_width, xpm_height;
+	char *xpm = read_xpm(pixmap_get(1), &xpm_width, &xpm_height, width, height);
+	printf("0x%X\n", xpm);
+	unsigned short xpm_width2 = xpm_width;
+	unsigned short xpm_height2 = xpm_height;
+	char *pixmap = vg_rotate_pixmap(xpm, &xpm_width2, &xpm_height2, vehicle->heading + PI / 2);
+	printf("2\n");
+	xpm_width = xpm_width2;
+	xpm_height = xpm_height2;
+	vg_draw_pixmap(vehicle->position.x - xpm_width / 2, vehicle->position.y - xpm_height / 2, pixmap, (unsigned short)xpm_width, (unsigned short)xpm_height);
+	printf("3\n");
 }
 
 void vehicle_delete(vehicle_t *vehicle)
