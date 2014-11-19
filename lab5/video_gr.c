@@ -3,8 +3,11 @@
 #include <machine/int86.h>
 #include <sys/mman.h>
 #include <sys/types.h>
-
+#include "math.h"
 #include "vbe.h"
+#include "video_gr.h"
+
+#define PI	3.141592653589793238463
 
 #define BIT(n) (0x01<<(n))
 
@@ -196,16 +199,50 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 	return 0;
 }
 
-int vg_draw_pixmap(unsigned long x, unsigned long y, char pixmap[], unsigned short width, unsigned short height)
+int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height)
 {
 	size_t i, j;
 	for (i = 0; i < width; ++i)
 	{
 		for (j = 0; j < height; ++j)
 		{
-			vg_set_pixel(x + i, y + j, pixmap[i + width * j]);
+			vg_set_pixel(x + i, y + j, *(pixmap + i + j * width));
 		}
 	}
+}
+
+char* vg_rotate_pixmap(char* pixmap, unsigned short *width, unsigned short *height, double angle)
+{
+	// TODO
+	unsigned short old_width = *width;
+	unsigned short old_height = *height;
+	if (angle < PI / 2)
+	{
+		*width = abs(*width * cos(angle)) + abs(*height * sin(angle));
+		*height = abs(*width * sin(angle)) + abs(*height * cos(angle));
+	}
+	else
+	{
+		*width = *height;
+		*height = old_width;
+		double new_angle = angle - PI / 2;
+		*width = *width * cos(new_angle) + *height * sin(new_angle);
+		*height = *height * cos(new_angle) - *width * sin(new_angle);
+	}
+	char *new_pixmap = malloc(*width * *height * sizeof(char) * 100);
+	unsigned short x, y;
+	unsigned short j, i;
+	for (i = 0; i < *width; ++i)
+	{
+		for (j = 0; j < *height; ++j)
+		{
+			x = (unsigned short)(sin(angle) * j + cos(angle) * y);
+			y = (unsigned short)(cos(angle) * j - sin(angle) * x);
+			*(new_pixmap + i + j * *width) = *(pixmap + x + y * old_width);
+			printf("running... 0x%X\n", *(new_pixmap + i + j * *width));
+		}
+	}
+	return new_pixmap;
 }
 
 int vg_exit() {
