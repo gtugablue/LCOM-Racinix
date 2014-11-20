@@ -195,6 +195,7 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 	char* pixmap = read_xpm(xpm, &width, &height, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
 	vg_draw_pixmap(xi, yi, pixmap, width, height);
 	vg_swap_buffer();
+	free(pixmap);
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
@@ -247,17 +248,14 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 int test_controller()
 {
 	vbe_info_block_t vbe_info_block;
-	if (vbe_get_info_block(&vbe_info_block))
+	int16_t *video_modes;
+	unsigned num_video_modes;
+	if (vbe_get_info_block(&vbe_info_block, video_modes, &num_video_modes))
 	{
 		return 1;
 	}
 	printf("Video modes:\n");
-
-	void *farptr = vbe_farptr(vbe_info_block.VideoModePtr);
-	size_t i;
-	for (i = 0; *((uint16_t *)farptr + i) != VBE_VIDEO_MODE_PTR_TERMINATE; ++i)
-	{
-		printf("0x%X\n", *((uint16_t *)farptr + i));
-	}
+	printf("0x%X\n", video_modes[0]);
+	free(video_modes);
 	return 0;
 }
