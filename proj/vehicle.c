@@ -308,7 +308,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 
 int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
 {
-	size_t i;
+	/*size_t i;
 	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 	{
 		vg_draw_circle(vehicle->wheels[i].x, vehicle->wheels[i].y, 2, 0x0);
@@ -320,24 +320,22 @@ int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
 	for (i = 0; i < VEHICLE_NUM_WHEELS / 2; ++i)
 	{
 		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
-	}
+	}*/
 
 	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(3), &xpm_width, &xpm_height, width, height);
+	char *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, width, height);
 	unsigned short xpm_width2 = xpm_width;
 	unsigned short xpm_height2 = xpm_height;
-	char *pixmap = xpm;
-	/*if ((pixmap = pixmap_rotate(xpm, &xpm_width2, &xpm_height2, vehicle->heading + PI / 2)) == NULL)
+	char *pixmap;
+	if ((pixmap = pixmap_rotate(xpm, &xpm_width2, &xpm_height2, vehicle->heading)) == NULL)
 	{
 		return 1;
-	}*/
-	// TODO - resolver memory leak (?) na linha acima
+	}
 	xpm_width = xpm_width2;
 	xpm_height = xpm_height2;
 	vg_draw_pixmap(vehicle->position.x - xpm_width / 2, vehicle->position.y - xpm_height / 2, pixmap, (unsigned short)xpm_width, (unsigned short)xpm_height);
 	free(xpm);
-	//free(pixmap);
-	printf("0x%X\n", vehicle);
+	free(pixmap);
 }
 
 void vehicle_delete(vehicle_t *vehicle)

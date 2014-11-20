@@ -22,6 +22,7 @@ static unsigned v_res;		/* Vertical screen resolution in pixels */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
 static char *double_buffer;
+static char *mouse_buffer;
 
 void *vg_init(unsigned short mode)
 {
@@ -70,7 +71,10 @@ void *vg_init(unsigned short mode)
 				{
 					if ((double_buffer = malloc(h_res * v_res * bits_per_pixel / 8)) != NULL)
 					{
-						return video_mem;
+						if ((mouse_buffer = malloc(h_res * v_res * bits_per_pixel / 8)) != NULL)
+						{
+							return video_mem;
+						}
 					}
 				}
 			}
@@ -91,10 +95,12 @@ int vg_fill(unsigned long color)
 }
 
 inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
-	if(x <= h_res && y <= v_res)
+	if(x < h_res && y < v_res)
 	{
 		if (color != VIDEO_GR_TRANSPARENT)
-		*(double_buffer + x + y * h_res) = (char)color;
+		{
+			*(double_buffer + x + y * h_res) = color;
+		}
 		return 0;
 	}
 	return 1;
@@ -216,6 +222,24 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 	}
 }
 
+void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height)
+{
+	size_t i, j;
+	for (i = 0; i < width; ++i)
+	{
+		for (j = 0; j < height; ++j)
+		{
+			if(x + i < h_res && y + j < v_res)
+			{
+				if (*(pixmap + i + j * width) != VIDEO_GR_TRANSPARENT)
+				{
+					*(mouse_buffer + (x + i) + (y + j) * h_res) = *(pixmap + i + j * width);
+				}
+			}
+		}
+	}
+}
+
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 {
 	size_t i, j;
@@ -256,11 +280,17 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 
 void vg_swap_buffer()
 {
-	memcpy(video_mem, double_buffer, h_res * v_res * bits_per_pixel / 8);
+	memcpy(mouse_buffer, double_buffer, h_res * v_res * bits_per_pixel / 8);
+}
+
+void vg_swap_mouse_buffer()
+{
+	memcpy(video_mem, mouse_buffer, h_res * v_res * bits_per_pixel / 8);
 }
 
 int vg_exit() {
 	free(double_buffer);
+	free(mouse_buffer);
 	struct reg86u reg86;
 
 	reg86.u.b.intno = 0x10; /* BIOS video services */

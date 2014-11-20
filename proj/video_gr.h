@@ -91,7 +91,11 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
+void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
+
 void vg_swap_buffer();
+
+void vg_swap_mouse_buffer();
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)

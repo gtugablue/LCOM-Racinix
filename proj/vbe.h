@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <minix/syslib.h>
+#include "lmlib.h"
 
 #define VBE_INTERRUPT_VECTOR							0x10
 #define VBE_FUNCTION									0x4F
@@ -59,6 +60,8 @@
 #define VBE_SET_GET_DAC_PALETTE_FORMAT					0x8
 #define VBE_SET_GET_PALETTE_DATA						0x9
 #define VBE_RETURN_VBE_PROTECTED_MODE_INTERFACE			0xA
+
+#define VBE_VIDEO_MODE_PTR_TERMINATE					-1
 
 /** @defgroup vbe vbe
  * @{
@@ -133,6 +136,31 @@ typedef struct {
 
 /** @} end of vbe_mode_info_t*/
 
+/** @name VBE Mode Info Block */
+/**@{
+ *
+ * Packed VBE Mode Info Block
+ */
+
+typedef struct {
+	uint8_t VbeSignature[4];	/* VBE Signature */
+	uint16_t VbeVersion;	/* VBE Version */
+	phys_bytes OemStringPtr;	/* pointer to OEM String */
+	uint8_t Capabilities[4];	/* capabilities of graphics controller */
+	phys_bytes VideoModePtr;	/* pointer to VideoModeList */
+	uint16_t TotalMemory;	/* number of 64kb memory blocks */
+
+	/* Added for VBE 2.0 */
+	uint16_t OemSoftwareRev;	/* VBE implementation Software revision */
+	phys_bytes OemVendorNamePtr;	/* pointer to Vendor Name String */
+	phys_bytes OemProductNamePtr;	/* pointer to Product Name String */
+	phys_bytes OemProductRevPtr;	/* pointer to Product Revision String */
+	uint8_t Reserved[222];	/* reserved for VBE implementation scratch area */
+	uint8_t OemData[256];	/* Data Area for OEM Strings */
+} __attribute__((packed)) vbe_info_block_t;
+
+/** @} end of vbe_info_block_t*/
+
 /**
  * @brief Returns information on the input VBE mode, including screen dimensions, color depth and VRAM physical address
  * 
@@ -146,6 +174,8 @@ typedef struct {
  * @return 0 on success, non-zero otherwise
  */
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
+
+int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned *num_video_modes);
 
  /** @} end of vbe */
 
