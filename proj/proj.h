@@ -14,6 +14,8 @@
 #include "timer.h"
 #include "track.h"
 #include "mouse.h"
+#include "pixmap.h"
+#include "xpm.h"
 
 #define FPS				29.97
 #define INTERP_PERIOD	0.07f
@@ -29,6 +31,8 @@ int racinix_keyboard_int_handler();
 int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2);
 
 int racinix_mouse_int_handler();
+
+void draw_mouse(unsigned width, unsigned height);
 
 int orientation(vector2D_t p, vector2D_t q, vector2D_t r);
 

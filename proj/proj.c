@@ -32,24 +32,24 @@ int main(int argc, char **argv) {
 	}
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
-		//return 1;
+		return 1;
 	}
 	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
-		//return 1;
+		return 1;
 	}
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
-	/*if (keyboard_subscribe_int() == -1)
+	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
-	}*/
+	}
 
 	unsigned char timer_hook_bit;
-	/*if ((timer_hook_bit = timer_subscribe_int()) < 0)
+	if ((timer_hook_bit = timer_subscribe_int()) < 0)
 	{
 		return 1;
-	}*/
+	}
 
 	int r, ipc_status;
 	message msg;
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 		if (is_ipc_notify(ipc_status)) { /* received notification */
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
-				/*if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
+				if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
 					if (racinix_keyboard_int_handler())
 					{
 						return 1;
@@ -75,17 +75,17 @@ int main(int argc, char **argv) {
 					{
 						return 1;
 					}
-				}*/
+				}
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
-					racinix_mouse_int_handler();
+					racinix_mouse_int_handler(vmi.XResolution, vmi.YResolution);
 				}
 			}
 		}
 	}
 
 	keyboard_unsubscribe_int();
-	/*mouse_disable_stream_mode(MOUSE_NUM_TRIES);
-	mouse_unsubscribe_int(mouse_hook_id);*/
+	mouse_disable_stream_mode(MOUSE_NUM_TRIES);
+	mouse_unsubscribe_int(mouse_hook_id);
 	racinix_exit();
 
 	return 0;
@@ -98,7 +98,7 @@ int racinix_start(vbe_mode_info_t *vmi)
 	vg_init(0x105);
 	vbe_get_mode_info(0x105, vmi);
 
-	mouse_position = vectorCreate(400, 400);
+	mouse_position = vectorCreate(vmi->XResolution / 2, vmi->YResolution / 2);
 }
 
 int racinix_exit()
@@ -117,6 +117,7 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 	static unsigned counter = 0;
 	if (counter >= TIMER_DEFAULT_FREQ / FPS)
 	{
+		vg_swap_mouse_buffer();
 		vg_fill(0x2);
 		size_t l;
 		track_draw(track, vmi->XResolution, vmi->YResolution);
@@ -161,6 +162,7 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 		{
 			vehicle_vehicle_collision_handler(vehicle2, vehicle1);
 		}
+		draw_mouse(vmi->XResolution, vmi->YResolution);
 		vg_swap_buffer();
 	}
 	++counter;
@@ -169,19 +171,49 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 
 int racinix_mouse_int_handler(unsigned width, unsigned height)
 {
+	if(mouse_int_handler(MOUSE_NUM_TRIES))
+	{
+		return 1;
+	}
 	mouse_data_packet_t mouse_data_packet;
 	if (mouse_get_packet(&mouse_data_packet))
 	{
-		// TODO
-		mouse_position = vectorAdd(mouse_position, vectorCreate(mouse_data_packet.x_delta, mouse_data_packet.y_delta));
-		vg_set_pixel(mouse_position.x, mouse_position.y, 0x11);
-		vg_swap_buffer();
+		mouse_position = vectorAdd(mouse_position, vectorCreate(mouse_data_packet.x_delta, -mouse_data_packet.y_delta));
+		if (mouse_position.x < 0)
+		{
+			mouse_position.x = 0;
+		}
+		else if (mouse_position.x >= width)
+		{
+			mouse_position.x = width - 1;
+		}
+		if (mouse_position.y < 0)
+		{
+			mouse_position.y = 0;
+		}
+		else if (mouse_position.y >= height)
+		{
+			mouse_position.y = height - 1;
+		}
+
+		draw_mouse(width, height);
+
 		return 0;
 	}
 	else
 	{
 		return 1;
 	}
+}
+
+void draw_mouse(unsigned width, unsigned height)
+{
+	vg_swap_buffer();
+	int xpm_width, xpm_height;
+	char *xpm = read_xpm(pixmap_get(5), &xpm_width, &xpm_height, width, height);
+	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, xpm, (unsigned short)xpm_width, (unsigned short)xpm_height);
+	free(xpm);
+	vg_swap_mouse_buffer();
 }
 
 // Returns a list of points on the convex hull in counter-clockwise order.

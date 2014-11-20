@@ -115,6 +115,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		 }
 		 printf("Method 1 iterations: %d\n", counter);*/
 
+	/* This loop was much faster, however we came up with a better idea...
 	size_t x, y;
 	vector2D_t polygon[4];
 	vector2D_t point;
@@ -141,6 +142,50 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 					{
 						*(track->track_points + y * width + x) = true;
 					}
+				}
+			}
+		}
+	}*/
+
+	/* This loop is really fast. It loops through all spline points and creates a 4-side polygon. Then it checks all points that are in the range (min.x, min.y) to (max.x, max.y). */
+	size_t x, y, j;
+	vector2D_t polygon[4];
+	vector2D_t point;
+	vector2D_t min, max;
+	for (i = 0; i < track->spline_size; ++i)
+	{
+		polygon[0] = track->inside_spline[i];
+		polygon[1] = track->outside_spline[i];
+		polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
+		polygon[3] = track->inside_spline[(i + 1) % track->spline_size];
+		min = max = polygon[0];
+		for (j = 0; j < 4; ++j)
+		{
+			if (polygon[j].x < min.x)
+			{
+				min.x = polygon[j].x;
+			}
+			else if (polygon[j].x > max.x)
+			{
+				max.x = polygon[j].x;
+			}
+			if (polygon[j].y < min.y)
+			{
+				min.y = polygon[j].y;
+			}
+			else if (polygon[j].y > max.y)
+			{
+				max.y = polygon[j].y;
+			}
+		}
+		for (x = (int)min.x; x <= (int)max.x; ++x)
+		{
+			for (y = (int)min.y; y <= (int)max.y; ++y)
+			{
+				point = vectorCreate(x, y);
+				if (isPointInPolygon(polygon, 4, &point))
+				{
+					*(track->track_points + y * width + x) = true;
 				}
 			}
 		}

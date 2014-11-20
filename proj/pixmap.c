@@ -16,6 +16,10 @@ char **pixmap_get(unsigned short id)
 		return pic3;
 	case 4:
 		return penguin;
+	case 5:
+		return cursor;
+	case 6:
+		return car;
 	default:
 		return NULL;
 	}
