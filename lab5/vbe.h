@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <minix/syslib.h>
+#include "lmlib.h"
 
 #define VBE_INTERRUPT_VECTOR							0x10
 #define VBE_FUNCTION									0x4F
@@ -174,9 +175,7 @@ typedef struct {
  */
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
 
-int vbe_get_info_block(vbe_info_block_t *vib_p);
-
-void *vbe_farptr(uint32_t farptr);
+int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned *num_video_modes);
 
  /** @} end of vbe */
 

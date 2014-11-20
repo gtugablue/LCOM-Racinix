@@ -5,7 +5,7 @@ COMPILER_TYPE= gnu
 CC=gcc
 
 PROG=	lab5
-SRCS=	lab5.c video_gr.c vbe.c test5.c keyboard.c kbc.c timer.c xpm.c pixmap.c
+SRCS=	lab5.c video_gr.c vbe.c test5.c keyboard.c kbc.c timer.c xpm.c pixmap.c vector2D.c
 CCFLAGS= -Wall
 
 DPADD+=	${LIBDRIVER} ${LIBSYS}
