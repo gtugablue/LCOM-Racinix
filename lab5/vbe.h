@@ -3,65 +3,70 @@
 
 #include <stdint.h>
 #include <minix/syslib.h>
+#include <sys/types.h>
 #include "lmlib.h"
 
-#define VBE_INTERRUPT_VECTOR							0x10
-#define VBE_FUNCTION									0x4F
+#define VBE_INTERRUPT_VECTOR									0x10
+#define VBE_FUNCTION											0x4F
 
 // VBE Return Status
-#define VBE_FUNCTION_SUPPORTED							0x4F
-#define VBE_FUNCTION_CALL_SUCCESSFUL					0x0
-#define VBE_FUNCTION_CALL_FAILED						0x1
-#define VBE_FUNCTION_NOT_SUPPORTED_IN_CURR_HW_CONFIG	0x2
-#define VBE_FUNCTION_CALL_INVALID_IN_CURR_VIDEO_MODE	0x3
+#define VBE_FUNCTION_SUPPORTED									0x4F
+#define VBE_FUNCTION_CALL_SUCCESSFUL							0x0
+#define VBE_FUNCTION_CALL_FAILED								0x1
+#define VBE_FUNCTION_NOT_SUPPORTED_IN_CURR_HW_CONFIG			0x2
+#define VBE_FUNCTION_CALL_INVALID_IN_CURR_VIDEO_MODE			0x3
 
 // VBE Mode Numbers
-#define VBE_MODE_NUMBER_LINEAR_FLAT_FRAME_BUFFER_BIT	14
-#define VBE_MODE_NUMBER_PRESERVE_DISPLAY_MEMORY_BIT		15
-#define VBE_MODE_GRAPHICS_640_400_256					0x100
-#define VBE_MODE_GRAPHICS_640_480_256					0x101
-#define VBE_MODE_GRAPHICS_800_600_16					0x102
-#define VBE_MODE_GRAPHICS_800_600_256					0x103
-#define VBE_MODE_GRAPHICS_1024_768_16					0x104
-#define VBE_MODE_GRAPHICS_1024_786_256					0x105
-#define VBE_MODE_GRAPHICS_1280_1024_16					0x106
-#define VBE_MODE_GRAPHICS_1280_1024_256					0x107
-#define VBE_MODE_TEXT_80_60								0x108
-#define VBE_MODE_TEXT_132_25							0x109
-#define VBE_MODE_TEXT_132_43							0x10A
-#define VBE_MODE_TEXT_132_50							0x10B
-#define VBE_MODE_TEXT_132_60							0x10C
-#define VBE_MODE_GRAPHICS_320_200_32K					0x10D
-#define VBE_MODE_GRAPHICS_320_200_64K					0x10E
-#define VBE_MODE_GRAPHICS_320_200_16_8M					0x10F
-#define VBE_MODE_GRAPHICS_640_480_32K					0x110
-#define VBE_MODE_GRAPHICS_640_480_64K					0x111
-#define VBE_MODE_GRAPHICS_640_480_16_8M					0x112
-#define VBE_MODE_GRAPHICS_800_600_32K					0x113
-#define VBE_MODE_GRAPHICS_800_600_64K					0x114
-#define VBE_MODE_GRAPHICS_800_600_16_8M					0x115
-#define VBE_MODE_GRAPHICS_1024_768_32K					0x116
-#define VBE_MODE_GRAPHICS_1024_768_64K					0x117
-#define VBE_MODE_GRAPHICS_1024_768_16_8M				0x118
-#define VBE_MODE_GRAPHICS_1280_1024_32K					0x119
-#define VBE_MODE_GRAPHICS_1280_1024_64K					0x11A
-#define VBE_MODE_GRAPHICS_1280_1024_16_8M				0x11B
-#define VBE_MODE_SPECIAL_PRESERVE_CURRENT_MEMORY		0x81FF
+#define VBE_MODE_NUMBER_LINEAR_FLAT_FRAME_BUFFER_BIT			14
+#define VBE_MODE_NUMBER_PRESERVE_DISPLAY_MEMORY_BIT				15
+#define VBE_MODE_GRAPHICS_640_400_256							0x100
+#define VBE_MODE_GRAPHICS_640_480_256							0x101
+#define VBE_MODE_GRAPHICS_800_600_16							0x102
+#define VBE_MODE_GRAPHICS_800_600_256							0x103
+#define VBE_MODE_GRAPHICS_1024_768_16							0x104
+#define VBE_MODE_GRAPHICS_1024_786_256							0x105
+#define VBE_MODE_GRAPHICS_1280_1024_16							0x106
+#define VBE_MODE_GRAPHICS_1280_1024_256							0x107
+#define VBE_MODE_TEXT_80_60										0x108
+#define VBE_MODE_TEXT_132_25									0x109
+#define VBE_MODE_TEXT_132_43									0x10A
+#define VBE_MODE_TEXT_132_50									0x10B
+#define VBE_MODE_TEXT_132_60									0x10C
+#define VBE_MODE_GRAPHICS_320_200_32K							0x10D
+#define VBE_MODE_GRAPHICS_320_200_64K							0x10E
+#define VBE_MODE_GRAPHICS_320_200_16_8M							0x10F
+#define VBE_MODE_GRAPHICS_640_480_32K							0x110
+#define VBE_MODE_GRAPHICS_640_480_64K							0x111
+#define VBE_MODE_GRAPHICS_640_480_16_8M							0x112
+#define VBE_MODE_GRAPHICS_800_600_32K							0x113
+#define VBE_MODE_GRAPHICS_800_600_64K							0x114
+#define VBE_MODE_GRAPHICS_800_600_16_8M							0x115
+#define VBE_MODE_GRAPHICS_1024_768_32K							0x116
+#define VBE_MODE_GRAPHICS_1024_768_64K							0x117
+#define VBE_MODE_GRAPHICS_1024_768_16_8M						0x118
+#define VBE_MODE_GRAPHICS_1280_1024_32K							0x119
+#define VBE_MODE_GRAPHICS_1280_1024_64K							0x11A
+#define VBE_MODE_GRAPHICS_1280_1024_16_8M						0x11B
+#define VBE_MODE_SPECIAL_PRESERVE_CURRENT_MEMORY				0x81FF
 
 // VBE Functions
-#define VBE_RETURN_VBE_CONTROLLER_INFO					0x0
-#define VBE_RETURN_VBE_MODE_INFO						0x1
-#define VBE_SET_VBE_MODE								0x2
-#define VBE_RETURN_CURRENT_VBE_MODE						0x3
-#define VBE_SAVE_RESTORE_STATE							0x4
-#define VBE_DISPLAY_WINDOW_CONTROL						0x5
-#define VBE_SET_GET_LOGICAL_SCAN_LINE_LENGTH			0x6
-#define VBE_SET_GET_DISPLAY_START						0x7
-#define VBE_SET_GET_DAC_PALETTE_FORMAT					0x8
-#define VBE_SET_GET_PALETTE_DATA						0x9
-#define VBE_RETURN_VBE_PROTECTED_MODE_INTERFACE			0xA
+#define VBE_RETURN_VBE_CONTROLLER_INFO							0x0
+#define VBE_RETURN_VBE_MODE_INFO								0x1
+#define VBE_SET_VBE_MODE										0x2
+#define VBE_RETURN_CURRENT_VBE_MODE								0x3
+#define VBE_SAVE_RESTORE_STATE									0x4
+#define VBE_DISPLAY_WINDOW_CONTROL								0x5
+#define VBE_SET_GET_LOGICAL_SCAN_LINE_LENGTH					0x6
+#define VBE_SET_GET_DISPLAY_START								0x7
+#define VBE_SET_GET_DAC_PALETTE_FORMAT							0x8
+#define VBE_SET_GET_PALETTE_DATA								0x9
+#define VBE_RETURN_VBE_PROTECTED_MODE_INTERFACE					0xA
 
-#define VBE_VIDEO_MODE_PTR_TERMINATE					-1
+#define VBE_VIDEO_MODE_PTR_TERMINATE							-1
+
+#define VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT	0
+#define VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT					1
+#define VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT		2
 
 /** @defgroup vbe vbe
  * @{
@@ -143,10 +148,10 @@ typedef struct {
  */
 
 typedef struct {
-	uint8_t VbeSignature[4];	/* VBE Signature */
+	char VbeSignature[4];	/* VBE signature */
 	uint16_t VbeVersion;	/* VBE Version */
 	phys_bytes OemStringPtr;	/* pointer to OEM String */
-	uint8_t Capabilities[4];	/* capabilities of graphics controller */
+	uint32_t Capabilities;	/* capabilities of graphics controller */
 	phys_bytes VideoModePtr;	/* pointer to VideoModeList */
 	uint16_t TotalMemory;	/* number of 64kb memory blocks */
 
@@ -175,7 +180,7 @@ typedef struct {
  */
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
 
-int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned *num_video_modes);
+int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned *num_video_modes);
 
  /** @} end of vbe */
 

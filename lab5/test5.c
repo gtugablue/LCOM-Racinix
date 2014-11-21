@@ -247,15 +247,56 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 
 int test_controller()
 {
-	vbe_info_block_t vbe_info_block;
-	int16_t *video_modes;
-	unsigned num_video_modes;
-	if (vbe_get_info_block(&vbe_info_block, video_modes, &num_video_modes))
+	if (lm_init())
 	{
 		return 1;
 	}
-	printf("Video modes:\n");
-	printf("0x%X\n", video_modes[0]);
+	static uint16_t *video_modes;
+	vbe_info_block_t vbe_info_block;
+	unsigned num_video_modes;
+	if (vbe_get_info_block(&vbe_info_block, &video_modes, &num_video_modes))
+	{
+		return 1;
+	}
+#define VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT	0
+#define VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT					1
+#define VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT		2
+	printf("Controller capabilities: 0x%X\n", vbe_info_block.Capabilities);
+	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT))
+	{
+		printf("\tDAC width is switchable to 8 bits per primary color\n");
+	}
+	else
+	{
+		printf("\tDAC is fixed width, with 6 bits per primary color\n");
+	}
+	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT))
+	{
+		printf("\tController is not VGA compatible\n");
+	}
+	else
+	{
+		printf("\tController is VGA compatible\n");
+	}
+	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT))
+	{
+		printf("\tWhen programming large blocks of information to the RAMDAC, the blank bit must be used in function 0x09\n");
+	}
+	else
+	{
+		printf("\tNormal RAMDAC operation\n");
+	}
+	printf("\nVideo modes: ");
+	size_t i;
+	if (num_video_modes > 0)
+	{
+		printf("0x%X", video_modes[0]);
+	}
+	for (i = 1; i < num_video_modes; ++i)
+	{
+		printf(", 0x%X", video_modes[i]);
+	}
 	free(video_modes);
+	printf("\n\nSize of VRAM memory: %lu KB\n", vbe_info_block.TotalMemory * 64);
 	return 0;
 }
