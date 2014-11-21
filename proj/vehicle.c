@@ -22,7 +22,7 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	return vehicle;
 }
 
-void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys, unsigned width, unsigned height)
+void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag, vehicle_keys_t vehicle_keys)
 {
 	vehicle_update_steering(vehicle, delta_time, vehicle_keys);
 
@@ -38,9 +38,9 @@ void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag, vehicle_ke
 
 	vehicle_calculate_wheel_position(vehicle);
 
-	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, width, height), width, height);
+	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, vmi_p->XResolution, vmi_p->YResolution), vmi_p->XResolution, vmi_p->YResolution);
 
-	vehicle_draw(vehicle, width, height);
+	vehicle_draw(vehicle, vmi_p);
 }
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys)
@@ -306,7 +306,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 }
 
-int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
+int vehicle_draw(vehicle_t *vehicle, vbe_mode_info_t *vmi_p)
 {
 	/*size_t i;
 	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
@@ -323,11 +323,11 @@ int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height)
 	}*/
 
 	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, width, height);
+	char *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, vmi_p->XResolution, vmi_p->YResolution);
 	unsigned short xpm_width2 = xpm_width;
 	unsigned short xpm_height2 = xpm_height;
 	char *pixmap;
-	if ((pixmap = pixmap_rotate(xpm, &xpm_width2, &xpm_height2, vehicle->heading)) == NULL)
+	if ((pixmap = pixmap_rotate(vmi_p, xpm, &xpm_width2, &xpm_height2, vehicle->heading)) == NULL)
 	{
 		return 1;
 	}

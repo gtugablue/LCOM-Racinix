@@ -45,18 +45,15 @@ int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p)
 	return 1;
 }
 
-int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned *num_video_modes)
+int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned *num_video_modes)
 {
-	if (lm_init())
-	{
-		return 1;
-	}
-
 	mmap_t map;
 	if (lm_alloc(sizeof(vbe_info_block_t), &map) == NULL)
 	{
 		return 1;
 	}
+
+	memcpy(vib_p->VbeSignature, "VBE2", sizeof("VBE2"));
 
 	struct reg86u reg86;
 
@@ -78,7 +75,14 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned 
 
 	*vib_p = *((vbe_info_block_t *)map.virtual);
 
-	void *farptr = ((vib_p->VideoModePtr & 0xffff0000) >> 12) + (vib_p->VideoModePtr & 0xffff) + ((uint32_t)map.virtual & 0xF0000000);
+	if (memcmp(vib_p->VbeSignature, "VESA", sizeof(vib_p->VbeSignature)) != 0)
+	{
+		return 1;
+	}
+
+	void *farptr = (void *)(((vib_p->VideoModePtr & 0xffff0000) >> 12) + (vib_p->VideoModePtr & 0xffff) + ((uint32_t)map.virtual & 0xF0000000));
+
+	lm_free(&map);
 
 	int16_t *modes = farptr;
 	*num_video_modes = 0;
@@ -87,15 +91,13 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, int16_t video_modes[], unsigned 
 	{
 		// Find the total number of video modes
 	}
-	if ((video_modes = malloc(*num_video_modes * sizeof(int16_t))) == NULL)
+	if ((*video_modes = malloc(*num_video_modes * sizeof(uint16_t))) == NULL)
 	{
 		return 1;
 	}
 	for (i = 0, modes = farptr; i < *num_video_modes; ++i, ++modes)
 	{
-		video_modes[i] = *modes;
-		printf("0x%X - ", video_modes[i]);
+		(*video_modes)[i] = *modes;
 	}
-	lm_free(&map);
 	return 0;
 }

@@ -86,7 +86,7 @@ void *vg_init(unsigned short mode)
 int vg_fill(unsigned long color)
 {
 	char *pixel;
-	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res; ++pixel)
+	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res * bits_per_pixel / 8; ++pixel)
 	{
 		*pixel = color;
 	}
@@ -99,7 +99,7 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	{
 		if (color != VIDEO_GR_TRANSPARENT)
 		{
-			*(double_buffer + x + y * h_res) = color;
+			*(double_buffer + (x + y * h_res) * bits_per_pixel / 8) = color;
 		}
 		return 0;
 	}
@@ -109,7 +109,7 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 inline long vg_get_pixel(unsigned long x, unsigned long y) {
 	if (x <= h_res && y <= v_res)
 	{
-		return *(double_buffer + x + y * h_res);
+		return *(double_buffer + (x + y * h_res) * bits_per_pixel / 8);
 	}
 	return 0;
 }
@@ -168,12 +168,12 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 	return 0;
 }
 
-int vg_draw_square(unsigned long x, unsigned long y, unsigned long size, unsigned long color)
+int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, unsigned long color)
 {
 	size_t i, j;
-	for (i = x; i < x + size; ++i)
+	for (i = x; i < x + width; ++i)
 	{
-		for (j = y; j < y + size; ++j)
+		for (j = y; j < y + height; ++j)
 		{
 			vg_set_pixel(i, j, color);
 		}
@@ -217,7 +217,7 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 	{
 		for (j = 0; j < height; ++j)
 		{
-			vg_set_pixel(x + i, y + j, *(pixmap + i + j * width));
+			vg_set_pixel(x + i, y + j, *(pixmap + (i + j * width) * bits_per_pixel / 8));
 		}
 	}
 }
@@ -233,7 +233,7 @@ void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 			{
 				if (*(pixmap + i + j * width) != VIDEO_GR_TRANSPARENT)
 				{
-					*(mouse_buffer + (x + i) + (y + j) * h_res) = *(pixmap + i + j * width);
+					*(mouse_buffer + ((x + i) + (y + j) * h_res) * bits_per_pixel / 8) = *(pixmap + (i + j * width) * bits_per_pixel / 8);
 				}
 			}
 		}

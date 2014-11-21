@@ -7,6 +7,8 @@
 #define BIT(n) (0x01<<(n))
 
 static vector2D_t mouse_position;
+static vbe_mode_info_t vmi;
+static int state;
 
 int main(int argc, char **argv) {
 
@@ -14,12 +16,32 @@ int main(int argc, char **argv) {
 
 	sef_startup();
 
-	vbe_mode_info_t vmi;
+	racinix_start();
 
-	racinix_start(&vmi);
+	racinix_dispatcher();
 
-	vg_fill(0x02);
+	racinix_exit();
 
+	return 0;
+}
+
+int racinix_start()
+{
+	srand(time(NULL));
+
+	vg_init(0x105);
+	vbe_get_mode_info(0x105, &vmi);
+
+	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
+}
+
+int racinix_exit()
+{
+	vg_exit();
+}
+
+int racinix_dispatcher()
+{
 	track_t *track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
 	vehicle_t *vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
@@ -50,6 +72,7 @@ int main(int argc, char **argv) {
 	{
 		return 1;
 	}
+
 
 	int r, ipc_status;
 	message msg;
@@ -83,27 +106,66 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	timer_unsubscribe_int();
 	keyboard_unsubscribe_int();
 	mouse_disable_stream_mode(MOUSE_NUM_TRIES);
 	mouse_unsubscribe_int(mouse_hook_id);
-	racinix_exit();
+}
 
+int racinix_event_handler(int event, ...)
+{
+	static int state = RACINIX_STATE_MAIN_MENU;
+	va_list var_args;
+	va_start(var_args, event);
+	switch(state)
+	{
+	case RACINIX_STATE_MAIN_MENU:
+	{
+		racinix_main_menu_event_handler(var_args);
+	}
+	case RACINIX_STATE_PICK_TRACK:
+	case RACINIX_STATE_DESIGN_TRACK:
+	case RACINIX_STATE_RACE_FREEZE_TIME:
+	case RACINIX_STATE_RACE:
+	case RACINIX_STATE_RACE_END:
+	case RACINIX_STATE_END:
+	break;
+	}
+	va_end(var_args);
+}
+
+int racinix_main_menu_event_handler(va_list var_args)
+{
+	if (va_arg(var_args, int) == RACINIX_EVENT_MOUSE_LEFT_BTN) // event
+	{
+		// TODO
+	}
+	else
+	{
+		if (!va_arg(var_args, int)) // pressed
+		{
+			char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
+			buttons[0] = "Pick track", 0;
+			buttons[1] = "Design track", 0;
+			buttons[2] = "Multiplayer", 0;
+			buttons[3] = "Credits", 0;
+			buttons[4] = "Exit", 0;
+
+			size_t i;
+			for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+			{
+				// TODO Write text
+				vg_draw_rectangle(
+						(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * sizeof(buttons[i])) / 2,
+						i * vmi.YResolution / RACINIX_MAIN_MENU_NUM_BTN,
+						RACINIX_MAIN_MENU_CHAR_WIDTH * sizeof(buttons[i]),
+						RACINIX_MAIN_MENU_BTN_HEIGHT,
+						0x11
+				);
+			}
+		}
+	}
 	return 0;
-}
-
-int racinix_start(vbe_mode_info_t *vmi)
-{
-	srand(time(NULL));
-
-	vg_init(0x105);
-	vbe_get_mode_info(0x105, vmi);
-
-	mouse_position = vectorCreate(vmi->XResolution / 2, vmi->YResolution / 2);
-}
-
-int racinix_exit()
-{
-	vg_exit();
 }
 
 int racinix_keyboard_int_handler()
@@ -113,6 +175,7 @@ int racinix_keyboard_int_handler()
 
 int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2)
 {
+	racinix_event_handler(RACINIX_EVENT_TIMER);
 	static vehicle_keys_t vehicle_keys;
 	static unsigned counter = 0;
 	if (counter >= TIMER_DEFAULT_FREQ / FPS)
@@ -132,7 +195,7 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 		vehicle_keys.brake = kbd_keys[KEY_S].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_A].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_D].pressed;
-		vehicle_tick(vehicle1, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys, vmi->XResolution, vmi->YResolution);
+		vehicle_tick(vehicle1, vmi, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys);
 		for (i = 1; i < 5; ++i)
 		{
 			vg_draw_line(vmi->XResolution / 2, vmi->YResolution - i, vmi->XResolution / 2 + vehicle1->speed, vmi->YResolution - i, 0x0);
@@ -147,7 +210,7 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 		vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_ARR_LEFT].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_ARR_RIGHT].pressed;
-		vehicle_tick(vehicle2, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys, vmi->XResolution, vmi->YResolution);
+		vehicle_tick(vehicle2, vmi, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys);
 		for (i = 5; i < 10; ++i)
 		{
 			vg_draw_line(vmi->XResolution / 2, vmi->YResolution - i, vmi->XResolution / 2 + vehicle2->speed, vmi->YResolution - i, 0x0);

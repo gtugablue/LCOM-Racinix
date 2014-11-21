@@ -1,6 +1,8 @@
 #ifndef _PIXMAP_H
 #define _PIXMAP_H
 
+#include "vbe.h"
+
 /**
  *  @author Joao Cardoso (jcard@fe.up.pt) ????
  *  Added by pfs@fe.up.pt
@@ -301,6 +303,6 @@ static char * car[] = {
 
 char **pixmap_get(unsigned short id);
 
-char* pixmap_rotate(char* pixmap, unsigned short *width, unsigned short *height, double angle);
+char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width, unsigned short *height, double angle);
 
 #endif
