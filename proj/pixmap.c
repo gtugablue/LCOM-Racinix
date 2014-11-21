@@ -25,7 +25,7 @@ char **pixmap_get(unsigned short id)
 	}
 }
 
-char* pixmap_rotate(char* pixmap, unsigned short *width, unsigned short *height, double angle)
+char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width, unsigned short *height, double angle)
 {
 	double angle_cos = cos(angle);
 	double angle_sin = sin(angle);
@@ -35,7 +35,7 @@ char* pixmap_rotate(char* pixmap, unsigned short *width, unsigned short *height,
 	unsigned short old_height = *height;
 	*width = *height = sqrt(old_width * old_width + old_height * old_height);
 	char *new_pixmap;
-	if ((new_pixmap = malloc(*width * *height * sizeof(char))) == NULL)
+	if ((new_pixmap = malloc(*width * *height * vmi_p->BitsPerPixel / 8)) == NULL)
 	{
 		return NULL;
 	}
@@ -51,7 +51,7 @@ char* pixmap_rotate(char* pixmap, unsigned short *width, unsigned short *height,
 			old_y = ((int)(transform_y * angle_cos - transform_x * angle_sin)) + old_height / 2;
 			if (old_x >= 0 && old_x < old_width && old_y >= 0 && old_y < old_height)
 			{
-				*(new_pixmap + x + y * *width) = *(pixmap + old_x + old_y * old_width);
+				*(new_pixmap + (x + y * *width) * vmi_p->BitsPerPixel / 8) = *(pixmap + (old_x + old_y * old_width) * vmi_p->BitsPerPixel / 8);
 			}
 		}
 	}

@@ -7,6 +7,7 @@
 #include "keyboard.h"
 #include "math.h"
 #include "video_gr.h"
+#include "vbe.h"
 
 #define VEHICLE_ACCELERATE			150.0
 #define VEHICLE_REVERSE				75.0
@@ -56,7 +57,7 @@ typedef union
 
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading);
 
-void vehicle_tick(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys, unsigned width, unsigned height);
+void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag, vehicle_keys_t vehicle_keys);
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys);
 
@@ -94,7 +95,7 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2);
 
-int vehicle_draw(vehicle_t *vehicle, unsigned width, unsigned height);
+int vehicle_draw(vehicle_t *vehicle, vbe_mode_info_t *vmi_p);
 
 void vehicle_delete(vehicle_t *vehicle);
 
