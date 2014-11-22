@@ -9,6 +9,7 @@
 #include <stdbool.h>
 
 #define TRACK_INTERP_PERIOD	0.07
+#define TRACK_GRASS_DRAG	0.7
 
 typedef struct
 {

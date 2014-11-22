@@ -18,11 +18,12 @@
 #include "xpm.h"
 #include <stdarg.h>
 
-#define FPS											29.97
+#define FPS											59.94
 #define INTERP_PERIOD								0.07f
-#define RACINIX_MAIN_MENU_NUM_BTN					5
-#define RACINIX_MAIN_MENU_BTN_HEIGHT				30
-#define RACINIX_MAIN_MENU_CHAR_WIDTH				5
+#define RACINIX_VIDEO_MODE							0x105
+#define RACINIX_MAIN_MENU_NUM_BTN					6
+#define RACINIX_MAIN_MENU_CHAR_HEIGHT				30
+#define RACINIX_MAIN_MENU_CHAR_WIDTH				10
 
 // States
 enum
@@ -30,9 +31,7 @@ enum
 	RACINIX_STATE_MAIN_MENU,
 	RACINIX_STATE_PICK_TRACK,
 	RACINIX_STATE_DESIGN_TRACK,
-	RACINIX_STATE_RACE_FREEZE_TIME,
 	RACINIX_STATE_RACE,
-	RACINIX_STATE_RACE_END,
 	RACINIX_STATE_END
 };
 
@@ -46,15 +45,17 @@ int racinix_dispatcher();
 
 int racinix_event_handler(int event, ...);
 
-int racinix_main_menu_event_handler(va_list var_args);
+int racinix_main_menu_event_handler(int event, va_list *var_args);
+
+int racinix_race_event_handler(int event, va_list *var_args);
 
 int racinix_keyboard_int_handler();
 
 int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2);
 
-int racinix_mouse_int_handler();
+int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
-void draw_mouse(unsigned width, unsigned height);
+void draw_mouse();
 
 int orientation(vector2D_t p, vector2D_t q, vector2D_t r);
 
@@ -74,7 +75,7 @@ enum
 	RACINIX_EVENT_KEYSTROKE, // int key, bool pressed
 	RACINIX_EVENT_MOUSE_MOVEMENT,
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
-	RACINIX_EVENT_TIMER
+	RACINIX_EVENT_NEW_FRAME
 };
 
 #endif
