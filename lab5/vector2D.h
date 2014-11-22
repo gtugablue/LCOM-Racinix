@@ -26,6 +26,8 @@ double vectorNorm(vector2D_t vector);
 
 void normalize(vector2D_t* vector);
 
+bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point);
+
 /**
  * @brief Tests if a given point is inside a given polygon
  *
@@ -34,6 +36,6 @@ void normalize(vector2D_t* vector);
  * @param point point to be tested
  * @return true if point is inside the polygon, false otherwise
  */
-bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t* point);
+bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t point);
 
 #endif
