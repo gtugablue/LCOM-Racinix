@@ -254,7 +254,7 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 	size_t i;
 	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 	{
-		if (isPointInPolygon(vehicle2->wheels, VEHICLE_NUM_WHEELS, &vehicle->wheels[i]))
+		if (isPointInPolygon(vehicle2->wheels, VEHICLE_NUM_WHEELS, vehicle->wheels[i]))
 		{
 			return true; // Wheel inside the other vehicle
 		}

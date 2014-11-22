@@ -183,7 +183,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 			for (y = (int)min.y; y <= (int)max.y; ++y)
 			{
 				point = vectorCreate(x, y);
-				if (isPointInPolygon(polygon, 4, &point))
+				if (isPointInPolygon(polygon, 4, point))
 				{
 					*(track->track_points + y * width + x) = true;
 				}
@@ -317,7 +317,7 @@ double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsign
 			return 0;
 		}
 	}
-	return 0.5;
+	return TRACK_GRASS_DRAG;
 }
 
 void track_delete(track_t *track)

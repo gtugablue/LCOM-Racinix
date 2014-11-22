@@ -270,7 +270,7 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 		for (j = min.y; j < max.y; ++j)
 		{
 			point = vectorCreate(i, j);
-			if (isPointInPolygon(polygon, n, &point))
+			if (isPointInPolygon(polygon, n, point))
 			{
 				vg_set_pixel(i, j, color);
 			}

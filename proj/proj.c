@@ -8,7 +8,9 @@
 
 static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
-static int state;
+static track_t *track;
+static vehicle_t *vehicle1;
+static vehicle_t *vehicle2;
 
 int main(int argc, char **argv) {
 
@@ -28,9 +30,9 @@ int main(int argc, char **argv) {
 int racinix_start()
 {
 	srand(time(NULL));
-
-	vg_init(0x105);
-	vbe_get_mode_info(0x105, &vmi);
+	//vg_exit(); // Fix darker colors first time the mode is changed.
+	vg_init(RACINIX_VIDEO_MODE);
+	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
 }
@@ -42,10 +44,10 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
-	track_t *track = track_generate(vmi.XResolution, vmi.YResolution, rand());
+	track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
-	vehicle_t *vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
-	vehicle_t *vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
+	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
+	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
 
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
@@ -73,7 +75,8 @@ int racinix_dispatcher()
 		return 1;
 	}
 
-
+	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
+	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
 	message msg;
 	unsigned counter = 0;
@@ -94,13 +97,31 @@ int racinix_dispatcher()
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					if (racinix_timer_int_handler(&vmi, track, vehicle1, vehicle2))
+					if (racinix_timer_int_handler(&vmi, track, vehicle1, vehicle2) == 0)
 					{
-						return 1;
+						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME) == -1)
+						{
+							break;
+						}
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
-					racinix_mouse_int_handler(vmi.XResolution, vmi.YResolution);
+					if (racinix_mouse_int_handler(&new_mouse_data_packet) != 0)
+					{
+						continue; // Packet not ready
+					}
+					if (racinix_event_handler(RACINIX_EVENT_MOUSE_MOVEMENT) == -1)
+					{
+						break;
+					}
+					if (new_mouse_data_packet.left_button != old_mouse_data_packet.left_button)
+					{
+						if (racinix_event_handler(RACINIX_EVENT_MOUSE_LEFT_BTN, new_mouse_data_packet.left_button) == -1)
+						{
+							break;
+						}
+					}
+					old_mouse_data_packet = new_mouse_data_packet;
 				}
 			}
 		}
@@ -121,101 +142,139 @@ int racinix_event_handler(int event, ...)
 	{
 	case RACINIX_STATE_MAIN_MENU:
 	{
-		racinix_main_menu_event_handler(var_args);
+		state = racinix_main_menu_event_handler(event, &var_args);
+		break;
 	}
 	case RACINIX_STATE_PICK_TRACK:
 	case RACINIX_STATE_DESIGN_TRACK:
-	case RACINIX_STATE_RACE_FREEZE_TIME:
 	case RACINIX_STATE_RACE:
-	case RACINIX_STATE_RACE_END:
+	{
+		state = racinix_race_event_handler(event, &var_args);
+		break;
+	}
 	case RACINIX_STATE_END:
+	{
+		va_end(var_args);
+		return -1;
+	}
 	break;
 	}
 	va_end(var_args);
-}
-
-int racinix_main_menu_event_handler(va_list var_args)
-{
-	if (va_arg(var_args, int) == RACINIX_EVENT_MOUSE_LEFT_BTN) // event
-	{
-		// TODO
-	}
-	else
-	{
-		if (!va_arg(var_args, int)) // pressed
-		{
-			char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
-			buttons[0] = "Pick track", 0;
-			buttons[1] = "Design track", 0;
-			buttons[2] = "Multiplayer", 0;
-			buttons[3] = "Credits", 0;
-			buttons[4] = "Exit", 0;
-
-			size_t i;
-			for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
-			{
-				// TODO Write text
-				vg_draw_rectangle(
-						(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * sizeof(buttons[i])) / 2,
-						i * vmi.YResolution / RACINIX_MAIN_MENU_NUM_BTN,
-						RACINIX_MAIN_MENU_CHAR_WIDTH * sizeof(buttons[i]),
-						RACINIX_MAIN_MENU_BTN_HEIGHT,
-						0x11
-				);
-			}
-		}
-	}
 	return 0;
 }
 
-int racinix_keyboard_int_handler()
+int racinix_main_menu_event_handler(int event, va_list *var_args)
 {
-	return keyboard_int_handler();
+	char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
+	buttons[0] = "1 Player", '\0';
+	buttons[1] = "2 Players in the same PC", '\0';
+	buttons[2] = "2 Players via serial port", '\0';
+	buttons[3] = "Settings", '\0';
+	buttons[4] = "Credits", '\0';
+	buttons[5] = "Exit", '\0';
+	if(event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+	{
+		if (!va_arg(*var_args, int)) // pressed
+		{
+			vector2D_t top_left_corner;
+			size_t i;
+			for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+			{
+				top_left_corner = vectorCreate((vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
+						i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
+				if (isPointInAxisAlignedRectangle(
+						top_left_corner,
+						RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
+						RACINIX_MAIN_MENU_CHAR_HEIGHT,
+						mouse_position))
+				{
+					break;
+				}
+			}
+			switch (i) // TODO
+			{
+			case 0: // 1 Player
+				return RACINIX_STATE_RACE;
+			case 1: // 2 Players in the same PC
+				break;
+			case 2: // 2 Players via serial port
+				break;
+			case 3: // Settings
+				break;
+			case 4: // Credits
+				break;
+			case 5: // Exit
+				return RACINIX_STATE_END;
+			default:
+				break; // A button wasn't clicked
+			}
+		}
+	}
+	if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+	{
+		draw_mouse();
+	}
+
+	// Show menu
+	size_t i;
+	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+	{
+		// TODO Write text
+		vg_draw_rectangle(
+				(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
+				i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
+				RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
+				RACINIX_MAIN_MENU_CHAR_HEIGHT,
+				0x11
+		);
+	}
+	draw_mouse();
+	vg_swap_buffer();
+	return RACINIX_STATE_MAIN_MENU;
 }
 
-int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2)
+int racinix_race_event_handler(int event, va_list *var_args)
 {
-	racinix_event_handler(RACINIX_EVENT_TIMER);
-	static vehicle_keys_t vehicle_keys;
-	static unsigned counter = 0;
-	if (counter >= TIMER_DEFAULT_FREQ / FPS)
+	switch (event)
 	{
+	case RACINIX_EVENT_NEW_FRAME:
+	{
+		static vehicle_keys_t vehicle_keys;
 		vg_swap_mouse_buffer();
 		vg_fill(0x2);
 		size_t l;
-		track_draw(track, vmi->XResolution, vmi->YResolution);
+		track_draw(track, vmi.XResolution, vmi.YResolution);
 		// Vehicle 1
-		double drag = 0.5;
+		double drag = VEHICLE_DRAG;
 		size_t i;
 		for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 		{
-			drag += track_get_point_drag(track, (int)vehicle1->wheels[i].x, (int)vehicle1->wheels[i].y, vmi->XResolution, vmi->YResolution);
+			drag += track_get_point_drag(track, (int)vehicle1->wheels[i].x, (int)vehicle1->wheels[i].y, vmi.XResolution, vmi.YResolution);
 		}
 		vehicle_keys.accelerate = kbd_keys[KEY_W].pressed;
 		vehicle_keys.brake = kbd_keys[KEY_S].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_A].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_D].pressed;
-		vehicle_tick(vehicle1, vmi, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys);
+		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 1; i < 5; ++i)
 		{
-			vg_draw_line(vmi->XResolution / 2, vmi->YResolution - i, vmi->XResolution / 2 + vehicle1->speed, vmi->YResolution - i, 0x0);
+			vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle1->speed, vmi.YResolution - i, 0x0);
 		}
 		// Vehicle 2
 		drag = 0.5;
 		for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 		{
-			drag += track_get_point_drag(track, (int)vehicle2->wheels[i].x, (int)vehicle2->wheels[i].y, vmi->XResolution, vmi->YResolution);
+			drag += track_get_point_drag(track, (int)vehicle2->wheels[i].x, (int)vehicle2->wheels[i].y, vmi.XResolution, vmi.YResolution);
 		}
 		vehicle_keys.accelerate = kbd_keys[KEY_ARR_UP].pressed;
 		vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_ARR_LEFT].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_ARR_RIGHT].pressed;
-		vehicle_tick(vehicle2, vmi, (double)counter / TIMER_DEFAULT_FREQ, drag, vehicle_keys);
+		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 5; i < 10; ++i)
 		{
-			vg_draw_line(vmi->XResolution / 2, vmi->YResolution - i, vmi->XResolution / 2 + vehicle2->speed, vmi->YResolution - i, 0x0);
+			vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle2->speed, vmi.YResolution - i, 0x0);
 		}
-		counter = 0;
 
 		if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
 		{
@@ -225,41 +284,53 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 		{
 			vehicle_vehicle_collision_handler(vehicle2, vehicle1);
 		}
-		draw_mouse(vmi->XResolution, vmi->YResolution);
 		vg_swap_buffer();
 	}
-	++counter;
-	return 0;
+	}
+	return RACINIX_STATE_RACE;
 }
 
-int racinix_mouse_int_handler(unsigned width, unsigned height)
+int racinix_keyboard_int_handler()
+{
+	return keyboard_int_handler();
+}
+
+int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2)
+{
+	static unsigned counter = 0;
+	if (counter >= TIMER_DEFAULT_FREQ / FPS)
+	{
+		counter = 1;
+		return 0;
+	}
+	return ++counter;
+}
+
+int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet)
 {
 	if(mouse_int_handler(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
-	mouse_data_packet_t mouse_data_packet;
-	if (mouse_get_packet(&mouse_data_packet))
+	if (mouse_get_packet(mouse_data_packet))
 	{
-		mouse_position = vectorAdd(mouse_position, vectorCreate(mouse_data_packet.x_delta, -mouse_data_packet.y_delta));
+		mouse_position = vectorAdd(mouse_position, vectorCreate(mouse_data_packet->x_delta, -mouse_data_packet->y_delta));
 		if (mouse_position.x < 0)
 		{
 			mouse_position.x = 0;
 		}
-		else if (mouse_position.x >= width)
+		else if (mouse_position.x >= vmi.XResolution)
 		{
-			mouse_position.x = width - 1;
+			mouse_position.x = vmi.XResolution - 1;
 		}
 		if (mouse_position.y < 0)
 		{
 			mouse_position.y = 0;
 		}
-		else if (mouse_position.y >= height)
+		else if (mouse_position.y >= vmi.YResolution)
 		{
-			mouse_position.y = height - 1;
+			mouse_position.y = vmi.YResolution - 1;
 		}
-
-		draw_mouse(width, height);
 
 		return 0;
 	}
@@ -269,11 +340,11 @@ int racinix_mouse_int_handler(unsigned width, unsigned height)
 	}
 }
 
-void draw_mouse(unsigned width, unsigned height)
+void draw_mouse()
 {
 	vg_swap_buffer();
 	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(5), &xpm_width, &xpm_height, width, height);
+	char *xpm = read_xpm(pixmap_get(5), &xpm_width, &xpm_height, vmi.XResolution, vmi.YResolution);
 	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, xpm, (unsigned short)xpm_width, (unsigned short)xpm_height);
 	free(xpm);
 	vg_swap_mouse_buffer();
