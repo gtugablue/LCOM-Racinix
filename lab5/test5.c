@@ -79,7 +79,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 	{
 		return 1;
 	}
-	vg_draw_square(x, y, size, color);
+	vg_draw_rectangle(x, y, size, size, color);
 	vg_swap_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
@@ -136,6 +136,7 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 	}
 	vg_draw_line(xi, yi, xf, yf, color);
 	vg_swap_buffer();
+	vg_swap_mouse_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
@@ -258,11 +259,8 @@ int test_controller()
 	{
 		return 1;
 	}
-#define VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT	0
-#define VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT					1
-#define VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT		2
 	printf("Controller capabilities: 0x%X\n", vbe_info_block.Capabilities);
-	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT))
+	if (vbe_info_block.Capabilities & BIT(VBE_CONTROLLER_CAPABILITIES_DAC_SWITCHABLE_WIDTH_BIT))
 	{
 		printf("\tDAC width is switchable to 8 bits per primary color\n");
 	}
@@ -270,7 +268,7 @@ int test_controller()
 	{
 		printf("\tDAC is fixed width, with 6 bits per primary color\n");
 	}
-	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT))
+	if (vbe_info_block.Capabilities & BIT(VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT))
 	{
 		printf("\tController is not VGA compatible\n");
 	}
@@ -278,7 +276,7 @@ int test_controller()
 	{
 		printf("\tController is VGA compatible\n");
 	}
-	if (vbe_info_block.Capabilities && BIT(VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT))
+	if (vbe_info_block.Capabilities & BIT(VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT))
 	{
 		printf("\tWhen programming large blocks of information to the RAMDAC, the blank bit must be used in function 0x09\n");
 	}

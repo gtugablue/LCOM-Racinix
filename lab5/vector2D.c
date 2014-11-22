@@ -54,12 +54,24 @@ void normalize(vector2D_t* vector)
 	return;
 }
 
-bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t* point)
+bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point)
+{
+	if (point.x >= top_left_corner.x && point.y >= top_left_corner.y && point.x <= top_left_corner.x + width && point.y <= top_left_corner.y + height)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t point)
 {
 	int i, j;
 	bool c = false;
 	for (i = 0, j = polygon_size - 1; i < polygon_size; j = i++) {
-		if (((polygon[i].y > point->y) != (polygon[j].y > point->y)) && (point->x < (polygon[j].x - polygon[i].x) * (point->y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x))
+		if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) && (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x))
 		{
 			c = !c;
 		}
