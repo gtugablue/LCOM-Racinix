@@ -14,6 +14,10 @@
 
 void *test_init(unsigned short mode, unsigned short delay)
 {
+	if (lm_init())
+	{
+		return 1;
+	}
 	char *video_mem;
 	if ((video_mem = vg_init(mode)) == NULL)
 	{
@@ -70,6 +74,10 @@ void *test_init(unsigned short mode, unsigned short delay)
 
 int test_square(unsigned short x, unsigned short y, unsigned short size, unsigned long color)
 {
+	if (lm_init())
+	{
+		return 1;
+	}
 	char *video_mem;
 	if (vg_exit()) // To fix the bug that makes colors darker the first time Minix enters graphics mode
 	{
@@ -125,6 +133,10 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 
 int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned short yf, unsigned long color)
 {
+	if (lm_init())
+	{
+		return 1;
+	}
 	if (vg_exit()) // To fix the bug that makes colors darker the first time Minix enters graphics mode
 	{
 		return 1;
@@ -182,6 +194,10 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 
 int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 {
+	if (lm_init())
+	{
+		return 1;
+	}
 	char *video_mem;
 	if ((video_mem = vg_init(TEST_MODE)) == NULL)
 	{
@@ -242,8 +258,12 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 
 int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short hor, short delta, unsigned short time)
 {
+	if (lm_init())
+	{
+		return 1;
+	}
 	/* To be completed */
-	
+
 }					
 
 int test_controller()
