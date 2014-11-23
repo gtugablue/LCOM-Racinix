@@ -1,7 +1,8 @@
 #ifndef __VIDEO_GR_H
 #define __VIDEO_GR_H
 
-#define VIDEO_GR_TRANSPARENT		0x00
+#define VIDEO_GR_256_TRANSPARENT		0x00
+#define VIDEO_GR_256_BLACK				0xFF
 
 #include <stdbool.h>
 #include "vector2D.h"

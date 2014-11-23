@@ -10,11 +10,6 @@
 
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p)
 {
-	if (lm_init())
-	{
-		return 1;
-	}
-
 	mmap_t map;
 
 	if (lm_alloc(sizeof(vbe_mode_info_t), &map) == NULL)

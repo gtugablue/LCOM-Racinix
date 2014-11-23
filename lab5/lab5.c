@@ -126,11 +126,11 @@ static int proc_args(int argc, char *argv[]) {
 			printf("video_gr: pixmap not found\n");
 			return 1;
 		}
-		if( (hor = parse_ushort(argv[2], 10)) == USHRT_MAX )
+		if( (hor = parse_ushort(argv[5], 10)) == USHRT_MAX )
 			return 1;
-		if( (delta = parse_ushort(argv[3], 10)) == USHRT_MAX )
+		if( (delta = parse_ushort(argv[6], 10)) == USHRT_MAX )
 			return 1;
-		if( (time = parse_ushort(argv[4], 10)) == USHRT_MAX )
+		if( (time = parse_ushort(argv[7], 10)) == USHRT_MAX )
 			return 1;
 
 		printf("video_gr:: test_move(%d, %d, pixmaps[%d], %d, %d, %d)\n",

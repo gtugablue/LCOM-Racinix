@@ -97,7 +97,7 @@ int vg_fill(unsigned long color)
 inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	if(x < h_res && y < v_res)
 	{
-		if (color != VIDEO_GR_TRANSPARENT)
+		if (color != VIDEO_GR_256_TRANSPARENT)
 		{
 			*(double_buffer + (x + y * h_res) * bits_per_pixel / 8) = color;
 		}
@@ -262,7 +262,7 @@ void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 		{
 			if(x + i < h_res && y + j < v_res)
 			{
-				if (*(pixmap + i + j * width) != VIDEO_GR_TRANSPARENT)
+				if (*(pixmap + i + j * width) != VIDEO_GR_256_TRANSPARENT)
 				{
 					*(mouse_buffer + ((x + i) + (y + j) * h_res) * bits_per_pixel / 8) = *(pixmap + (i + j * width) * bits_per_pixel / 8);
 				}

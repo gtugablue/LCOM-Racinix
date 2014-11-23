@@ -16,7 +16,11 @@ void *test_init(unsigned short mode, unsigned short delay)
 {
 	if (lm_init())
 	{
-		return 1;
+		return NULL;
+	}
+	if (vg_exit()) // To fix the bug that makes colors darker the first time Minix enters graphics mode
+	{
+		return NULL;
 	}
 	char *video_mem;
 	if ((video_mem = vg_init(mode)) == NULL)
@@ -93,7 +97,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 	{
 		return 1;
 	}
-	int r, ipc_status, scan_result;
+	int r, ipc_status;
 	message msg;
 	bool pressed = false;
 	while (1)
@@ -124,11 +128,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 			}
 		}
 	}
-	if (keyboard_unsubscribe_int())
-	{
-		return 1;
-	}
-	return vg_exit();
+	return keyboard_unsubscribe_int() | vg_exit();
 }
 
 int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned short yf, unsigned long color)
@@ -153,7 +153,7 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 	{
 		return 1;
 	}
-	int r, ipc_status, scan_result;
+	int r, ipc_status;
 	message msg;
 	bool pressed = false;
 	while (1)
@@ -184,17 +184,16 @@ int test_line(unsigned short xi, unsigned short yi, unsigned short xf, unsigned 
 			}
 		}
 	}
-	if (keyboard_unsubscribe_int())
-	{
-		return 1;
-	}
-
-	return vg_exit();
+	return keyboard_unsubscribe_int() | vg_exit();
 }
 
 int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 {
 	if (lm_init())
+	{
+		return 1;
+	}
+	if (vg_exit()) // To fix the bug that makes colors darker the first time Minix enters graphics mode
 	{
 		return 1;
 	}
@@ -217,7 +216,7 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 	{
 		return 1;
 	}
-	int r, ipc_status, scan_result;
+	int r, ipc_status;
 	message msg;
 	bool pressed = false;
 	while (1)
@@ -248,12 +247,7 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 			}
 		}
 	}
-	if (keyboard_unsubscribe_int())
-	{
-		return 1;
-	}
-
-	return vg_exit();
+	return keyboard_unsubscribe_int() | vg_exit();
 }	
 
 int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short hor, short delta, unsigned short time)
@@ -262,8 +256,84 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 	{
 		return 1;
 	}
-	/* To be completed */
+	if (vg_exit()) // To fix the bug that makes colors darker the first time Minix enters graphics mode
+	{
+		return 1;
+	}
+	char *video_mem;
+	if ((video_mem = vg_init(TEST_MODE)) == NULL)
+	{
+		return 1;
+	}
+	vbe_mode_info_t vbe_mode_info;
+	if (vbe_get_mode_info(TEST_MODE, &vbe_mode_info)) // We are running this command again but this way we avoid having to pass a vbe_mode_info_t struct by reference to vg_init, which sometimes may not be needed
+	{
+		return 1;
+	}
+	unsigned char timer_hook_bit;
+	if ((timer_hook_bit = timer_subscribe_int()) < 0)
+	{
+		return 1;
+	}
+	int r, ipc_status;
+	message msg;
+	bool pressed = false;
+	unsigned counter = 0;
+	if (keyboard_subscribe_int() == -1)
+	{
+		return 1;
+	}
+	vector2D_t velocity = vectorCreate(0, 0);
+	if (hor == 0)
+	{
+		velocity.x = (double)delta / time;
+	}
+	else
+	{
+		velocity.y = (double)delta / time;
+	}
+	Sprite *sprite = create_sprite(xpm, xi, yi, velocity.x, velocity.y, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
+	while (counter < TIMER_DEFAULT_FREQ * time)
+	{
+		/* Get a request message. */
+		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
+			// Driver receive fail
+			continue;
+		}
+		if (is_ipc_notify(ipc_status)) { /* received notification */
+			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
+			{
+				if (msg.NOTIFY_ARG & BIT(timer_hook_bit))
+				{
+					// New frame
+					clear_sprite_area(sprite);
+					animate_sprite(sprite, 1.0 / TIMER_DEFAULT_FREQ);
+					++counter;
 
+					// Swap buffers
+					vg_swap_buffer();
+					vg_swap_mouse_buffer();
+				}
+				if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
+					if (keyboard_int_handler())
+					{
+						return 1;
+					}
+					if (kbd_keys[KEY_ESC].pressed)
+					{
+						pressed = true;
+						continue;
+					}
+					if (!kbd_keys[KEY_ESC].pressed && pressed)
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+	destroy_sprite(sprite);
+	return timer_unsubscribe_int() | keyboard_unsubscribe_int() | vg_exit();
 }					
 
 int test_controller()
