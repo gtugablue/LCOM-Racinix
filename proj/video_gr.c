@@ -97,7 +97,7 @@ int vg_fill(unsigned long color)
 inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 	if(x < h_res && y < v_res)
 	{
-		if (color != VIDEO_GR_TRANSPARENT)
+		if (color != VIDEO_GR_256_TRANSPARENT)
 		{
 			*(double_buffer + (x + y * h_res) * bits_per_pixel / 8) = color;
 		}
@@ -123,10 +123,42 @@ static void swap(unsigned long* a, unsigned long* b)
 
 int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 {
-	// Bresenham's line algorithm
+	// Our algorithm
+	if (xi == xf)
+	{
+		if (yi > yf)
+		{
+			swap(&yi, &yf);
+		}
+		while (yi <= yf)
+		{
+			vg_set_pixel(xf, yi, color);
+			++yi;
+		}
+		return 0;
+	}
+	float m = (yf - yi) / (xf - xi);
+	float b = yf - m * xf;
+	if (xf < xi)
+	{
+		swap (&xf, &xi);
+	}
+	if (yf < yi)
+	{
+		swap (&yf, &yi);
+	}
+	while (xi <= xf)
+	{
+		vg_set_pixel(xi, (long)(m * xi + b), color);
+		++xi;
+	}
+	while (yi <= yf)
+	{
+		vg_set_pixel((long)((yi - b) / m), yi, color);
+		++yi;
+	}
 
-	// TODO ALTERAR ESTE CÓDIGO!!! ARRANJAR UM ALGORITMO MEU!!
-
+	/*Bresenham's line algorithm
 	unsigned long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
 	dx=abs(xi-xf);dy=abs(yi-yf);
@@ -163,8 +195,7 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 			vg_set_pixel(yi,xi,color);
 		else
 			vg_set_pixel(xi,yi,color);
-	}
-
+	}*/
 	return 0;
 }
 
@@ -231,7 +262,7 @@ void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned shor
 		{
 			if(x + i < h_res && y + j < v_res)
 			{
-				if (*(pixmap + i + j * width) != VIDEO_GR_TRANSPARENT)
+				if (*(pixmap + i + j * width) != VIDEO_GR_256_TRANSPARENT)
 				{
 					*(mouse_buffer + ((x + i) + (y + j) * h_res) * bits_per_pixel / 8) = *(pixmap + (i + j * width) * bits_per_pixel / 8);
 				}
