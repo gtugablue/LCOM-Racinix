@@ -5,6 +5,7 @@
 #include "vbe.h"
 #include "timer.h"
 #include "keyboard.h"
+#include "sprite.h"
 
 /** @defgroup video_gr video_gr
  * @{

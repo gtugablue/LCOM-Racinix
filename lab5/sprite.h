@@ -1,17 +1,21 @@
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
+#include "vector2D.h"
+
 typedef struct {
-int x, y; // current position
+vector2D_t position; // current position
 int width, height; // dimensions
-double xspeed, yspeed; // current speed
+vector2D_t velocity;
 char *map; // the pixmap
 } Sprite;
 
 #endif
 
-Sprite *create_sprite(char *pic[], char *bas);
+Sprite *create_sprite(char *pic[], unsigned x, unsigned y, double velocity_x, double velocity_y, unsigned h_res, unsigned v_res);
 
-int animate_sprite(Sprite *sp, char *base);
+int clear_sprite_area(Sprite *sp);
 
-void destroy_sprite(Sprite *sp, char *base);
+int animate_sprite(Sprite *sp, double delta_time);
+
+void destroy_sprite(Sprite *sp);

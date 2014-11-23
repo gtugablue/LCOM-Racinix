@@ -39,7 +39,7 @@ char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width,
 	{
 		return NULL;
 	}
-	memset(new_pixmap, VIDEO_GR_TRANSPARENT, *width * *height * sizeof(char));
+	memset(new_pixmap, VIDEO_GR_256_TRANSPARENT, *width * *height * sizeof(char));
 	int x, y;
 	for (x = 0; x < *width; ++x)
 	{
