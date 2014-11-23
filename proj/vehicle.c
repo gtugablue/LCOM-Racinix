@@ -47,11 +47,11 @@ void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys
 {
 	if (vehicle_keys.turn_left && !vehicle_keys.turn_right)
 	{
-		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
+		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
 	}
 	else if (vehicle_keys.turn_right && !vehicle_keys.turn_left)
 	{
-		vehicle->steering += (VEHICLE_STEER * vehicle->length) / (2 * abs(vehicle->speed));
+		vehicle->steering += (VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
 	}
 	else
 	{
