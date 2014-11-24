@@ -48,7 +48,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 		return 1;
 	}
 
-	memcpy(vib_p->VbeSignature, "VBE2", sizeof("VBE2"));
+	memcpy(vib_p->VbeSignature, VBE_2_SIGNATURE, sizeof(VBE_2_SIGNATURE));
 
 	struct reg86u reg86;
 
@@ -70,7 +70,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 
 	*vib_p = *((vbe_info_block_t *)map.virtual);
 
-	if (memcmp(vib_p->VbeSignature, "VESA", sizeof(vib_p->VbeSignature)) != 0)
+	if (memcmp(vib_p->VbeSignature, VBE_VESA_SIGNATURE, sizeof(vib_p->VbeSignature)) != 0)
 	{
 		return 1;
 	}
