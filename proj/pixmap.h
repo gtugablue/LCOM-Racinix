@@ -247,8 +247,8 @@ static char * penguin[] = {
 static char * cursor[] = {
 "13 22 3",
 "  0",
-"+ 255",
-". 63",
+"+ 1",
+". 65000",
 "+            ",
 "++           ",
 "+.+          ",
@@ -274,7 +274,7 @@ static char * cursor[] = {
 
 static char * car[] = {
 "40 22 4",
-"  0",
+"  1",
 ". 255",
 "+ 4",
 "@ 254",
@@ -303,6 +303,6 @@ static char * car[] = {
 
 char **pixmap_get(unsigned short id);
 
-char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width, unsigned short *height, double angle);
+uint16_t* pixmap_rotate(vbe_mode_info_t *vmi_p, uint16_t* pixmap, unsigned short *width, unsigned short *height, double angle);
 
 #endif

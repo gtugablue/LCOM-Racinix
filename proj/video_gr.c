@@ -15,14 +15,16 @@
 
 /* Private global variables */
 
-static char *video_mem;		/* Process address to which VRAM is mapped */
+static uint16_t *video_mem;		/* Process address to which VRAM is mapped */
 
 static unsigned h_res;		/* Horizontal screen resolution in pixels */
 static unsigned v_res;		/* Vertical screen resolution in pixels */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
-static char *double_buffer;
-static char *mouse_buffer;
+static uint16_t *double_buffer;
+static uint16_t *mouse_buffer;
+
+static vbe_mode_info_t vbe_mode_info;
 
 void *vg_init(unsigned short mode)
 {
@@ -32,8 +34,6 @@ void *vg_init(unsigned short mode)
 	reg86.u.b.ah = VBE_FUNCTION;
 	reg86.u.b.al = VBE_SET_VBE_MODE;
 	reg86.u.w.bx = mode | BIT(VBE_MODE_NUMBER_LINEAR_FLAT_FRAME_BUFFER_BIT);
-
-	vbe_mode_info_t vbe_mode_info;
 	if (sys_int86(&reg86) == OK)
 	{
 		if (reg86.u.w.ax == VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL)
@@ -83,24 +83,20 @@ void *vg_init(unsigned short mode)
 	return NULL;
 }
 
-int vg_fill(unsigned long color)
+int vg_fill(uint16_t color)
 {
-	char *pixel;
-	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res * bits_per_pixel / 8; ++pixel)
+	uint16_t *pixel;
+	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res; ++pixel)
 	{
 		*pixel = color;
 	}
-
 	return 0;
 }
 
-inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
+inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color) {
 	if(x < h_res && y < v_res)
 	{
-		if (color != VIDEO_GR_256_TRANSPARENT)
-		{
-			*(double_buffer + (x + y * h_res) * bits_per_pixel / 8) = color;
-		}
+		*(double_buffer + (x + y * h_res)) = color;
 		return 0;
 	}
 	return 1;
@@ -109,7 +105,7 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color) {
 inline long vg_get_pixel(unsigned long x, unsigned long y) {
 	if (x <= h_res && y <= v_res)
 	{
-		return *(double_buffer + (x + y * h_res) * bits_per_pixel / 8);
+		return *(double_buffer + (x + y * h_res));
 	}
 	return 0;
 }
@@ -241,30 +237,42 @@ int vg_draw_circle(unsigned long x0, unsigned long y0, unsigned long radius, uns
 	return 0;
 }
 
-int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height)
+int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned short width, unsigned short height)
 {
 	size_t i, j;
 	for (i = 0; i < width; ++i)
 	{
 		for (j = 0; j < height; ++j)
 		{
-			vg_set_pixel(x + i, y + j, *(pixmap + (i + j * width) * bits_per_pixel / 8));
+			vg_set_pixel(x + i, y + j, *(pixmap + (i + j * width)));
 		}
 	}
+	/*size_t i, pixelID;
+	size_t line;
+	size_t linePixel;
+	for (i = double_buffer + x + y * h_res, line = 0; line < height; ++line, i += y_res)
+	{
+		linePixel = 0;
+		while (linePixel < width)
+		{
+			*(i + linePixel) =
+					linePixel++;
+		}
+	}*/
 }
 
-void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height)
+void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap)
 {
 	size_t i, j;
-	for (i = 0; i < width; ++i)
+	for (i = x; i < x + bitmap->bitmap_information_header.width; ++i)
 	{
-		for (j = 0; j < height; ++j)
+		for (j = y; j < y + bitmap->bitmap_information_header.height; ++j)
 		{
-			if(x + i < h_res && y + j < v_res)
+			if(i < h_res && 2 * y + bitmap->bitmap_information_header.height - j < v_res)
 			{
-				if (*(pixmap + i + j * width) != VIDEO_GR_256_TRANSPARENT)
+				if (*((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width) !=  VIDEO_GR_64K_TRANSPARENT)
 				{
-					*(mouse_buffer + ((x + i) + (y + j) * h_res) * bits_per_pixel / 8) = *(pixmap + (i + j * width) * bits_per_pixel / 8);
+					*(mouse_buffer + i + (2 * y + bitmap->bitmap_information_header.height - j) * h_res) = *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width);
 				}
 			}
 		}
@@ -317,6 +325,16 @@ void vg_swap_buffer()
 void vg_swap_mouse_buffer()
 {
 	memcpy(video_mem, mouse_buffer, h_res * v_res * bits_per_pixel / 8);
+}
+
+uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
+{
+	// TODO FIX
+	uint16_t rgb = 0x0;
+	rgb |= (r * (1 << vbe_mode_info.RedMaskSize) / (1 << 8)) << vbe_mode_info.RedFieldPosition;
+	rgb |= (g * (1 << vbe_mode_info.GreenMaskSize) / (1 << 8)) << vbe_mode_info.GreenFieldPosition;
+	rgb |= (b * (1 << vbe_mode_info.BlueMaskSize) / (1 << 8)) << vbe_mode_info.BlueFieldPosition;
+	return rgb;
 }
 
 int vg_exit() {

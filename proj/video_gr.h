@@ -3,9 +3,17 @@
 
 #define VIDEO_GR_256_TRANSPARENT		0x00
 #define VIDEO_GR_256_BLACK				0xFF
+#define VIDEO_GR_64K_TRANSPARENT		0x01
+#define VIDEO_GR_RED					rgb(255, 0, 0)
+#define VIDEO_GR_GREEN					rgb(0, 255, 0)
+#define	VIDEO_GR_BLUE					rgb(0, 0, 255)
+#define VIDEO_GR_BLACK					rgb(0, 0, 0)
+#define VIDEO_GR_WHITE					rgb(255, 255, 255)
 
 #include <stdbool.h>
+#include <minix/syslib.h>
 #include "vector2D.h"
+#include "bitmap.h"
 
 /** @defgroup video_gr video_gr
  * @{
@@ -33,7 +41,7 @@ void *vg_init(unsigned short mode);
  * @param color color to fill the screen with
  * @return 0 on success, non-zero upon failure
  */
-int vg_fill(unsigned long color);
+int vg_fill(uint16_t color);
 
 /**
  * @brief Sets input pixel with input color
@@ -46,7 +54,7 @@ int vg_fill(unsigned long color);
  * @param color color to set the pixel
  * @return 0 on success, non-zero otherwise
  */
-inline int vg_set_pixel(unsigned long x, unsigned long y, unsigned long color);
+inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color);
 
 /**
  * @brief Returns the color of the input pixel
@@ -88,15 +96,17 @@ int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, uns
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
 
-int vg_draw_pixmap(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
+int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned short width, unsigned short height);
 
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
-void vg_draw_mouse(unsigned long x, unsigned long y, char *pixmap, unsigned short width, unsigned short height);
+void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
 
 void vg_swap_buffer();
 
 void vg_swap_mouse_buffer();
+
+uint16_t rgb(unsigned char r, unsigned char g, unsigned char b);
 
  /**
  * @brief Returns to default Minix 3 text mode (0x03: 25 x 80, 16 colors)

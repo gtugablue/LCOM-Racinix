@@ -8,14 +8,15 @@
 
 #include "xpm.h"
 
-char *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned short v_res)
+uint16_t *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned short v_res)
 {
-	int width, height, colors;
-	char sym[256];
-	int  col;
+	unsigned width, height, colors;
+	uint16_t sym[256];
+	uint16_t col;
 	int i, j;
-	char *pix, *pixtmp, *tmp, *line;
+	char *line;
 	char symbol;
+	uint16_t *pix, *pixtmp, *tmp;
 
 	/* read width, height, colors */
 	if (sscanf(map[0],"%d %d %d", &width, &height, &colors) != 3) {
@@ -25,7 +26,7 @@ char *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned sho
 #ifdef DEBUG
 	printf("%d %d %d\n", width, height, colors);
 #endif
-	if (width > h_res || height > v_res || colors > 256) {
+	if (width > h_res || height > v_res || colors > 255) {
 		printf("read_xpm: incorrect width, height, colors\n");
 		return NULL;
 	}
@@ -53,7 +54,7 @@ char *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned sho
 	}
 
 	/* allocate pixmap memory */
-	pix = pixtmp = malloc(width*height);
+	pix = pixtmp = malloc(width*height * sizeof(uint16_t));
 
 	/* parse each pixmap symbol line */
 	for (i=0; i<height; i++) {
@@ -62,7 +63,7 @@ char *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned sho
 		printf("\nparsing %s\n", line);
 #endif
 		for (j=0; j<width; j++) {
-			tmp = memchr(sym, line[j], 256);  /* find color of each symbol */
+			tmp = memchr(sym, line[j], 2 << 16);  /* find color of each symbol */
 			if (tmp == NULL) {
 				printf("read_xpm: incorrect symbol at line %d, col %d\n", colors+i+1, j);
 				return NULL;
@@ -73,6 +74,5 @@ char *read_xpm(char *map[], int *wd, int *ht, unsigned short h_res, unsigned sho
 #endif
 		}
 	}
-
 	return pix;
 }

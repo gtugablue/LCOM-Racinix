@@ -323,10 +323,10 @@ int vehicle_draw(vehicle_t *vehicle, vbe_mode_info_t *vmi_p)
 	}*/
 
 	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, vmi_p->XResolution, vmi_p->YResolution);
+	uint16_t *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, vmi_p->XResolution, vmi_p->YResolution);
 	unsigned short xpm_width2 = xpm_width;
 	unsigned short xpm_height2 = xpm_height;
-	char *pixmap;
+	uint16_t *pixmap = xpm;
 	if ((pixmap = pixmap_rotate(vmi_p, xpm, &xpm_width2, &xpm_height2, vehicle->heading)) == NULL)
 	{
 		return 1;

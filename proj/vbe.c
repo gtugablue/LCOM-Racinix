@@ -80,7 +80,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 		return 1;
 	}
 
-	void *farptr = (void *)(((vib_p->VideoModePtr & 0xffff0000) >> 12) + (vib_p->VideoModePtr & 0xffff) + ((uint32_t)map.virtual & 0xF0000000));
+	void *farptr = (void *)(((vib_p->VideoModePtr & 0xffff0000) >> 12) + PB2OFF(vib_p->VideoModePtr) + ((uint32_t)map.virtual & 0xF0000000));
 
 	lm_free(&map);
 

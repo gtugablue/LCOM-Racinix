@@ -25,7 +25,7 @@ char **pixmap_get(unsigned short id)
 	}
 }
 
-char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width, unsigned short *height, double angle)
+uint16_t* pixmap_rotate(vbe_mode_info_t *vmi_p, uint16_t* pixmap, unsigned short *width, unsigned short *height, double angle)
 {
 	double angle_cos = cos(angle);
 	double angle_sin = sin(angle);
@@ -34,12 +34,12 @@ char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width,
 	unsigned short old_width = *width;
 	unsigned short old_height = *height;
 	*width = *height = sqrt(old_width * old_width + old_height * old_height);
-	char *new_pixmap;
+	uint16_t *new_pixmap;
 	if ((new_pixmap = malloc(*width * *height * vmi_p->BitsPerPixel / 8)) == NULL)
 	{
 		return NULL;
 	}
-	memset(new_pixmap, VIDEO_GR_256_TRANSPARENT, *width * *height * sizeof(char));
+	memset(new_pixmap, VIDEO_GR_64K_TRANSPARENT, *width * *height * sizeof(char));
 	int x, y;
 	for (x = 0; x < *width; ++x)
 	{
@@ -51,7 +51,7 @@ char* pixmap_rotate(vbe_mode_info_t *vmi_p, char* pixmap, unsigned short *width,
 			old_y = ((int)(transform_y * angle_cos - transform_x * angle_sin)) + old_height / 2;
 			if (old_x >= 0 && old_x < old_width && old_y >= 0 && old_y < old_height)
 			{
-				*(new_pixmap + (x + y * *width) * vmi_p->BitsPerPixel / 8) = *(pixmap + (old_x + old_y * old_width) * vmi_p->BitsPerPixel / 8);
+				*(new_pixmap + (x + y * *width)) = *(pixmap + (old_x + old_y * old_width));
 			}
 		}
 	}
