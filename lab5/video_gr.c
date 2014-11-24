@@ -123,42 +123,7 @@ static void swap(unsigned long* a, unsigned long* b)
 
 int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 {
-	// Our algorithm
-	if (xi == xf)
-	{
-		if (yi > yf)
-		{
-			swap(&yi, &yf);
-		}
-		while (yi <= yf)
-		{
-			vg_set_pixel(xf, yi, color);
-			++yi;
-		}
-		return 0;
-	}
-	float m = (yf - yi) / (xf - xi);
-	float b = yf - m * xf;
-	if (xf < xi)
-	{
-		swap (&xf, &xi);
-	}
-	if (yf < yi)
-	{
-		swap (&yf, &yi);
-	}
-	while (xi <= xf)
-	{
-		vg_set_pixel(xi, (long)(m * xi + b), color);
-		++xi;
-	}
-	while (yi <= yf)
-	{
-		vg_set_pixel((long)((yi - b) / m), yi, color);
-		++yi;
-	}
-
-	/*Bresenham's line algorithm
+	//Bresenham's line algorithm
 	unsigned long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
 	dx=abs(xi-xf);dy=abs(yi-yf);
@@ -195,7 +160,7 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 			vg_set_pixel(yi,xi,color);
 		else
 			vg_set_pixel(xi,yi,color);
-	}*/
+	}
 	return 0;
 }
 
