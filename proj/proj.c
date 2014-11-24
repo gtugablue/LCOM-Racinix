@@ -11,6 +11,8 @@ static vbe_mode_info_t vmi;
 static track_t *track;
 static vehicle_t *vehicle1;
 static vehicle_t *vehicle2;
+static bitmap_t *background;
+static bitmap_t *mouse_cursor;
 
 int main(int argc, char **argv) {
 
@@ -18,9 +20,11 @@ int main(int argc, char **argv) {
 
 	sef_startup();
 
-	racinix_start();
-
-	racinix_dispatcher();
+	if (racinix_start())
+	{
+		racinix_exit();
+		printf("Racinix: An error occurred and the program was stopped.\n");
+	}
 
 	racinix_exit();
 
@@ -35,11 +39,31 @@ int racinix_start()
 	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
+
+	background = bitmap_load("/home/lcom/proj/images/background.bmp");
+	if (background == NULL)
+	{
+		return 1;
+	}
+
+	mouse_cursor = bitmap_load("/home/lcom/proj/images/mouse-cursor-icon.bmp");
+	if (mouse_cursor == NULL)
+	{
+		return 1;
+	}
+
+	if (racinix_dispatcher() != 0)
+	{
+		return 1;
+	}
+	return 0;
 }
 
 int racinix_exit()
 {
 	vg_exit();
+	bitmap_delete(background);
+	bitmap_delete(mouse_cursor);
 }
 
 int racinix_dispatcher()
@@ -213,9 +237,12 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
 	{
 		draw_mouse();
+		return RACINIX_STATE_MAIN_MENU;
 	}
 
 	// Show menu
+	bitmap_draw(background, 0, 0);
+
 	size_t i;
 	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
 	{
@@ -225,11 +252,10 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
 				RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
 				RACINIX_MAIN_MENU_CHAR_HEIGHT,
-				0x11
+				VIDEO_GR_BLUE
 		);
 	}
 	draw_mouse();
-	vg_swap_buffer();
 	return RACINIX_STATE_MAIN_MENU;
 }
 
@@ -241,7 +267,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	{
 		static vehicle_keys_t vehicle_keys;
 		vg_swap_mouse_buffer();
-		vg_fill(0x2);
+		vg_fill(RACINIX_COLOR_GRASS);
 		size_t l;
 		track_draw(track, vmi.XResolution, vmi.YResolution);
 		// Vehicle 1
@@ -343,10 +369,11 @@ int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet)
 void draw_mouse()
 {
 	vg_swap_buffer();
-	int xpm_width, xpm_height;
-	char *xpm = read_xpm(pixmap_get(5), &xpm_width, &xpm_height, vmi.XResolution, vmi.YResolution);
+	/*int xpm_width, xpm_height;
+	uint16_t *xpm = read_xpm(pixmap_get(5), &xpm_width, &xpm_height, vmi.XResolution, vmi.YResolution);
 	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, xpm, (unsigned short)xpm_width, (unsigned short)xpm_height);
-	free(xpm);
+	free(xpm);*/
+	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, mouse_cursor);
 	vg_swap_mouse_buffer();
 }
 

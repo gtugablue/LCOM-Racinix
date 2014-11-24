@@ -17,13 +17,17 @@
 #include "pixmap.h"
 #include "xpm.h"
 #include <stdarg.h>
+#include "bitmap.h"
 
-#define FPS											59.94
+#define FPS											29.97
 #define INTERP_PERIOD								0.07f
-#define RACINIX_VIDEO_MODE							0x105
+#define RACINIX_VIDEO_MODE							VBE_MODE_GRAPHICS_1024_768_64K
 #define RACINIX_MAIN_MENU_NUM_BTN					6
 #define RACINIX_MAIN_MENU_CHAR_HEIGHT				30
 #define RACINIX_MAIN_MENU_CHAR_WIDTH				10
+
+#define RACINIX_COLOR_MENU_BUTTONS					VIDEO_GR_BLUE
+#define RACINIX_COLOR_GRASS							rgb(0, 90, 0)
 
 // States
 enum

@@ -11,6 +11,8 @@
 #define TRACK_INTERP_PERIOD	0.07
 #define TRACK_GRASS_DRAG	0.7
 
+#define RACINIX_COLOR_TRACK							rgb(20, 20, 20)
+
 typedef struct
 {
 	bool *track_points;

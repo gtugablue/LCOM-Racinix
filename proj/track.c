@@ -203,7 +203,7 @@ void track_draw(track_t *track, unsigned width, unsigned height)
 		{
 			if (*(track->track_points + x + y * width))
 			{
-				vg_set_pixel(x, y, 0xFF);
+				vg_set_pixel(x, y, RACINIX_COLOR_TRACK);
 			}
 		}
 	}
