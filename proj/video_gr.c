@@ -93,10 +93,21 @@ int vg_fill(uint16_t color)
 	return 0;
 }
 
-inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color) {
+inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
+{
 	if(x < h_res && y < v_res)
 	{
 		*(double_buffer + (x + y * h_res)) = color;
+		return 0;
+	}
+	return 1;
+}
+
+inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color)
+{
+	if(color != VIDEO_GR_64K_TRANSPARENT && x < h_res && y < v_res)
+	{
+		*(mouse_buffer + (x + y * h_res)) = color;
 		return 0;
 	}
 	return 1;
@@ -119,42 +130,7 @@ static void swap(unsigned long* a, unsigned long* b)
 
 int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 {
-	// Our algorithm
-	if (xi == xf)
-	{
-		if (yi > yf)
-		{
-			swap(&yi, &yf);
-		}
-		while (yi <= yf)
-		{
-			vg_set_pixel(xf, yi, color);
-			++yi;
-		}
-		return 0;
-	}
-	float m = (yf - yi) / (xf - xi);
-	float b = yf - m * xf;
-	if (xf < xi)
-	{
-		swap (&xf, &xi);
-	}
-	if (yf < yi)
-	{
-		swap (&yf, &yi);
-	}
-	while (xi <= xf)
-	{
-		vg_set_pixel(xi, (long)(m * xi + b), color);
-		++xi;
-	}
-	while (yi <= yf)
-	{
-		vg_set_pixel((long)((yi - b) / m), yi, color);
-		++yi;
-	}
-
-	/*Bresenham's line algorithm
+	//Bresenham's line algorithm
 	unsigned long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
 	dx=abs(xi-xf);dy=abs(yi-yf);
@@ -191,7 +167,7 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 			vg_set_pixel(yi,xi,color);
 		else
 			vg_set_pixel(xi,yi,color);
-	}*/
+	}
 	return 0;
 }
 
@@ -247,18 +223,6 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned 
 			vg_set_pixel(x + i, y + j, *(pixmap + (i + j * width)));
 		}
 	}
-	/*size_t i, pixelID;
-	size_t line;
-	size_t linePixel;
-	for (i = double_buffer + x + y * h_res, line = 0; line < height; ++line, i += y_res)
-	{
-		linePixel = 0;
-		while (linePixel < width)
-		{
-			*(i + linePixel) =
-					linePixel++;
-		}
-	}*/
 }
 
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap)
@@ -268,13 +232,7 @@ void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap)
 	{
 		for (j = y; j < y + bitmap->bitmap_information_header.height; ++j)
 		{
-			if(i < h_res && 2 * y + bitmap->bitmap_information_header.height - j < v_res)
-			{
-				if (*((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width) !=  VIDEO_GR_64K_TRANSPARENT)
-				{
-					*(mouse_buffer + i + (2 * y + bitmap->bitmap_information_header.height - j) * h_res) = *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width);
-				}
-			}
+			vg_set_mouse_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * (bitmap->bitmap_information_header.width + 1)));
 		}
 	}
 }

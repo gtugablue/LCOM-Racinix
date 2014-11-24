@@ -9,6 +9,13 @@ static double calculateCatmullDerivativeCoordinate(double P0, double P1, double 
 static void pushApart(vector2D_t hull[], unsigned hull_size);
 static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
 static unsigned long track_generate_random(unsigned long seed);
+static int orientation(vector2D_t p, vector2D_t q, vector2D_t r);
+static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[]);
+static bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
+static void swapPoints(vector2D_t *a, int i, int j);
+static int partition(vector2D_t *a, int left, int right, int pivot);
+static void quickSort(vector2D_t *a, int left, int right);
+static void track_generate_perturb(track_t *track);
 
 track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 {
@@ -83,6 +90,8 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		// CALCULATE OUTSIDE SPLINE
 		track->outside_spline[i] = vectorSubtract(track->spline[i], normal);
 	}
+
+
 
 	/*for (i = 0; i < spline_size; ++i)
 	{
@@ -324,3 +333,97 @@ void track_delete(track_t *track)
 {
 	// TODO
 }
+
+// Returns a list of points on the convex hull in counter-clockwise order.
+// Note: the last point in the returned list is the same as the first one.
+static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[])
+{
+	int k = 0;
+
+	// Sort points lexicographically
+	quickSort(points, 0, n - 1);
+	int i;
+	// Build lower hull
+	for (i = 0; i < n; ++i) {
+		while (k >= 2 && isLeft(hull[k-2], hull[k-1], points[i])) k--;
+		hull[k++] = points[i];
+	}
+
+	// Build upper hull
+	int t;
+	for (i = n-2, t = k+1; i >= 0; i--) {
+		while (k >= t && isLeft(hull[k-2], hull[k-1], points[i])) k--;
+		hull[k++] = points[i];
+	}
+	return k;
+}
+
+static bool isLeft( vector2D_t p1, vector2D_t p2, vector2D_t p3 )
+{
+    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0;
+}
+
+static void swapPoints(vector2D_t *a, int i, int j)
+{
+    vector2D_t t;
+    t.x = a[i].x;
+    t.y = a[i].y;
+    a[i].x = a[j].x;
+    a[i].y = a[j].y;
+    a[j].x = t.x;
+    a[j].y = t.y;
+}
+
+static int partition(vector2D_t *a, int left, int right, int pivot)
+{
+	int pos, i;
+	swapPoints(a, pivot, right);
+	pos = left;
+	for(i = left; i < right; i++)
+	{
+		if (a[i].x < a[right].x || (a[i].x == a[right].x && a[i].y < a[right].y))
+		{
+			swapPoints(a, i, pos);
+			pos++;
+		}
+	}
+	swapPoints(a, right, pos);
+	return pos;
+}
+
+static void quickSort(vector2D_t *a, int left, int right)
+{
+	if (left < right)
+	{
+		int pivot = (left + right) / 2;
+		int pos = partition(a,left,right,pivot);
+		quickSort(a, left, pos - 1);
+		quickSort(a, pos + 1, right);
+	}
+}
+
+/*static void track_generate_perturb(track_t *track)
+{
+	vector2D_t perturbed_control_points[track->num_control_points * 2];
+	Vector2 disp = new Vector2();
+	float difficulty = 1f; //the closer the value is to 0, the harder the track should be. Grows exponentially.
+	float maxDisp = 20f; // Again, this may change to fit your units.
+	for(int i = 0; i < dataSet.length; ++i)
+	{
+		float dispLen = (float)Math.pow(Random(0.0f, 1.0f), difficulty) * maxDisp;
+		disp.set(0, 1);
+		disp.rotate(MathUtils.random(0.0f, 1.0f) * 360);
+		disp.scale(dispLen);
+		rSet[i*2] = dataSet[i];
+		rSet[i*2 + 1] = new Vector2(dataSet[i]);
+		rSet[i*2 + 1].add(dataSet[(i+1)%dataSet.length]).divide(2).add(disp);
+		//Explaining: a mid point can be found with (dataSet[i]+dataSet[i+1])/2.
+		//Then we just add the displacement.
+	}
+	dataSet = rSet;
+	//push apart again, so we can stabilize the points distances.
+	for(int i = 0; i < pushIterations; ++i)
+	{
+		pushApart(dataSet);
+	}
+}*/

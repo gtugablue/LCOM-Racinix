@@ -61,14 +61,14 @@ bitmap_t *bitmap_load(const char* filename)
 
 void bitmap_draw(bitmap_t *bitmap, int x, int y)
 {
-	/*size_t i, j;
+	size_t i, j;
 	for (i = x; i < x + bitmap->bitmap_information_header.width; ++i)
 	{
 		for (j = y; j < y + bitmap->bitmap_information_header.height; ++j)
 		{
 			vg_set_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width));
 		}
-	}*/
+	}
 }
 
 void bitmap_delete(bitmap_t *bitmap)

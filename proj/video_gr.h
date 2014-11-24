@@ -3,7 +3,7 @@
 
 #define VIDEO_GR_256_TRANSPARENT		0x00
 #define VIDEO_GR_256_BLACK				0xFF
-#define VIDEO_GR_64K_TRANSPARENT		0x01
+#define VIDEO_GR_64K_TRANSPARENT		0x00
 #define VIDEO_GR_RED					rgb(255, 0, 0)
 #define VIDEO_GR_GREEN					rgb(0, 255, 0)
 #define	VIDEO_GR_BLUE					rgb(0, 0, 255)
@@ -55,6 +55,8 @@ int vg_fill(uint16_t color);
  * @return 0 on success, non-zero otherwise
  */
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color);
+
+inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color);
 
 /**
  * @brief Returns the color of the input pixel
