@@ -75,6 +75,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 		return 1;
 	}
 
+	// Conversão linear -> físico
 	void *farptr = (void *)((vib_p->VideoModePtr & 0xffff0000) >> 12);
 	farptr += PB2OFF(vib_p->VideoModePtr);
 	farptr += (uint32_t)map.virtual & 0xF0000000;
