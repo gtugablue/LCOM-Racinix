@@ -90,6 +90,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 	{
 		return 1;
 	}
+	vbe_mode_info_t vbe_mode_info;
 	for (i = 0, modes = farptr; i < *num_video_modes; ++i, ++modes)
 	{
 		(*video_modes)[i] = *modes;
