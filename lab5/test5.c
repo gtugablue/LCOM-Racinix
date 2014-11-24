@@ -275,6 +275,10 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 	{
 		return 1;
 	}
+	if (keyboard_subscribe_int() == -1)
+	{
+		return 1;
+	}
 	int r, ipc_status;
 	message msg;
 	bool pressed = false;
@@ -293,7 +297,7 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 		velocity.y = (double)delta / time;
 	}
 	Sprite *sprite = create_sprite(xpm, xi, yi, velocity.x, velocity.y, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
-	while (counter < TIMER_DEFAULT_FREQ * time)
+	while (1)
 	{
 		/* Get a request message. */
 		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
@@ -303,7 +307,7 @@ int test_move(unsigned short xi, unsigned short yi, char *xpm[], unsigned short 
 		if (is_ipc_notify(ipc_status)) { /* received notification */
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
 			{
-				if (msg.NOTIFY_ARG & BIT(timer_hook_bit))
+				if (msg.NOTIFY_ARG & BIT(timer_hook_bit) && counter <= TIMER_DEFAULT_FREQ * time)
 				{
 					// New frame
 					clear_sprite_area(sprite);
