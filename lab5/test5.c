@@ -388,7 +388,7 @@ int test_controller()
 	}
 	for (i = 1; i < num_video_modes; ++i)
 	{
-		printf(" 0x%X", video_modes[i]);
+		printf(", 0x%X", video_modes[i]);
 	}
 	free(video_modes);
 	printf("\n\nSize of VRAM memory: %lu KB\n", vbe_info_block.TotalMemory * 64);
