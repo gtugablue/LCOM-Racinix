@@ -93,6 +93,7 @@ int test_square(unsigned short x, unsigned short y, unsigned short size, unsigne
 	}
 	vg_draw_rectangle(x, y, size, size, color);
 	vg_swap_buffer();
+	vg_swap_mouse_buffer();
 	if (keyboard_subscribe_int() == -1)
 	{
 		return 1;
