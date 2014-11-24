@@ -212,6 +212,7 @@ int test_xpm(unsigned short xi, unsigned short yi, char *xpm[])
 	char* pixmap = read_xpm(xpm, &width, &height, vbe_mode_info.XResolution, vbe_mode_info.YResolution);
 	vg_draw_pixmap(xi, yi, pixmap, width, height);
 	vg_swap_buffer();
+	vg_swap_mouse_buffer();
 	free(pixmap);
 	if (keyboard_subscribe_int() == -1)
 	{
