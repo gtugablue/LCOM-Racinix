@@ -18,6 +18,7 @@
 #define VEHICLE_MAX_STEER			1.0
 #define VEHICLE_COLLISION_FRICTION	200.0
 #define VEHICLE_DRAG				0.6
+#define VEHICLE_NITROUS				500			///////mine
 
 typedef struct
 {
@@ -41,6 +42,7 @@ typedef union
 		bool brake : 1;
 		bool turn_left : 1;
 		bool turn_right : 1;
+		bool nitrous : 1;
 	};
 } vehicle_keys_t;
 

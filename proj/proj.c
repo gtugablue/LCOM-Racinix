@@ -281,6 +281,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vehicle_keys.brake = kbd_keys[KEY_S].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_A].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_D].pressed;
+		vehicle_keys.nitrous = kbd_keys[KEY_L_CTRL].pressed; 								/////////////////////// mine
 		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 1; i < 5; ++i)
 		{
@@ -296,6 +297,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_ARR_LEFT].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_ARR_RIGHT].pressed;
+		vehicle_keys.nitrous = kbd_keys[KEY_R_CTRL].pressed; 							////////////////////mine
 		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 5; i < 10; ++i)
 		{
