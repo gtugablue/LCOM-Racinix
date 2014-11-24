@@ -46,7 +46,7 @@ int racinix_start()
 		return 1;
 	}
 
-	mouse_cursor = bitmap_load("/home/lcom/proj/images/mouse-cursor-icon.bmp");
+	mouse_cursor = bitmap_load("/home/lcom/proj/images/cursor.bmp");
 	if (mouse_cursor == NULL)
 	{
 		return 1;
@@ -375,72 +375,4 @@ void draw_mouse()
 	free(xpm);*/
 	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, mouse_cursor);
 	vg_swap_mouse_buffer();
-}
-
-// Returns a list of points on the convex hull in counter-clockwise order.
-// Note: the last point in the returned list is the same as the first one.
-int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[])
-{
-	int k = 0;
-
-	// Sort points lexicographically
-	quickSort(points, 0, n - 1);
-	int i;
-	// Build lower hull
-	for (i = 0; i < n; ++i) {
-		while (k >= 2 && isLeft(hull[k-2], hull[k-1], points[i])) k--;
-		hull[k++] = points[i];
-	}
-
-	// Build upper hull
-	int t;
-	for (i = n-2, t = k+1; i >= 0; i--) {
-		while (k >= t && isLeft(hull[k-2], hull[k-1], points[i])) k--;
-		hull[k++] = points[i];
-	}
-	return k;
-}
-
-bool isLeft( vector2D_t p1, vector2D_t p2, vector2D_t p3 )
-{
-    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0;
-}
-
-void swapPoints(vector2D_t *a, int i, int j)
-{
-    vector2D_t t;
-    t.x = a[i].x;
-    t.y = a[i].y;
-    a[i].x = a[j].x;
-    a[i].y = a[j].y;
-    a[j].x = t.x;
-    a[j].y = t.y;
-}
-
-int partition(vector2D_t *a, int left, int right, int pivot)
-{
-    int pos, i;
-    swapPoints(a, pivot, right);
-    pos = left;
-    for(i = left; i < right; i++)
-    {
-        if (a[i].x < a[right].x || (a[i].x == a[right].x && a[i].y < a[right].y))
-        {
-            swapPoints(a, i, pos);
-            pos++;
-        }
-    }
-    swapPoints(a, right, pos);
-    return pos;
-}
-
-void quickSort(vector2D_t *a, int left, int right)
-{
-    if (left < right)
-    {
-    	int pivot = (left + right) / 2;
-        int pos = partition(a,left,right,pivot);
-        quickSort(a, left, pos - 1);
-        quickSort(a, pos + 1, right);
-    }
 }
