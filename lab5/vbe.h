@@ -68,6 +68,9 @@
 #define VBE_CONTROLLER_CAPABILITIES_NOT_VGA_BIT					1
 #define VBE_CONTROLLER_CAPABILITIES_RAMDAC_USE_BLANK_BIT		2
 
+#define VBE_2_SIGNATURE											"VBE2"
+#define VBE_VESA_SIGNATURE										"VESA"
+
 /** @defgroup vbe vbe
  * @{
  *
