@@ -94,7 +94,7 @@ int vg_fill(uint16_t color)
 
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 {
-	if(color != VIDEO_GR_64K_TRANSPARENT && x < h_res && y < v_res)
+	if (x < h_res && y < v_res)
 	{
 		*(double_buffer + (x + y * h_res)) = color;
 		return 0;

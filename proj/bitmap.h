@@ -34,7 +34,9 @@ typedef struct
 
 bitmap_t *bitmap_load(const char *file);
 
-void bitmap_draw(bitmap_t *bitmap, int x, int y);
+void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y);
+
+void bitmap_draw(bitmap_t *bitmap, int x, int y); // For efficiency purposes
 
 void bitmap_delete(bitmap_t *bitmap);
 

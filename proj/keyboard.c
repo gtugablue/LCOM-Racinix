@@ -246,23 +246,24 @@ int keyboard_int_handler()
 	unsigned long current_scancode;
 	if (sys_inb(I8042_OUT_BUF, &current_scancode))
 	{
-		return 1;
+		return -1;
 	}
 	if (current_scancode == TWO_BYTE_SCANCODE)
 	{
 		scancode = TWO_BYTE_SCANCODE << 8;
-		return 0;
+		return KEY_NONE;
 	}
-	if (IS_BREAK_CODE(scancode | current_scancode))
+	current_scancode |= scancode;
+	scancode = KEY_NONE;
+	if (IS_BREAK_CODE(current_scancode))
 	{
-		keyboard_update_key((scancode | current_scancode) & ~(1 << I8042_BREAK_CODE_BIT), false);
+		return keyboard_update_key((current_scancode) & ~(1 << I8042_BREAK_CODE_BIT), false);
 	}
 	else
 	{
-		keyboard_update_key(scancode | current_scancode, true);
+		return keyboard_update_key(current_scancode, true);
 	}
-	scancode = KEY_NONE;
-	return 0;
+	return KEY_NONE;
 }
 
 static int keyboard_update_key(unsigned long makecode, bool pressed)
@@ -270,14 +271,14 @@ static int keyboard_update_key(unsigned long makecode, bool pressed)
 	size_t i;
 	for (i = 0; i < sizeof(kbd_keys) / sizeof(kbd_key_t); ++i)
 	{
-		// KEY_NULL is also considered here, but that's not a problem
+		// KEY_NONE is also considered here, but that's not a problem
 		if (kbd_keys[i].makecode == makecode)
 		{
 			kbd_keys[i].pressed = pressed;
-			return 0;
+			return i;
 		}
 	}
-	return 1;
+	return KEY_NONE;
 }
 
 int keyboard_unsubscribe_int()
