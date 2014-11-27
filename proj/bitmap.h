@@ -36,8 +36,6 @@ bitmap_t *bitmap_load(const char *file);
 
 void bitmap_draw(bitmap_t *bitmap, int x, int y);
 
-bitmap_t *bitmap_rotate(bitmap_t *bitmap, unsigned short *width, unsigned short *height, double angle);
-
 void bitmap_delete(bitmap_t *bitmap);
 
 #endif

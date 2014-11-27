@@ -13,6 +13,7 @@ static vehicle_t *vehicle1;
 static vehicle_t *vehicle2;
 static bitmap_t *background;
 static bitmap_t *mouse_cursor;
+static bitmap_t *logo;
 
 int main(int argc, char **argv) {
 
@@ -52,6 +53,12 @@ int racinix_start()
 		return 1;
 	}
 
+	logo = bitmap_load("/home/lcom/proj/images/logo.bmp");
+	if (logo == NULL)
+	{
+		return 1;
+	}
+
 	if (racinix_dispatcher() != 0)
 	{
 		return 1;
@@ -70,8 +77,8 @@ int racinix_dispatcher()
 {
 	track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
-	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
-	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
+	vehicle1 = vehicle_create(10, 20, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
+	vehicle2 = vehicle_create(10, 20, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
 
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
@@ -243,6 +250,9 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	// Show menu
 	bitmap_draw(background, 0, 0);
 
+	// Show logo
+	bitmap_draw(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2);
+
 	size_t i;
 	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
 	{
@@ -281,7 +291,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vehicle_keys.brake = kbd_keys[KEY_S].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_A].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_D].pressed;
-		vehicle_keys.nitrous = kbd_keys[KEY_L_CTRL].pressed; 								/////////////////////// mine
 		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 1; i < 5; ++i)
 		{
@@ -297,7 +306,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vehicle_keys.brake = kbd_keys[KEY_ARR_DOWN].pressed;
 		vehicle_keys.turn_left = kbd_keys[KEY_ARR_LEFT].pressed;
 		vehicle_keys.turn_right = kbd_keys[KEY_ARR_RIGHT].pressed;
-		vehicle_keys.nitrous = kbd_keys[KEY_R_CTRL].pressed; 							////////////////////mine
 		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag, vehicle_keys);
 		for (i = 5; i < 10; ++i)
 		{

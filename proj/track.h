@@ -8,9 +8,10 @@
 #include "video_gr.h"
 #include <stdbool.h>
 
-#define TRACK_INTERP_PERIOD	0.07
-#define TRACK_GRASS_DRAG	0.7
-
+#define TRACK_INTERP_PERIOD							0.07
+#define TRACK_GRASS_DRAG							0.7
+#define TRACK_CONTROL_POINT_PERTURBATION			0.5
+#define TRACK_THICKNESS								80
 #define RACINIX_COLOR_TRACK							rgb(20, 20, 20)
 
 typedef struct

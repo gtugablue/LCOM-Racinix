@@ -1,5 +1,7 @@
 #include "track.h"
 
+#define PI 					3.14159265358979323846
+
 #define MAX(a, b)	((a) > (b) ? (a) : (b))
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
@@ -15,7 +17,7 @@ static bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
 static void swapPoints(vector2D_t *a, int i, int j);
 static int partition(vector2D_t *a, int left, int right, int pivot);
 static void quickSort(vector2D_t *a, int left, int right);
-static void track_generate_perturb(track_t *track);
+static int track_generate_perturb(track_t *track);
 
 track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 {
@@ -29,22 +31,28 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 	{
 		return NULL;
 	}
+	printf("Bad address debug #1\n");
 	unsigned pointCount = rand() % 11 + 10; //we'll have a total of 10 to 20 points
+	printf("Bad address debug #1.1\n");
 	vector2D_t random_points[pointCount];
 	size_t i;
-
+	printf("Bad address debug #1.2\n");
 	for(i = 0; i < pointCount; ++i)
 	{
-		random_points[i].x = rand() % (int)(0.7 * width) + 0.15 * width;
-		random_points[i].y = rand() % (int)(0.7 * height) + 0.15 * height;
+		random_points[i].x = rand() % (int)(0.6 * width) + 0.2 * width;
+		random_points[i].y = rand() % (int)(0.6 * height) + 0.2 * height;
 	}
-
-	vector2D_t hull[pointCount];
-	track->num_control_points = convexHull(random_points, pointCount, hull) - 1;
-
-	pushApart(hull, track->num_control_points);
-	pushApart(hull, track->num_control_points);
-	pushApart(hull, track->num_control_points);
+	printf("Bad address debug #2\n");
+	track->control_points = malloc(pointCount * sizeof(vector2D_t));
+	track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
+	printf("Bad address debug #3\n");
+	for (i = 0; i < 10; ++i)
+	{
+		pushApart(track->control_points, track->num_control_points);
+	}
+	printf("Bad address debug #4\n");
+	track_generate_perturb(track);
+	printf("Bad address debug #5\n");
 	track->spline_size = 0;
 	double t;
 	track->spline = malloc((unsigned)ceil(20 * (1.0 / TRACK_INTERP_PERIOD)) * sizeof(vector2D_t));
@@ -53,45 +61,51 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		//vg_draw_circle(hull[i].x, hull[i].y, 10, 0x33);
 		for(t = 0.0f; t <= 1.0f; t += TRACK_INTERP_PERIOD)
 		{
-			track->spline[track->spline_size] = createCatmullRomSpline(hull[i], hull[(i + 1) % track->num_control_points], hull[(i + 2) % track->num_control_points], hull[(i + 3) % track->num_control_points], t);
+			track->spline[track->spline_size] = createCatmullRomSpline(track->control_points[i], track->control_points[(i + 1) % track->num_control_points], track->control_points[(i + 2) % track->num_control_points], track->control_points[(i + 3) % track->num_control_points], t);
 			++track->spline_size;
 		}
 	}
+	printf("Bad address debug #6\n");
 	double temp;
 	vector2D_t normal;
 	if ((track->inside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
 		return NULL;
 	}
+	printf("Bad address debug #6.1\n");
 	if ((track->outside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
+		printf("RETORNOU NULL\n");
 		return NULL;
 	}
+	printf("Bad address debug #6.2\n");
 	for (i = 0; i < track->spline_size; ++i)
 	{
+		printf("Bad address debug #7, i = %d\n", i);
 		// CALCULATE NORMAL
 		normal.x = track->spline[(i + 1) % track->spline_size].x - track->spline[i].x;
+		printf("Bad address debug #8\n");
 		normal.y = track->spline[(i + 1) % track->spline_size].y - track->spline[i].y;
-
+		printf("Bad address debug #9\n");
 		// NORMALIZE NORMAL
 		normal = vectorDivide(normal, vectorNorm(normal));
-
+		printf("Bad address debug #10\n");
 		// INSCREASE NORMAL
-		normal = vectorMultiply(normal, 30.0);
-
+		normal = vectorMultiply(normal, TRACK_THICKNESS	/ 2);
+		printf("Bad address debug #11\n");
 		// CALCULATE PERPENDICULAR TO THE SPLINE
 		temp = normal.x;
 		normal.x = -normal.y;
 		normal.y = temp;
-
+		printf("Bad address debug #12\n");
 		// CALCULATE INSIDE SPLINE
 		track->inside_spline[i] = vectorAdd(track->spline[i], normal);
-
+		printf("Bad address debug #13\n");
 		// CALCULATE OUTSIDE SPLINE
 		track->outside_spline[i] = vectorSubtract(track->spline[i], normal);
+		printf("Bad address debug #14\n");
 	}
-
-
+	printf("Bad address debug #15\n");
 
 	/*for (i = 0; i < spline_size; ++i)
 	{
@@ -136,12 +150,10 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
 		polygon[3] = track->inside_spline[(i + 1) % track->spline_size];
 
-		// TODO CHANGE THESE CONSTS
 		for (x = MAX(track->spline[i].x - 71, 0); x < MIN(track->spline[i].x + 71, width); ++x)
 		{
 			point.x = x;
 			found = false;
-			// TODO CHANGE THESE CONSTS
 			for (y = MAX(track->spline[i].y - 71, 0); y < MIN(track->spline[i].y + 71, height); y++)
 			{
 				point.y = y;
@@ -199,7 +211,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 			}
 		}
 	}
-
+	printf("Bad address debug #1\n");
 	return track;
 }
 
@@ -216,7 +228,17 @@ void track_draw(track_t *track, unsigned width, unsigned height)
 			}
 		}
 	}
-	vg_draw_line(track->inside_spline[0].x, track->inside_spline[0].y, track->outside_spline[0].x, track->outside_spline[0].y, 0x4);
+	//vg_draw_line(track->inside_spline[0].x, track->inside_spline[0].y, track->outside_spline[0].x, track->outside_spline[0].y, 0x4);
+	/*size_t i;
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		vector2D_t polygon[4];
+		polygon[0] = track->outside_spline[((int)(1.0 / TRACK_INTERP_PERIOD) * i) % track->spline_size];
+		polygon[1] = track->outside_spline[((int)(1.0 / TRACK_INTERP_PERIOD) * (i + 1)) % track->spline_size];
+		polygon[2] = track->inside_spline[((int)(1.0 / TRACK_INTERP_PERIOD) * (i + 1)) % track->spline_size];
+		polygon[3] = track->inside_spline[((int)(1.0 / TRACK_INTERP_PERIOD) * i) % track->spline_size];
+		vg_draw_polygon(polygon, 4, rgb(255, 255, 255));
+	}*/
 }
 
 static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_t p2, vector2D_t p3, double t)
@@ -278,7 +300,7 @@ static double calculateCatmullDerivativeCoordinate(double P0, double P1, double 
 
 static void pushApart(vector2D_t hull[], unsigned hull_size)
 {
-    double dst = 120;
+    double dst = 100;
     double dst2 = dst*dst;
     int i, j;
     for(i = 0; i < hull_size; ++i)
@@ -331,7 +353,12 @@ double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsign
 
 void track_delete(track_t *track)
 {
-	// TODO
+	free(track->track_points);
+	free(track->spline);
+	free(track->inside_spline);
+	free(track->outside_spline);
+	free(track->control_points);
+	free(track);
 }
 
 // Returns a list of points on the convex hull in counter-clockwise order.
@@ -402,28 +429,32 @@ static void quickSort(vector2D_t *a, int left, int right)
 	}
 }
 
-/*static void track_generate_perturb(track_t *track)
+static int track_generate_perturb(track_t *track)
 {
-	vector2D_t perturbed_control_points[track->num_control_points * 2];
-	Vector2 disp = new Vector2();
-	float difficulty = 1f; //the closer the value is to 0, the harder the track should be. Grows exponentially.
-	float maxDisp = 20f; // Again, this may change to fit your units.
-	for(int i = 0; i < dataSet.length; ++i)
+	vector2D_t *perturbed_control_points;
+	if ((perturbed_control_points = malloc(track->num_control_points * 2 * sizeof(vector2D_t))) == NULL)
 	{
-		float dispLen = (float)Math.pow(Random(0.0f, 1.0f), difficulty) * maxDisp;
-		disp.set(0, 1);
-		disp.rotate(MathUtils.random(0.0f, 1.0f) * 360);
-		disp.scale(dispLen);
-		rSet[i*2] = dataSet[i];
-		rSet[i*2 + 1] = new Vector2(dataSet[i]);
-		rSet[i*2 + 1].add(dataSet[(i+1)%dataSet.length]).divide(2).add(disp);
-		//Explaining: a mid point can be found with (dataSet[i]+dataSet[i+1])/2.
-		//Then we just add the displacement.
+		return 1;
 	}
-	dataSet = rSet;
-	//push apart again, so we can stabilize the points distances.
-	for(int i = 0; i < pushIterations; ++i)
+	vector2D_t perturbation;
+	double max_displacement = 40.0, perturbation_length; // Again, this may change to fit your units.
+	size_t i;
+	for(i = 0; i < track->num_control_points; ++i)
 	{
-		pushApart(dataSet);
+		perturbation = vectorCreate(1, 0);
+		perturbation = vectorRotate(perturbation, rand() % (int)(2 * PI));
+		perturbation = vectorMultiply(perturbation, pow((rand() % 10000) / (double)10000, TRACK_CONTROL_POINT_PERTURBATION) * max_displacement);
+		perturbed_control_points[2 * i] = track->control_points[i];
+		perturbed_control_points[2 * i + 1] = vectorAdd(vectorDivide(vectorAdd(track->control_points[i], track->control_points[(i + 1) % track->num_control_points]), 2), perturbation);
 	}
-}*/
+	printf("derp\n");
+	free(track->control_points);
+	track->control_points = perturbed_control_points;
+	track->num_control_points = track->num_control_points * 2;
+
+	for(i = 0; i < 10; ++i)
+	{
+		pushApart(track->control_points, track->num_control_points);
+	}
+	return 0;
+}

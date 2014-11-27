@@ -4,7 +4,6 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include "math.h"
-#include "vbe.h"
 #include "video_gr.h"
 
 #define PI	3.141592653589793238463
@@ -95,7 +94,7 @@ int vg_fill(uint16_t color)
 
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 {
-	if(x < h_res && y < v_res)
+	if(color != VIDEO_GR_64K_TRANSPARENT && x < h_res && y < v_res)
 	{
 		*(double_buffer + (x + y * h_res)) = color;
 		return 0;
@@ -232,7 +231,7 @@ void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap)
 	{
 		for (j = y; j < y + bitmap->bitmap_information_header.height; ++j)
 		{
-			vg_set_mouse_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * (bitmap->bitmap_information_header.width + 1)));
+			vg_set_mouse_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * (bitmap->bitmap_information_header.width)));
 		}
 	}
 }
@@ -273,6 +272,16 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 			}
 		}
 	}
+}
+
+vbe_mode_info_t *vg_get_vbe_mode_info()
+{
+	return &vbe_mode_info;
+}
+
+void *vg_get_double_buffer()
+{
+	return double_buffer;
 }
 
 void vg_swap_buffer()
