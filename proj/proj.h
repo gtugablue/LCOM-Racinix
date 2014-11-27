@@ -21,6 +21,7 @@
 
 #define FPS											30
 #define INTERP_PERIOD								0.07f
+#define RACINIX_MOUSE_SENSITIVITY					1.7
 #define RACINIX_VIDEO_MODE							VBE_MODE_GRAPHICS_1024_768_64K
 #define RACINIX_MAIN_MENU_NUM_BTN					6
 #define RACINIX_MAIN_MENU_CHAR_HEIGHT				30
@@ -37,6 +38,15 @@ enum
 	RACINIX_STATE_DESIGN_TRACK,
 	RACINIX_STATE_RACE,
 	RACINIX_STATE_END
+};
+
+// Race states
+enum
+{
+	RACINIX_STATE_RACE_RACING_1_PLAYER,
+	RACINIX_STATE_RACE_RACING_2_PLAYERS_SAME_PC,
+	RACINIX_STATE_RACE_RACING_2_PLAYERS_SERIAL_PORT,
+	RACINIX_STATE_RACE_END
 };
 
 int racinix_start();
@@ -59,13 +69,15 @@ int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *v
 
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
-void draw_mouse();
+void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
+
+void racinix_draw_mouse();
 
 // Events
 enum
 {
 	RACINIX_EVENT_KEYSTROKE, // int key, bool pressed
-	RACINIX_EVENT_MOUSE_MOVEMENT,
+	RACINIX_EVENT_MOUSE_MOVEMENT, // mouse_data_packet_t *mouse_data_packet
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
 	RACINIX_EVENT_NEW_FRAME
 };

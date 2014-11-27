@@ -3,6 +3,9 @@
 
 #define BITMAP_SIGNATURE		0x4D42
 
+#define MAX(a, b)	((a) > (b) ? (a) : (b))
+#define MIN(a, b)	((a) < (b) ? (a) : (b))
+
 bitmap_t *bitmap_load(const char* filename)
 {
 	bitmap_t *bmp;
@@ -76,17 +79,32 @@ bitmap_t *bitmap_load(const char* filename)
 	return bmp;
 }
 
-void bitmap_draw(bitmap_t *bitmap, int x, int y)
+void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y)
 {
-	uint16_t *double_buffer = vg_get_double_buffer();
-	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
+	uint16_t color;
 	size_t i, j;
 	for (i = x; i < x + bitmap->bitmap_information_header.width; ++i)
 	{
 		for (j = y; j < y + bitmap->bitmap_information_header.height; ++j)
 		{
-			vg_set_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width));
+			color = *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width);
+			if (color != VIDEO_GR_64K_TRANSPARENT)
+			{
+				vg_set_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, color);
+			}
 		}
+	}
+}
+
+void bitmap_draw(bitmap_t *bitmap, int x, int y)
+{
+	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
+	uint16_t *double_buffer = vg_get_double_buffer();
+	size_t i;
+	for (i = 0; i < bitmap->bitmap_information_header.height; ++i)
+	{
+		// TODO check para ver se não excede a borda direita
+		memcpy(double_buffer + x + (y + bitmap->bitmap_information_header.height - 1 - i) * vbe_mode_info->XResolution, (uint16_t *)bitmap->pixel_array + i * MIN(bitmap->bitmap_information_header.width, x + vbe_mode_info->XResolution), bitmap->bitmap_information_header.width * vbe_mode_info->BitsPerPixel / 8);
 	}
 }
 

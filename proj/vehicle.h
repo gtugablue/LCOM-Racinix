@@ -34,16 +34,13 @@ typedef struct
 	vector2D_t oldPosition;					// Stored for efficiency purposes
 } vehicle_t;
 
-typedef union
+typedef struct
 {
-	struct
-	{
-		bool accelerate : 1;
-		bool brake : 1;
-		bool turn_left : 1;
-		bool turn_right : 1;
-		bool nitrous : 1;
-	};
+	int accelerate;
+	int brake;
+	int turn_left;
+	int turn_right;
+	int nitrous;
 } vehicle_keys_t;
 
 typedef union
@@ -84,9 +81,6 @@ void vehicle_calculate_axle_position(vehicle_t *vehicle);
  * 3 - front right wheel
  *
  * @param vehicle vehicle info
- * @param back_axle position of the center of the back axle
- * @param front_axle position of the center of the front axle
- * @param wheels[4] address of memory where to write the wheel positions
  */
 void vehicle_calculate_wheel_position(vehicle_t *vehicle);
 

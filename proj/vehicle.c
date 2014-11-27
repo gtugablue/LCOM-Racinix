@@ -45,11 +45,11 @@ void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time,
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys)
 {
-	if (vehicle_keys.turn_left && !vehicle_keys.turn_right)
+	if (kbd_keys[vehicle_keys.turn_left].pressed && !kbd_keys[vehicle_keys.turn_right].pressed)
 	{
 		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
 	}
-	else if (vehicle_keys.turn_right && !vehicle_keys.turn_left)
+	else if (kbd_keys[vehicle_keys.turn_right].pressed && !kbd_keys[vehicle_keys.turn_left].pressed)
 	{
 		vehicle->steering += (VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
 	}
@@ -69,7 +69,7 @@ void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys
 
 void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys)
 {
-	if (vehicle_keys.brake)
+	if (kbd_keys[vehicle_keys.brake].pressed)
 	{
 		if (vehicle->speed > 0)
 		{
@@ -80,18 +80,18 @@ void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag, ve
 			vehicle->speed -= VEHICLE_REVERSE * delta_time;
 		}
 
-		if (vehicle_keys.nitrous)
+		if (kbd_keys[vehicle_keys.nitrous].pressed)
 		{
 			vehicle->speed += VEHICLE_NITROUS * delta_time;    ///////falta corrigir pois qd esta a andar pa tras com nitro ele ganha veloc para frente
 		}
 	}
-	else if (vehicle_keys.accelerate)
+	else if (kbd_keys[vehicle_keys.accelerate].pressed)
 	{
 		vehicle->speed += VEHICLE_ACCELERATE * delta_time;
-		if (vehicle_keys.nitrous)
-			{
-				vehicle->speed += VEHICLE_NITROUS * delta_time;
-			}
+		if (kbd_keys[vehicle_keys.nitrous].pressed)
+		{
+			vehicle->speed += VEHICLE_NITROUS * delta_time;
+		}
 	}
 	////////////////////////////////nitrous/////////////////////////////////////////////
 

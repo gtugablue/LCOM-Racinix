@@ -14,6 +14,12 @@
 #define KEYBOARD_HOOK_BIT		2
 #define TWO_BYTE_SCANCODE		0xE0
 
+typedef struct
+{
+	unsigned long makecode;
+	bool pressed;
+} kbd_key_t;
+
 /** @defgroup keyboard keyboard
  * @{
  *
@@ -63,7 +69,7 @@ int keyboard_read_status(unsigned long* status);
  *
  * Reads the scancode from the OUT_BUF
  *
- * @return Return 0 upon success and non-zero otherwise
+ * @return Returns the key ID upon success or -1 otherwise
  */
 int keyboard_int_handler();
 
@@ -82,12 +88,6 @@ int keyboard_unsubscribe_int();
 unsigned char keyboard_get_led_status();
 
 // Keys
-typedef struct
-{
-	unsigned long makecode;
-	bool pressed;
-} kbd_key_t;
-
 kbd_key_t kbd_keys[102];
 
 enum {
