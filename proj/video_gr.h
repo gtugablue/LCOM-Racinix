@@ -3,7 +3,7 @@
 
 #define VIDEO_GR_256_TRANSPARENT		0x00
 #define VIDEO_GR_256_BLACK				0xFF
-#define VIDEO_GR_64K_TRANSPARENT		0x00
+#define VIDEO_GR_64K_TRANSPARENT		0x47E0
 #define VIDEO_GR_RED					rgb(255, 0, 0)
 #define VIDEO_GR_GREEN					rgb(0, 255, 0)
 #define	VIDEO_GR_BLUE					rgb(0, 0, 255)
@@ -14,6 +14,7 @@
 #include <minix/syslib.h>
 #include "vector2D.h"
 #include "bitmap.h"
+#include "vbe.h"
 
 /** @defgroup video_gr video_gr
  * @{
@@ -103,6 +104,10 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned 
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
+
+vbe_mode_info_t *vg_get_vbe_mode_info();
+
+void *vg_get_double_buffer();
 
 void vg_swap_buffer();
 

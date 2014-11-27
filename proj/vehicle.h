@@ -9,15 +9,15 @@
 #include "video_gr.h"
 #include "vbe.h"
 
-#define VEHICLE_ACCELERATE			300.0
-#define VEHICLE_REVERSE				150.0
+#define VEHICLE_ACCELERATE			150.0
+#define VEHICLE_REVERSE				75.0
 #define VEHICLE_BREAK				200.0
 #define VEHICLE_STEER				0.15
 #define VEHICLE_STOP_SPEED			10.0
 #define VEHICLE_NUM_WHEELS			4
-#define VEHICLE_MAX_STEER			1.0
+#define VEHICLE_MAX_STEER			0.4
 #define VEHICLE_COLLISION_FRICTION	200.0
-#define VEHICLE_DRAG				0.6
+#define VEHICLE_DRAG				0.8
 #define VEHICLE_NITROUS				500			///////mine
 
 typedef struct

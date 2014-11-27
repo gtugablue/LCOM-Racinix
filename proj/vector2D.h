@@ -22,6 +22,8 @@ vector2D_t vectorMultiply(vector2D_t vector, double factor);
 
 vector2D_t vectorDivide(vector2D_t vector, double factor);
 
+vector2D_t vectorRotate(vector2D_t vector, double degrees);
+
 double vectorNorm(vector2D_t vector);
 
 void normalize(vector2D_t* vector);

@@ -41,6 +41,13 @@ vector2D_t vectorDivide(vector2D_t vector, double factor)
 	return vector;
 }
 
+vector2D_t vectorRotate(vector2D_t vector, double degrees)
+{
+	vector.x = vector.x * cos(degrees) - vector.y * sin(degrees);
+	vector.y = vector.x * sin(degrees) + vector.y * cos(degrees);
+	return vector;
+}
+
 double vectorNorm(vector2D_t vector)
 {
 	return sqrt(pow(vector.x, 2) + pow(vector.y, 2));

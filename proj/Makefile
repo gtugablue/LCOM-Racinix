@@ -7,7 +7,7 @@ CC=gcc
 PROG=	proj
 SRCS=	proj.c vbe.c video_gr.c vector2D.c queue.c vehicle.c kbc.c keyboard.c timer.c track.c mouse.c pixmap.c xpm.c bitmap.c
 
-CCFLAGS= -Wall
+CCFLAGS= -Wall -O3
 
 DPADD+=	${LIBDRIVER} ${LIBSYS}
 LDADD+=	-llm -ldriver -lsys

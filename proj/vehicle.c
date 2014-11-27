@@ -59,11 +59,11 @@ void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys
 	}
 	if (vehicle->steering > VEHICLE_MAX_STEER)
 	{
-		vehicle->steering = (VEHICLE_MAX_STEER * vehicle->length) / abs(vehicle->speed);
+		vehicle->steering = VEHICLE_MAX_STEER;
 	}
 	else if (vehicle->steering < -VEHICLE_MAX_STEER)
 	{
-		vehicle->steering = -(VEHICLE_MAX_STEER * vehicle->length) / abs(vehicle->speed);
+		vehicle->steering = -VEHICLE_MAX_STEER;
 	}
 }
 

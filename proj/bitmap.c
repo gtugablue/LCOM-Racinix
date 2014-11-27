@@ -1,4 +1,5 @@
 #include "bitmap.h"
+#include "video_gr.h"
 
 #define BITMAP_SIGNATURE		0x4D42
 
@@ -44,8 +45,24 @@ bitmap_t *bitmap_load(const char* filename)
 		bitmap_delete(bmp);
 		return NULL;
 	}
+
 	// read the bitmap image data
-	fread(bmp->pixel_array, bmp->bitmap_information_header.image_size, 1, fp);
+	if (bmp->bitmap_information_header.width % 2 == 0)
+	{
+		fread(bmp->pixel_array, bmp->bitmap_information_header.image_size, 1, fp);
+	}
+	else
+	{
+		// Fix for 16-bit mode
+		size_t i;
+		uint16_t discard;
+		for (i = 0; i < bmp->bitmap_information_header.height; ++i)
+		{
+			fread((uint16_t *)bmp->pixel_array + i * bmp->bitmap_information_header.width, bmp->bitmap_information_header.width * bmp->bitmap_information_header.bits_per_pixel / 8, 1, fp);
+			fread(&discard, 2, 1, fp);
+		}
+	}
+
 
 	if (bmp->pixel_array == NULL)
 	{
@@ -61,6 +78,8 @@ bitmap_t *bitmap_load(const char* filename)
 
 void bitmap_draw(bitmap_t *bitmap, int x, int y)
 {
+	uint16_t *double_buffer = vg_get_double_buffer();
+	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
 	size_t i, j;
 	for (i = x; i < x + bitmap->bitmap_information_header.width; ++i)
 	{
