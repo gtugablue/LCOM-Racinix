@@ -64,7 +64,7 @@ void racinix_update_vehicle(vehicle_t *vehicle);
 
 int racinix_keyboard_int_handler();
 
-int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2);
+int racinix_timer_int_handler();
 
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 

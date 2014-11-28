@@ -72,6 +72,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 		return NULL;
 	}
 	printf("Bad address debug #6.1\n");
+	printf("spline_size: %d\n", track->spline_size);
 	if ((track->outside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
 		printf("RETORNOU NULL\n");
@@ -168,6 +169,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 	}*/
 
 	/* This loop is really fast. It loops through all spline points and creates a 4-side polygon. Then it checks all points that are in the range (min.x, min.y) to (max.x, max.y). */
+	memset(track->track_points, false, width * height); // Initialize track_points
 	size_t x, y, j;
 	vector2D_t polygon[4];
 	vector2D_t point;

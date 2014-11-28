@@ -8,8 +8,7 @@
 static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
 static track_t *track;
-static vehicle_t *vehicle1;
-static vehicle_t *vehicle2;
+static vehicle_keys_t vehicle_keys[2];
 
 // Bitmaps
 static bitmap_t *background;
@@ -66,6 +65,18 @@ int racinix_start()
 		return 1;
 	}
 
+	vehicle_keys[0].accelerate = KEY_W;
+	vehicle_keys[0].brake = KEY_S;
+	vehicle_keys[0].turn_left = KEY_A;
+	vehicle_keys[0].turn_right = KEY_D;
+	vehicle_keys[0].nitrous = KEY_L_CTRL;
+
+	vehicle_keys[1].accelerate = KEY_ARR_UP;
+	vehicle_keys[1].brake = KEY_ARR_DOWN;
+	vehicle_keys[1].turn_left = KEY_ARR_LEFT;
+	vehicle_keys[1].turn_right = KEY_ARR_RIGHT;
+	vehicle_keys[1].nitrous = KEY_R_CTRL;
+
 	if (racinix_dispatcher() != 0)
 	{
 		return 1;
@@ -82,24 +93,6 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
-	track = track_generate(vmi.XResolution, vmi.YResolution, rand());
-
-	vehicle_keys_t vehicle_keys;
-
-	vehicle_keys.accelerate = KEY_W;
-	vehicle_keys.brake = KEY_S;
-	vehicle_keys.turn_left = KEY_A;
-	vehicle_keys.turn_right = KEY_D;
-	vehicle_keys.nitrous = KEY_L_CTRL;
-	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x), car, vehicle_keys);
-
-	vehicle_keys.accelerate = KEY_ARR_UP;
-	vehicle_keys.brake = KEY_ARR_DOWN;
-	vehicle_keys.turn_left = KEY_ARR_LEFT;
-	vehicle_keys.turn_right = KEY_ARR_RIGHT;
-	vehicle_keys.nitrous = KEY_R_CTRL;
-	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x), car, vehicle_keys);
-
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
@@ -157,7 +150,7 @@ int racinix_dispatcher()
 					continue;
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					if (racinix_timer_int_handler(&vmi, track, vehicle1, vehicle2) == 0)
+					if (racinix_timer_int_handler() == 0)
 					{
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME) == -1)
 						{
@@ -268,8 +261,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
 				return RACINIX_STATE_RACE;
 			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
-				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, true);
-				return RACINIX_STATE_RACE;
+				return RACINIX_STATE_MAIN_MENU;
 			case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
 				break;
 			case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
@@ -313,27 +305,51 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 int racinix_race_event_handler(int event, va_list *var_args)
 {
 	static int state;
-	static vehicle_t *vehicles;
+	static unsigned num_vehicles;
+	static vehicle_t **vehicles;
 	switch (event)
 	{
 	case RACINIX_EVENT_NEW_RACE: // unsigned num_players, bool serial_port
 	{
 		if (va_arg(*var_args, unsigned) == 1) // num_players
 		{
+			if ((vehicles = malloc(1 * sizeof(vehicle_t *))) == NULL)
+			{
+				return 1;
+			}
 			state = RACINIX_STATE_RACE_RACING_1_PLAYER;
+			num_vehicles = 1;
 		}
 		else
 		{
 			if (va_arg(*var_args, int)) // serial_port
 			{
-				// TODO implement serial port mode...
+				// TODO implement serial port mode... don't forget to malloc *vehicles properly
 				return RACINIX_STATE_MAIN_MENU;
 			}
 			else
 			{
+				if ((vehicles = malloc(2 * sizeof(vehicle_t *))) == NULL)
+				{
+					return 1;
+				}
 				state = RACINIX_STATE_RACE_RACING_2_PLAYERS_SAME_PC;
 			}
+			num_vehicles = 2;
 		}
+		track = track_generate(vmi.XResolution, vmi.YResolution, rand());
+
+		vector2D_t starting_position_increment = vectorDivide(vectorSubtract(track->outside_spline[0], track->inside_spline[0]), num_vehicles + 1);
+		vector2D_t starting_position;
+		double heading = atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x);
+
+		size_t i;
+		for (i = 0; i < num_vehicles; ++i)
+		{
+			starting_position = vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1));
+			vehicles[i] = vehicle_create(20, 40, &starting_position, heading, car, vehicle_keys[i]);
+		}
+
 	}
 	case RACINIX_EVENT_NEW_FRAME:
 	{
@@ -341,16 +357,26 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vg_swap_mouse_buffer();
 		vg_fill(RACINIX_COLOR_GRASS);
 		track_draw(track, vmi.XResolution, vmi.YResolution);
-		racinix_update_vehicle(vehicle1);
-		racinix_update_vehicle(vehicle2);
-
-		if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
+		size_t i;
+		for (i = 0; i < num_vehicles; ++i)
 		{
-			vehicle_vehicle_collision_handler(vehicle1, vehicle2);
+			racinix_update_vehicle(vehicles[i]);
 		}
-		if (vehicle_check_vehicle_collision(vehicle2, vehicle1))
+
+		// Vehicle-vehicle collision
+		size_t j;
+		for (i = 0; i < num_vehicles; ++i)
 		{
-			vehicle_vehicle_collision_handler(vehicle2, vehicle1);
+			for (j = 0; j < num_vehicles; ++j)
+			{
+				if (i != j)
+				{
+					if (vehicle_check_vehicle_collision(vehicles[i], vehicles[j]))
+					{
+						vehicle_vehicle_collision_handler(vehicles[i], vehicles[j]);
+					}
+				}
+			}
 		}
 		vg_swap_buffer();
 	}
@@ -385,7 +411,7 @@ int racinix_keyboard_int_handler()
 	return keyboard_int_handler();
 }
 
-int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2)
+int racinix_timer_int_handler()
 {
 	static unsigned counter = 0;
 	if (counter >= TIMER_DEFAULT_FREQ / FPS)
