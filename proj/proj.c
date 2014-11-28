@@ -85,8 +85,19 @@ int racinix_dispatcher()
 {
 	track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
-	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x), car);
-	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x), car);
+	vehicle_keys_t vehicle_keys;
+
+	vehicle_keys.accelerate = KEY_W;
+	vehicle_keys.brake = KEY_S;
+	vehicle_keys.turn_left = KEY_A;
+	vehicle_keys.turn_right = KEY_D;
+	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x), car, vehicle_keys);
+
+	vehicle_keys.accelerate = KEY_ARR_UP;
+	vehicle_keys.brake = KEY_ARR_DOWN;
+	vehicle_keys.turn_left = KEY_ARR_LEFT;
+	vehicle_keys.turn_right = KEY_ARR_RIGHT;
+	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x), car, vehicle_keys);
 
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
@@ -304,30 +315,14 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			drag += track_get_point_drag(track, (int)vehicle1->wheels[i].x, (int)vehicle1->wheels[i].y, vmi.XResolution, vmi.YResolution);
 		}
-		vehicle_keys.accelerate = KEY_W;
-		vehicle_keys.brake = KEY_S;
-		vehicle_keys.turn_left = KEY_A;
-		vehicle_keys.turn_right = KEY_D;
-		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag, vehicle_keys);
-		for (i = 1; i < 5; ++i)
-		{
-			vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle1->speed, vmi.YResolution - i, 0x0);
-		}
+		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag);
 		// Vehicle 2
 		drag = VEHICLE_DRAG;
 		for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
 		{
 			drag += track_get_point_drag(track, (int)vehicle2->wheels[i].x, (int)vehicle2->wheels[i].y, vmi.XResolution, vmi.YResolution);
 		}
-		vehicle_keys.accelerate = KEY_ARR_UP;
-		vehicle_keys.brake = KEY_ARR_DOWN;
-		vehicle_keys.turn_left = KEY_ARR_LEFT;
-		vehicle_keys.turn_right = KEY_ARR_RIGHT;
-		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag, vehicle_keys);
-		for (i = 5; i < 10; ++i)
-		{
-			vg_draw_line(vmi.XResolution / 2, vmi.YResolution - i, vmi.XResolution / 2 + vehicle2->speed, vmi.YResolution - i, 0x0);
-		}
+		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag);
 
 		if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
 		{

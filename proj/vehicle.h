@@ -22,6 +22,15 @@
 
 typedef struct
 {
+	int accelerate;
+	int brake;
+	int turn_left;
+	int turn_right;
+	int nitrous;
+} vehicle_keys_t;
+
+typedef struct
+{
 	double width;
 	double length;
 	vector2D_t position;
@@ -33,16 +42,8 @@ typedef struct
 	vector2D_t wheels[VEHICLE_NUM_WHEELS]; 	// Stored for efficiency purposes
 	vector2D_t oldPosition;					// Stored for efficiency purposes
 	bitmap_t *bitmap;
+	vehicle_keys_t vehicle_keys;
 } vehicle_t;
-
-typedef struct
-{
-	int accelerate;
-	int brake;
-	int turn_left;
-	int turn_right;
-	int nitrous;
-} vehicle_keys_t;
 
 typedef union
 {
@@ -57,13 +58,13 @@ typedef union
 } vehicle_limits_collision_t;
 
 // Creates the vehicle and scales the bitmap according to its size (for efficiency purposes)
-vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap);
+vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys);
 
-void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag, vehicle_keys_t vehicle_keys);
+void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag);
 
-void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys);
+void vehicle_update_steering(vehicle_t *vehicle, double delta_time);
 
-void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag, vehicle_keys_t vehicle_keys);
+void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag);
 
 void vehicle_update_axles(vehicle_t *vehicle, double delta_time);
 
