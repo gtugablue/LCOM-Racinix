@@ -93,7 +93,7 @@ int vg_fill(uint16_t color)
 
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 {
-	if (x < h_res && y < v_res)
+	if (x < h_res && y < v_res) // Since the function arguments are of the "unsigned long" type, this check is enough and therefore performance is increased
 	{
 		*(double_buffer + (x + y * h_res)) = color;
 		return 0;

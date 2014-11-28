@@ -54,7 +54,7 @@ typedef union
 		bool top : 1;
 		bool bottom : 1;
 	};
-	char all;
+	uint8_t all;
 } vehicle_limits_collision_t;
 
 // Creates the vehicle and scales the bitmap according to its size (for efficiency purposes)
