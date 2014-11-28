@@ -1,6 +1,5 @@
 #include "proj.h"
 
-#define WAIT_TIME_S 	1
 #define MOUSE_NUM_TRIES		10
 #define MOUSE_HOOK_BIT	12
 
@@ -91,12 +90,14 @@ int racinix_dispatcher()
 	vehicle_keys.brake = KEY_S;
 	vehicle_keys.turn_left = KEY_A;
 	vehicle_keys.turn_right = KEY_D;
+	vehicle_keys.nitrous = KEY_L_CTRL;
 	vehicle1 = vehicle_create(20, 40, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x), car, vehicle_keys);
 
 	vehicle_keys.accelerate = KEY_ARR_UP;
 	vehicle_keys.brake = KEY_ARR_DOWN;
 	vehicle_keys.turn_left = KEY_ARR_LEFT;
 	vehicle_keys.turn_right = KEY_ARR_RIGHT;
+	vehicle_keys.nitrous = KEY_R_CTRL;
 	vehicle2 = vehicle_create(20, 40, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x), car, vehicle_keys);
 
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
@@ -201,11 +202,19 @@ int racinix_event_handler(int event, ...)
 	{
 	case RACINIX_STATE_MAIN_MENU:
 	{
-		state = racinix_main_menu_event_handler(event, &var_args);
+		if (event == RACINIX_EVENT_NEW_RACE)
+		{
+			state = racinix_race_event_handler(event, &var_args);
+		}
+		else
+		{
+			state = racinix_main_menu_event_handler(event, &var_args);
+		}
 		break;
 	}
 	case RACINIX_STATE_PICK_TRACK:
 	case RACINIX_STATE_DESIGN_TRACK:
+		break;
 	case RACINIX_STATE_RACE:
 	{
 		state = racinix_race_event_handler(event, &var_args);
@@ -252,17 +261,20 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			}
 			switch (i) // TODO
 			{
-			case 0: // 1 Player
+			case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
+				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 1, false);
 				return RACINIX_STATE_RACE;
-			case 1: // 2 Players in the same PC
+			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
+				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
+				return RACINIX_STATE_RACE;
+			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
+				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, true);
+				return RACINIX_STATE_RACE;
+			case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
 				break;
-			case 2: // 2 Players via serial port
+			case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
 				break;
-			case 3: // Settings
-				break;
-			case 4: // Credits
-				break;
-			case 5: // Exit
+			case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
 				return RACINIX_STATE_END;
 			default:
 				break; // A button wasn't clicked
@@ -300,29 +312,37 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 
 int racinix_race_event_handler(int event, va_list *var_args)
 {
+	static int state;
+	static vehicle_t *vehicles;
 	switch (event)
 	{
+	case RACINIX_EVENT_NEW_RACE: // unsigned num_players, bool serial_port
+	{
+		if (va_arg(*var_args, unsigned) == 1) // num_players
+		{
+			state = RACINIX_STATE_RACE_RACING_1_PLAYER;
+		}
+		else
+		{
+			if (va_arg(*var_args, int)) // serial_port
+			{
+				// TODO implement serial port mode...
+				return RACINIX_STATE_MAIN_MENU;
+			}
+			else
+			{
+				state = RACINIX_STATE_RACE_RACING_2_PLAYERS_SAME_PC;
+			}
+		}
+	}
 	case RACINIX_EVENT_NEW_FRAME:
 	{
 		static vehicle_keys_t vehicle_keys;
 		vg_swap_mouse_buffer();
 		vg_fill(RACINIX_COLOR_GRASS);
 		track_draw(track, vmi.XResolution, vmi.YResolution);
-		// Vehicle 1
-		double drag = VEHICLE_DRAG;
-		size_t i;
-		for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-		{
-			drag += track_get_point_drag(track, (int)vehicle1->wheels[i].x, (int)vehicle1->wheels[i].y, vmi.XResolution, vmi.YResolution);
-		}
-		vehicle_tick(vehicle1, &vmi, 1.0 / FPS, drag);
-		// Vehicle 2
-		drag = VEHICLE_DRAG;
-		for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-		{
-			drag += track_get_point_drag(track, (int)vehicle2->wheels[i].x, (int)vehicle2->wheels[i].y, vmi.XResolution, vmi.YResolution);
-		}
-		vehicle_tick(vehicle2, &vmi, 1.0 / FPS, drag);
+		racinix_update_vehicle(vehicle1);
+		racinix_update_vehicle(vehicle2);
 
 		if (vehicle_check_vehicle_collision(vehicle1, vehicle2))
 		{
@@ -346,6 +366,18 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	}
 	}
 	return RACINIX_STATE_RACE;
+}
+
+void racinix_update_vehicle(vehicle_t *vehicle)
+{
+	// Vehicle 1
+	double drag = VEHICLE_DRAG;
+	size_t i;
+	for(i = 0; i < VEHICLE_NUM_WHEELS; ++i)
+	{
+		drag += track_get_point_drag(track, (int)vehicle->wheels[i].x, (int)vehicle->wheels[i].y, vmi.XResolution, vmi.YResolution);
+	}
+	vehicle_tick(vehicle, &vmi, 1.0 / FPS, drag);
 }
 
 int racinix_keyboard_int_handler()

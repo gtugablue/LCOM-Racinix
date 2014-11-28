@@ -43,8 +43,7 @@ enum
 {
 	RACINIX_STATE_RACE_RACING_1_PLAYER,
 	RACINIX_STATE_RACE_RACING_2_PLAYERS_SAME_PC,
-	RACINIX_STATE_RACE_RACING_2_PLAYERS_SERIAL_PORT,
-	RACINIX_STATE_RACE_END
+	RACINIX_STATE_RACE_RACING_2_PLAYERS_SERIAL_PORT
 };
 
 int racinix_start();
@@ -61,6 +60,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args);
 
 int racinix_race_event_handler(int event, va_list *var_args);
 
+void racinix_update_vehicle(vehicle_t *vehicle);
+
 int racinix_keyboard_int_handler();
 
 int racinix_timer_int_handler(vbe_mode_info_t *vmi, track_t *track, vehicle_t *vehicle1, vehicle_t *vehicle2);
@@ -72,12 +73,23 @@ void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 void racinix_draw_mouse();
 
 // Events
-enum
+enum asda
 {
 	RACINIX_EVENT_KEYSTROKE, // int key, bool pressed
 	RACINIX_EVENT_MOUSE_MOVEMENT, // mouse_data_packet_t *mouse_data_packet
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
-	RACINIX_EVENT_NEW_FRAME
+	RACINIX_EVENT_NEW_FRAME,
+	RACINIX_EVENT_NEW_RACE // unsigned num_players, bool serial_port
+};
+
+enum
+{
+	RACINIX_MAIN_MENU_BUTTON_1_PLAYER,
+	RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC,
+	RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT,
+	RACINIX_MAIN_MENU_BUTTON_SETTINGS,
+	RACINIX_MAIN_MENU_BUTTON_CREDITS,
+	RACINIX_MAIN_MENU_BUTTON_EXIT
 };
 
 #endif
