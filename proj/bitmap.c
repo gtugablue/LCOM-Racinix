@@ -80,6 +80,7 @@ bitmap_t *bitmap_load(const char* filename)
 
 void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y)
 {
+	// TODO aceitar valores negativos
 	uint16_t color;
 	size_t i, j;
 	for (i = x; i < x + bitmap->bitmap_information_header.width; ++i)
@@ -107,6 +108,92 @@ void bitmap_draw(bitmap_t *bitmap, int x, int y)
 	}
 }
 
+bitmap_t *bitmap_scale(bitmap_t *bitmap, unsigned new_width, unsigned new_height)
+{
+	double scale_x = (double)new_width / bitmap->bitmap_information_header.width;
+	double scale_y = (double)new_height / bitmap->bitmap_information_header.height;
+	int old_x, old_y;
+	bitmap_t *scaled_bitmap;
+	if ((scaled_bitmap = (bitmap_t *)malloc(sizeof(bitmap_t))) == NULL)
+	{
+		return NULL;
+	}
+	memcpy(&scaled_bitmap->bitmap_information_header, &bitmap->bitmap_information_header, sizeof(bitmap_information_header_t));
+	scaled_bitmap->bitmap_information_header.width = ceil(scale_x * bitmap->bitmap_information_header.width);
+	scaled_bitmap->bitmap_information_header.height = ceil(scale_y * bitmap->bitmap_information_header.height);
+	scaled_bitmap->bitmap_information_header.image_size = scaled_bitmap->bitmap_information_header.width * scaled_bitmap->bitmap_information_header.height * scaled_bitmap->bitmap_information_header.bits_per_pixel / 8;
+	if ((scaled_bitmap->pixel_array = malloc(scaled_bitmap->bitmap_information_header.image_size)) == NULL)
+	{
+		return NULL;
+	}
+	size_t x, y;
+	for (x = 0; x < scaled_bitmap->bitmap_information_header.width; ++x)
+	{
+		for (y = 0; y < scaled_bitmap->bitmap_information_header.height; ++y)
+		{
+			// Scaling matrix
+			old_x = (int)(x / scale_x);
+			old_y = (int)(y / scale_y);
+
+			if (old_x >= 0 && old_x < bitmap->bitmap_information_header.width && old_y >= 0 && old_y < bitmap->bitmap_information_header.height)
+			{
+				*((uint16_t *)scaled_bitmap->pixel_array + x + y * scaled_bitmap->bitmap_information_header.width) = *((uint16_t *)bitmap->pixel_array + old_x + old_y * bitmap->bitmap_information_header.width);
+			}
+			else
+			{
+				*((uint16_t *)scaled_bitmap->pixel_array + x + y * scaled_bitmap->bitmap_information_header.width) = VIDEO_GR_64K_TRANSPARENT;
+			}
+		}
+	}
+	return scaled_bitmap;
+}
+
+bitmap_t *bitmap_transform(bitmap_t *bitmap, unsigned new_width, unsigned new_height, double angle)
+{
+	double angle_cos = cos(angle);
+	double angle_sin = sin(angle);
+	double scale_x = (double)new_width / bitmap->bitmap_information_header.width;
+	double scale_y = (double)new_height / bitmap->bitmap_information_header.height;
+	double transform_x, transform_y;
+	int old_x, old_y;
+	bitmap_t *rotated_bitmap;
+	if ((rotated_bitmap = (bitmap_t *)malloc(sizeof(bitmap_t))) == NULL)
+	{
+		return NULL;
+	}
+	memcpy(&rotated_bitmap->bitmap_information_header, &bitmap->bitmap_information_header, sizeof(bitmap_information_header_t));
+	//rotated_bitmap->bitmap_information_header = bitmap->bitmap_information_header;
+	rotated_bitmap->bitmap_information_header.width = rotated_bitmap->bitmap_information_header.height = sqrt(ceil(scale_x * bitmap->bitmap_information_header.width * bitmap->bitmap_information_header.width) + ceil(scale_y * bitmap->bitmap_information_header.height * bitmap->bitmap_information_header.height));
+	rotated_bitmap->bitmap_information_header.image_size = rotated_bitmap->bitmap_information_header.width * rotated_bitmap->bitmap_information_header.height * rotated_bitmap->bitmap_information_header.bits_per_pixel / 8;
+	if ((rotated_bitmap->pixel_array = malloc(rotated_bitmap->bitmap_information_header.image_size)) == NULL)
+	{
+		return NULL;
+	}
+	int x, y;
+	for (x = 0; x < rotated_bitmap->bitmap_information_header.width; ++x)
+	{
+		for (y = 0; y < rotated_bitmap->bitmap_information_header.height; ++y)
+		{
+			transform_x = (double)(x - (int16_t)rotated_bitmap->bitmap_information_header.width / 2);
+			transform_y = (double)(y - (int16_t)rotated_bitmap->bitmap_information_header.height / 2);
+
+			// Rotation matrix
+			old_x = (int)((transform_x * angle_cos - transform_y * angle_sin) / scale_x + (double)bitmap->bitmap_information_header.width / 2);
+			old_y = (int)((transform_y * angle_cos + transform_x * angle_sin) / scale_y + (double)bitmap->bitmap_information_header.height / 2);
+
+			if (old_x >= 0 && old_x < bitmap->bitmap_information_header.width && old_y >= 0 && old_y < bitmap->bitmap_information_header.height)
+			{
+				*((uint16_t *)rotated_bitmap->pixel_array + x + y * rotated_bitmap->bitmap_information_header.width) = *((uint16_t *)bitmap->pixel_array + old_x + old_y * bitmap->bitmap_information_header.width);
+			}
+			else
+			{
+				*((uint16_t *)rotated_bitmap->pixel_array + x + y * rotated_bitmap->bitmap_information_header.width) = VIDEO_GR_64K_TRANSPARENT;
+			}
+		}
+	}
+	return rotated_bitmap;
+}
+
 bitmap_t *bitmap_rotate(bitmap_t *bitmap, double angle)
 {
 	double angle_cos = cos(angle);
@@ -120,7 +207,7 @@ bitmap_t *bitmap_rotate(bitmap_t *bitmap, double angle)
 	}
 	memcpy(&rotated_bitmap->bitmap_information_header, &bitmap->bitmap_information_header, sizeof(bitmap_information_header_t));
 	//rotated_bitmap->bitmap_information_header = bitmap->bitmap_information_header;
-	rotated_bitmap->bitmap_information_header.width = rotated_bitmap->bitmap_information_header.height = sqrt(bitmap->bitmap_information_header.width * bitmap->bitmap_information_header.width + bitmap->bitmap_information_header.height * bitmap->bitmap_information_header.height);
+	rotated_bitmap->bitmap_information_header.width = rotated_bitmap->bitmap_information_header.height = sqrt(ceil(bitmap->bitmap_information_header.width * bitmap->bitmap_information_header.width) + ceil(bitmap->bitmap_information_header.height * bitmap->bitmap_information_header.height));
 	rotated_bitmap->bitmap_information_header.image_size = rotated_bitmap->bitmap_information_header.width * rotated_bitmap->bitmap_information_header.height * rotated_bitmap->bitmap_information_header.bits_per_pixel / 8;
 	if ((rotated_bitmap->pixel_array = malloc(rotated_bitmap->bitmap_information_header.image_size)) == NULL)
 	{
