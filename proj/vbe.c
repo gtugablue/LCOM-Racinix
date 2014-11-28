@@ -33,7 +33,7 @@ int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p)
 
 	if (sys_int86(&reg86) == OK)
 	{
-		if (reg86.u.w.ax == VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL)
+		if (reg86.u.w.ax == (VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL))
 		{
 			*vmi_p = *((vbe_mode_info_t *)map.virtual);
 			lm_free(&map);
@@ -68,7 +68,7 @@ int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned
 		return 1;
 	}
 
-	if (reg86.u.w.ax != VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL)
+	if (reg86.u.w.ax != (VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL))
 	{
 		return 1;
 	}

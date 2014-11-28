@@ -76,31 +76,34 @@ int racinix_start()
 
 int racinix_exit()
 {
-	vg_exit();
 	bitmap_delete(background);
 	bitmap_delete(mouse_cursor);
+	return vg_exit();
 }
 
 int racinix_dispatcher()
 {
 	track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
-	vehicle1 = vehicle_create(10, 20, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x));
-	vehicle2 = vehicle_create(10, 20, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x));
+	vehicle1 = vehicle_create(10, 20, &track->spline[0], atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x), car);
+	vehicle2 = vehicle_create(10, 20, &track->spline[5], atan2(track->spline[6].y - track->spline[5].y, track->spline[6].x - track->spline[5].x), car);
 
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
 		return 1;
 	}
+
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
+
 	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
+
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
 	if (keyboard_subscribe_int() == -1)
@@ -118,17 +121,16 @@ int racinix_dispatcher()
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
 	message msg;
-	unsigned counter = 0;
 	key_t key;
 	while(1) // Main loop
 	{
-		/* Get a request message. */
+		// Get a request message.
 		if ((r = driver_receive(ANY, &msg, &ipc_status)) != 0) {
 			// Driver receive fail
 			continue;
 		}
-		if (is_ipc_notify(ipc_status)) { /* received notification */
-			if (_ENDPOINT_P(msg.m_source) == HARDWARE) /* hardware interrupt notification */
+		if (is_ipc_notify(ipc_status)) { // received notification
+			if (_ENDPOINT_P(msg.m_source) == HARDWARE) // hardware interrupt notification
 			{
 				if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
 
@@ -175,6 +177,8 @@ int racinix_dispatcher()
 	keyboard_unsubscribe_int();
 	mouse_disable_stream_mode(MOUSE_NUM_TRIES);
 	mouse_unsubscribe_int(mouse_hook_id);
+
+	return 0;
 }
 
 int racinix_event_handler(int event, ...)
@@ -383,7 +387,6 @@ int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet)
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet)
 {
-	printf("updating... %d\n", mouse_data_packet->x_delta);
 	mouse_position = vectorAdd(mouse_position, vectorMultiply(vectorCreate(mouse_data_packet->x_delta, -mouse_data_packet->y_delta), RACINIX_MOUSE_SENSITIVITY));
 	if (mouse_position.x < 0)
 	{

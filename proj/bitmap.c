@@ -1,10 +1,9 @@
 #include "bitmap.h"
 #include "video_gr.h"
+#include <stdlib.h>
+#include <minix/driver.h>
 
 #define BITMAP_SIGNATURE		0x4D42
-
-#define MAX(a, b)	((a) > (b) ? (a) : (b))
-#define MIN(a, b)	((a) < (b) ? (a) : (b))
 
 bitmap_t *bitmap_load(const char* filename)
 {
@@ -106,6 +105,50 @@ void bitmap_draw(bitmap_t *bitmap, int x, int y)
 		// TODO check para ver se não excede a borda direita
 		memcpy(double_buffer + x + (y + bitmap->bitmap_information_header.height - 1 - i) * vbe_mode_info->XResolution, (uint16_t *)bitmap->pixel_array + i * MIN(bitmap->bitmap_information_header.width, x + vbe_mode_info->XResolution), bitmap->bitmap_information_header.width * vbe_mode_info->BitsPerPixel / 8);
 	}
+}
+
+bitmap_t *bitmap_rotate(bitmap_t *bitmap, double angle)
+{
+	double angle_cos = cos(angle);
+	double angle_sin = sin(angle);
+	double transform_x, transform_y;
+	int old_x, old_y;
+	bitmap_t *rotated_bitmap;
+	if ((rotated_bitmap = (bitmap_t *)malloc(sizeof(bitmap_t))) == NULL)
+	{
+		return NULL;
+	}
+	memcpy(&rotated_bitmap->bitmap_information_header, &bitmap->bitmap_information_header, sizeof(bitmap_information_header_t));
+	//rotated_bitmap->bitmap_information_header = bitmap->bitmap_information_header;
+	rotated_bitmap->bitmap_information_header.width = rotated_bitmap->bitmap_information_header.height = sqrt(bitmap->bitmap_information_header.width * bitmap->bitmap_information_header.width + bitmap->bitmap_information_header.height * bitmap->bitmap_information_header.height);
+	rotated_bitmap->bitmap_information_header.image_size = rotated_bitmap->bitmap_information_header.width * rotated_bitmap->bitmap_information_header.height * rotated_bitmap->bitmap_information_header.bits_per_pixel / 8;
+	if ((rotated_bitmap->pixel_array = malloc(rotated_bitmap->bitmap_information_header.image_size)) == NULL)
+	{
+		return NULL;
+	}
+	int x, y;
+	for (x = 0; x < rotated_bitmap->bitmap_information_header.width; ++x)
+	{
+		for (y = 0; y < rotated_bitmap->bitmap_information_header.height; ++y)
+		{
+			transform_x = (double)(x - (int16_t)rotated_bitmap->bitmap_information_header.width / 2);
+			transform_y = (double)(y - (int16_t)rotated_bitmap->bitmap_information_header.height / 2);
+
+			// Rotation matrix
+			old_x = (int)((transform_x * angle_cos - transform_y * angle_sin) + (double)bitmap->bitmap_information_header.width / 2);
+			old_y = (int)((transform_y * angle_cos + transform_x * angle_sin) + (double)bitmap->bitmap_information_header.height / 2);
+
+			if (old_x >= 0 && old_x < bitmap->bitmap_information_header.width && old_y >= 0 && old_y < bitmap->bitmap_information_header.height)
+			{
+				*((uint16_t *)rotated_bitmap->pixel_array + x + y * rotated_bitmap->bitmap_information_header.width) = *((uint16_t *)bitmap->pixel_array + old_x + old_y * bitmap->bitmap_information_header.width);
+			}
+			else
+			{
+				*((uint16_t *)rotated_bitmap->pixel_array + x + y * rotated_bitmap->bitmap_information_header.width) = VIDEO_GR_64K_TRANSPARENT;
+			}
+		}
+	}
+	return rotated_bitmap;
 }
 
 void bitmap_delete(bitmap_t *bitmap)

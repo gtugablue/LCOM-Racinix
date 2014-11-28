@@ -35,7 +35,7 @@ void *vg_init(unsigned short mode)
 	reg86.u.w.bx = mode | BIT(VBE_MODE_NUMBER_LINEAR_FLAT_FRAME_BUFFER_BIT);
 	if (sys_int86(&reg86) == OK)
 	{
-		if (reg86.u.w.ax == VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL)
+		if (reg86.u.w.ax == (VBE_FUNCTION_SUPPORTED | VBE_FUNCTION_CALL_SUCCESSFUL))
 		{
 			if(vbe_get_mode_info(mode, &vbe_mode_info))
 			{
@@ -43,7 +43,6 @@ void *vg_init(unsigned short mode)
 			}
 			else
 			{
-				int r;
 				struct mem_range mr;
 				unsigned mr_size;
 
@@ -120,7 +119,7 @@ inline long vg_get_pixel(unsigned long x, unsigned long y) {
 	return 0;
 }
 
-static void swap(unsigned long* a, unsigned long* b)
+static void swap(long* a, long* b)
 {
 	int t=*a;
 	*a=*b;
@@ -130,7 +129,7 @@ static void swap(unsigned long* a, unsigned long* b)
 int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 {
 	//Bresenham's line algorithm
-	unsigned long dx,dy;
+	long dx,dy;
 	int d,incry,incre,incrne,slopegt1=0;
 	dx=abs(xi-xf);dy=abs(yi-yf);
 	if(dy>dx)
@@ -222,6 +221,7 @@ int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned 
 			vg_set_pixel(x + i, y + j, *(pixmap + (i + j * width)));
 		}
 	}
+	return 0;
 }
 
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap)
@@ -272,6 +272,7 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 			}
 		}
 	}
+	return 0;
 }
 
 vbe_mode_info_t *vg_get_vbe_mode_info()
@@ -305,8 +306,8 @@ uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 }
 
 int vg_exit() {
-	free(double_buffer);
-	free(mouse_buffer);
+	//free(double_buffer);
+	//free(mouse_buffer);
 	struct reg86u reg86;
 
 	reg86.u.b.intno = 0x10; /* BIOS video services */

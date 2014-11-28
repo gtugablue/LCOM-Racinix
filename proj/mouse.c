@@ -1,4 +1,5 @@
 #include "mouse.h"
+#include <minix/driver.h>
 
 #define BIT(n) (0x01<<(n))
 #define MOUSE_IS_POSSIBLE_FIRST_BYTE(byte)	((byte) & BIT(MOUSE_1ST_BYTE_ALWAYS_1_BIT))
@@ -16,7 +17,7 @@ int mouse_subscribe_int(unsigned* hook_id)
 	{
 		return -1;
 	}
-	if (sys_irqsetpolicy(I8042_MOUSE_IRQ, IRQ_REENABLE | IRQ_EXCLUSIVE, hook_id) == OK)
+	if (sys_irqsetpolicy(I8042_MOUSE_IRQ, IRQ_REENABLE | IRQ_EXCLUSIVE, (int *)hook_id) == OK)
 	{
 		memset(packet, 0, sizeof(packet));	// Clean the array to make sure bit 3 is off in all bytes
 		next_byte = 0;

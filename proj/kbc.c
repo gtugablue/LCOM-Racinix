@@ -14,7 +14,7 @@ int kbc_subscribe_keyboard_int(unsigned* hook_id)
 	{
 		 return -1;
 	}
-	if (sys_irqsetpolicy(I8042_KBD_IRQ, IRQ_REENABLE | IRQ_EXCLUSIVE, hook_id) == OK)
+	if (sys_irqsetpolicy(I8042_KBD_IRQ, IRQ_REENABLE | IRQ_EXCLUSIVE, (int *)hook_id) == OK)
 	{
 		return -1;
 	}
@@ -149,11 +149,12 @@ int kbc_clean_output_buffer(unsigned num_tries)
 		}
 		return 0;
 	}
+	return 1;
 }
 
 int kbc_unsubscribe_int(unsigned hook_id)
 {
-	if (sys_irqrmpolicy(&hook_id) == OK)
+	if (sys_irqrmpolicy((int *)&hook_id) == OK)
 	{
 		return 0;
 	}

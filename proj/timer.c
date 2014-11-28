@@ -285,7 +285,7 @@ int timer_test_int(unsigned long time) {
 
 int timer_test_config(unsigned long timer) {
 	unsigned long *st;
-	if (st = malloc(sizeof(unsigned char)))
+	if ((st = malloc(sizeof(unsigned char))) != NULL)
 	{
 		if (timer_get_conf(timer, st))
 		{

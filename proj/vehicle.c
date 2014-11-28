@@ -1,10 +1,8 @@
 #include "vehicle.h"
-#include "xpm.h"
-#include "pixmap.h"
 
 #define PI 					3.14159265358979323846
 
-vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading)
+vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap)
 {
 	vehicle_t *vehicle = malloc(sizeof(vehicle_t));
 	if (vehicle == NULL)
@@ -17,6 +15,7 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	vehicle->speed = 0.0;
 	vehicle->heading = heading;
 	vehicle->steering = 0.0;
+	vehicle->bitmap = bitmap;
 	vehicle_calculate_axle_position(vehicle);
 	vehicle_calculate_wheel_position(vehicle);
 	return vehicle;
@@ -40,7 +39,7 @@ void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time,
 
 	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, vmi_p->XResolution, vmi_p->YResolution), vmi_p->XResolution, vmi_p->YResolution);
 
-	vehicle_draw(vehicle, vmi_p);
+	vehicle_draw(vehicle);
 }
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time, vehicle_keys_t vehicle_keys)
@@ -276,6 +275,7 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 			return true; // Wheel inside the other vehicle
 		}
 	}
+	return false;
 }
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2)
@@ -323,36 +323,16 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 }
 
-int vehicle_draw(vehicle_t *vehicle, vbe_mode_info_t *vmi_p)
+int vehicle_draw(vehicle_t *vehicle)
 {
-	/*size_t i;
-	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-	{
-		vg_draw_circle(vehicle->wheels[i].x, vehicle->wheels[i].y, 2, 0x0);
-	}
-	for (i = 0; i < VEHICLE_NUM_WHEELS; ++i)
-	{
-		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 1) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 1) % VEHICLE_NUM_WHEELS].y, 0x4);
-	}
-	for (i = 0; i < VEHICLE_NUM_WHEELS / 2; ++i)
-	{
-		vg_draw_line(vehicle->wheels[i % VEHICLE_NUM_WHEELS].x, vehicle->wheels[i % VEHICLE_NUM_WHEELS].y, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].x, vehicle->wheels[(i + 2) % VEHICLE_NUM_WHEELS].y, 0x4);
-	}*/
-
-	int xpm_width, xpm_height;
-	uint16_t *xpm = read_xpm(pixmap_get(6), &xpm_width, &xpm_height, vmi_p->XResolution, vmi_p->YResolution);
-	unsigned short xpm_width2 = xpm_width;
-	unsigned short xpm_height2 = xpm_height;
-	uint16_t *pixmap = xpm;
-	if ((pixmap = pixmap_rotate(vmi_p, xpm, &xpm_width2, &xpm_height2, vehicle->heading)) == NULL)
+	bitmap_t *rotated_bitmap;
+	if ((rotated_bitmap = bitmap_rotate(vehicle->bitmap, vehicle->heading)) == NULL)
 	{
 		return 1;
 	}
-	xpm_width = xpm_width2;
-	xpm_height = xpm_height2;
-	vg_draw_pixmap(vehicle->position.x - xpm_width / 2, vehicle->position.y - xpm_height / 2, pixmap, (unsigned short)xpm_width, (unsigned short)xpm_height);
-	free(xpm);
-	free(pixmap);
+	bitmap_draw_alpha(rotated_bitmap, vehicle->position.x - rotated_bitmap->bitmap_information_header.width / 2, vehicle->position.y - rotated_bitmap->bitmap_information_header.height / 2);
+	bitmap_delete(rotated_bitmap);
+	return 0;
 }
 
 void vehicle_delete(vehicle_t *vehicle)

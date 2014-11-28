@@ -32,6 +32,7 @@ typedef struct
 	vector2D_t front_axle;					// Stored for efficiency purposes
 	vector2D_t wheels[VEHICLE_NUM_WHEELS]; 	// Stored for efficiency purposes
 	vector2D_t oldPosition;					// Stored for efficiency purposes
+	bitmap_t *bitmap;
 } vehicle_t;
 
 typedef struct
@@ -55,7 +56,7 @@ typedef union
 	char all;
 } vehicle_limits_collision_t;
 
-vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading);
+vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap);
 
 void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag, vehicle_keys_t vehicle_keys);
 
@@ -92,7 +93,7 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2);
 
-int vehicle_draw(vehicle_t *vehicle, vbe_mode_info_t *vmi_p);
+int vehicle_draw(vehicle_t *vehicle);
 
 void vehicle_delete(vehicle_t *vehicle);
 
