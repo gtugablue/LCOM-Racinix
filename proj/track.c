@@ -6,12 +6,11 @@
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
 static vector2D_t createCatmullRomSpline(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
-static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t);
-static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t);
+//static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t);
+//static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t);
 static void pushApart(vector2D_t hull[], unsigned hull_size);
-static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
-static unsigned long track_generate_random(unsigned long seed);
-static int orientation(vector2D_t p, vector2D_t q, vector2D_t r);
+//static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
+//static unsigned long track_generate_random(unsigned long seed);
 static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[]);
 static bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
 static void swapPoints(vector2D_t *a, int i, int j);
@@ -271,7 +270,7 @@ static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_
     return result;
 }
 
-static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t)
+/*static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t)
 {
 	double t0 = t + 1;
 	double t1 = t0 + 1;
@@ -290,13 +289,13 @@ static double calculateCatmullCoordinate(double P0, double P1, double P2, double
 	C12 = 	L012 * ((t2 - t)/(t2 - t1)) + 	L123 * ((t - t1)/(t2 - t1));
 
 	return C12;
-}
+}*/
 
-static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t)
+/*static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t)
 {
 	//return t * (P0 * (2.0 - 4.5 * t) + P1 * (9.0 * t - 3.0) - 7.5 * P2 * t + 4.0 * P2 + 3.0 * P3 * t - P3);
 	return 0.5 * (3 * (P3 - 3.0 * P2 + 3.0 * P1 - P0) * t * t + 2 * (-P3 + 4 * P2 + P1 + P0 - 3.0) * t + P3 - P0);
-}
+}*/
 
 static void pushApart(vector2D_t hull[], unsigned hull_size)
 {
@@ -326,7 +325,7 @@ static void pushApart(vector2D_t hull[], unsigned hull_size)
     }
 }
 
-static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t)
+/*static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t)
 {
 	vector2D_t normal;
 	normal.y = -calculateCatmullDerivativeCoordinate(P0.x, P1.x, P2.x, P3.x, t);
@@ -337,11 +336,11 @@ static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_
 static unsigned long track_generate_random(unsigned long seed)
 {
 	return ((seed * 1103515245 + 12345)/65536) % 32768;
-}
+}*/
 
 double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsigned height)
 {
-	if (x >= 0 && x < width & y >= 0 && y < height)
+	if (x >= 0 && x < width && y >= 0 && y < height)
 	{
 		if (track->track_points[x + y * width])
 		{
@@ -437,7 +436,7 @@ static int track_generate_perturb(track_t *track)
 		return 1;
 	}
 	vector2D_t perturbation;
-	double max_displacement = 40.0, perturbation_length; // Again, this may change to fit your units.
+	double max_displacement = 40.0; // Again, this may change to fit your units.
 	size_t i;
 	for(i = 0; i < track->num_control_points; ++i)
 	{

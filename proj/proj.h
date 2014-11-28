@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>		// Code gets much more beautiful with true/false instead of (!=0)/0
-#include <minix/drivers.h>
+#include <minix/driver.h>
 #include "math.h"
 #include "video_gr.h"
 #include "vbe.h"
@@ -14,8 +14,6 @@
 #include "timer.h"
 #include "track.h"
 #include "mouse.h"
-#include "pixmap.h"
-#include "xpm.h"
 #include <stdarg.h>
 #include "bitmap.h"
 
