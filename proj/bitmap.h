@@ -34,6 +34,10 @@ typedef struct
 
 bitmap_t *bitmap_load(const char *file);
 
+bitmap_t *bitmap_transform(bitmap_t *bitmap, unsigned new_width, unsigned new_height, double angle);
+
+bitmap_t *bitmap_scale(bitmap_t *bitmap, unsigned new_width, unsigned new_height);
+
 bitmap_t *bitmap_rotate(bitmap_t *bitmap, double angle);
 
 void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y);

@@ -15,7 +15,7 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	vehicle->speed = 0.0;
 	vehicle->heading = heading;
 	vehicle->steering = 0.0;
-	vehicle->bitmap = bitmap;
+	vehicle->bitmap = bitmap_scale(bitmap, length, width);
 	vehicle_calculate_axle_position(vehicle);
 	vehicle_calculate_wheel_position(vehicle);
 	return vehicle;
@@ -337,5 +337,6 @@ int vehicle_draw(vehicle_t *vehicle)
 
 void vehicle_delete(vehicle_t *vehicle)
 {
+	free(vehicle->bitmap);
 	free(vehicle);
 }

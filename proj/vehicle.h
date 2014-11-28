@@ -15,7 +15,7 @@
 #define VEHICLE_STEER				0.15
 #define VEHICLE_STOP_SPEED			10.0
 #define VEHICLE_NUM_WHEELS			4
-#define VEHICLE_MAX_STEER			0.4
+#define VEHICLE_MAX_STEER			1.0
 #define VEHICLE_COLLISION_FRICTION	200.0
 #define VEHICLE_DRAG				0.8
 #define VEHICLE_NITROUS				500			///////mine
@@ -56,6 +56,7 @@ typedef union
 	char all;
 } vehicle_limits_collision_t;
 
+// Creates the vehicle and scales the bitmap according to its size (for efficiency purposes)
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap);
 
 void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag, vehicle_keys_t vehicle_keys);
