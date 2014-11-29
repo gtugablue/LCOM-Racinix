@@ -8,6 +8,7 @@
 #include "math.h"
 #include "video_gr.h"
 #include "vbe.h"
+#include "track.h"
 
 #define VEHICLE_ACCELERATE			150.0
 #define VEHICLE_REVERSE				75.0
@@ -43,6 +44,9 @@ typedef struct
 	vector2D_t oldPosition;					// Stored for efficiency purposes
 	bitmap_t *bitmap;
 	vehicle_keys_t vehicle_keys;
+	unsigned current_lap;
+	unsigned current_checkpoint;
+	uint16_t checkpoint_color;
 } vehicle_t;
 
 typedef union
@@ -58,9 +62,9 @@ typedef union
 } vehicle_limits_collision_t;
 
 // Creates the vehicle and scales the bitmap according to its size (for efficiency purposes)
-vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys);
+vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys, uint16_t checkpoint_color);
 
-void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag);
+void vehicle_tick(vehicle_t *vehicle, track_t *track, vbe_mode_info_t *vmi_p, double delta_time, double drag);
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time);
 
@@ -94,6 +98,10 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2);
+
+bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track);
+
+void vehicle_checkpoint_collision_handler(vehicle_t *vehicle, track_t *track);
 
 int vehicle_draw(vehicle_t *vehicle);
 

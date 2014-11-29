@@ -2,6 +2,7 @@
 
 #define MOUSE_NUM_TRIES		10
 #define MOUSE_HOOK_BIT	12
+#define PI 					3.14159265358979323846
 
 #define BIT(n) (0x01<<(n))
 
@@ -9,6 +10,7 @@ static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
 static track_t *track;
 static vehicle_keys_t vehicle_keys[2];
+static uint16_t vehicle_colors[2];
 
 // Bitmaps
 static bitmap_t *background;
@@ -76,6 +78,9 @@ int racinix_start()
 	vehicle_keys[1].turn_left = KEY_ARR_LEFT;
 	vehicle_keys[1].turn_right = KEY_ARR_RIGHT;
 	vehicle_keys[1].nitrous = KEY_R_CTRL;
+
+	vehicle_colors[0] = rgb(0, 0, 255);
+	vehicle_colors[1] = rgb(255, 0, 0);
 
 	if (racinix_dispatcher() != 0)
 	{
@@ -340,14 +345,19 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		track = track_generate(vmi.XResolution, vmi.YResolution, rand());
 
 		vector2D_t starting_position_increment = vectorDivide(vectorSubtract(track->outside_spline[0], track->inside_spline[0]), num_vehicles + 1);
+		vector2D_t starting_position_offset, temp_vector;
 		vector2D_t starting_position;
 		double heading = atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x);
 
 		size_t i;
 		for (i = 0; i < num_vehicles; ++i)
 		{
+			//temp_vector = vectorRotate(starting_position_increment, PI / 2);
+			//normalize(&temp_vector);
+			//starting_position_offset = vectorMultiply(temp_vector, vehicles[i]->length / 2);
+			//starting_position = vectorAdd(vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1)), starting_position_offset);
 			starting_position = vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1));
-			vehicles[i] = vehicle_create(20, 40, &starting_position, heading, car, vehicle_keys[i]);
+			vehicles[i] = vehicle_create(20, 40, &starting_position, heading, car, vehicle_keys[i], vehicle_colors[i]);
 		}
 
 	}
@@ -358,6 +368,10 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vg_fill(RACINIX_COLOR_GRASS);
 		track_draw(track, vmi.XResolution, vmi.YResolution);
 		size_t i;
+		for (i = 0; i < num_vehicles; ++i)
+		{
+			vg_draw_circle(track->control_points[vehicles[i]->current_checkpoint].x, track->control_points[vehicles[i]->current_checkpoint].y, 5, vehicles[i]->checkpoint_color);
+		}
 		for (i = 0; i < num_vehicles; ++i)
 		{
 			racinix_update_vehicle(vehicles[i]);
@@ -403,7 +417,7 @@ void racinix_update_vehicle(vehicle_t *vehicle)
 	{
 		drag += track_get_point_drag(track, (int)vehicle->wheels[i].x, (int)vehicle->wheels[i].y, vmi.XResolution, vmi.YResolution);
 	}
-	vehicle_tick(vehicle, &vmi, 1.0 / FPS, drag);
+	vehicle_tick(vehicle, track, &vmi, 1.0 / FPS, drag);
 }
 
 int racinix_keyboard_int_handler()
