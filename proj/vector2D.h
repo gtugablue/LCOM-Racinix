@@ -26,6 +26,10 @@ vector2D_t vectorRotate(vector2D_t vector, double degrees);
 
 double vectorNorm(vector2D_t vector);
 
+double vectorAngle(vector2D_t vector1, vector2D_t vector2);
+
+double vectorScalarProduct(vector2D_t vector1, vector2D_t vector2);
+
 void normalize(vector2D_t* vector);
 
 bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point);

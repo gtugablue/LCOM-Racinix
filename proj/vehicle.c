@@ -2,7 +2,7 @@
 
 #define PI 					3.14159265358979323846
 
-vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys)
+vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys, uint16_t checkpoint_color)
 {
 	vehicle_t *vehicle = malloc(sizeof(vehicle_t));
 	if (vehicle == NULL)
@@ -17,12 +17,15 @@ vehicle_t *vehicle_create(double width, double length, const vector2D_t *positio
 	vehicle->steering = 0.0;
 	vehicle->bitmap = bitmap_scale(bitmap, length, width);
 	vehicle->vehicle_keys = vehicle_keys;
+	vehicle->current_lap = 0;
+	vehicle->current_checkpoint = 1;
+	vehicle->checkpoint_color = checkpoint_color;
 	vehicle_calculate_axle_position(vehicle);
 	vehicle_calculate_wheel_position(vehicle);
 	return vehicle;
 }
 
-void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time, double drag)
+void vehicle_tick(vehicle_t *vehicle, track_t *track, vbe_mode_info_t *vmi_p, double delta_time, double drag)
 {
 	vehicle_update_steering(vehicle, delta_time);
 
@@ -39,6 +42,11 @@ void vehicle_tick(vehicle_t *vehicle, vbe_mode_info_t *vmi_p, double delta_time,
 	vehicle_calculate_wheel_position(vehicle);
 
 	vehicle_limits_collision_handler(vehicle, vehicle->oldPosition, vehicle_check_limits_collision(vehicle, vmi_p->XResolution, vmi_p->YResolution), vmi_p->XResolution, vmi_p->YResolution);
+
+	if (vehicle_check_checkpoint_collision(vehicle, track))
+	{
+		vehicle_checkpoint_collision_handler(vehicle, track);
+	}
 
 	vehicle_draw(vehicle);
 }
@@ -282,9 +290,10 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2)
 {
 	// TODO
-	vehicle->speed = 0.0;
+	vehicle2->speed = vehicle->speed;
+	vehicle->speed /= 2;
+	vehicle->heading = vehicle2->heading;
 	vehicle->position = vehicle->oldPosition;
-	vehicle2->speed = 0.0;
 	vehicle2->position = vehicle2->oldPosition;
 }
 
@@ -321,6 +330,27 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 		vehicle_update_position(vehicle);
 		vehicle_calculate_wheel_position(vehicle);
 		vehicle->position.y -= MAX(MAX(vehicle->wheels[0].y, vehicle->wheels[1].y), MAX(vehicle->wheels[2].y, vehicle->wheels[3].y)) - height;
+	}
+}
+
+bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track)
+{
+	if (vectorDistance(vehicle->position, track->control_points[vehicle->current_checkpoint]) < 50)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void vehicle_checkpoint_collision_handler(vehicle_t *vehicle, track_t *track)
+{
+	vehicle->current_checkpoint = (vehicle->current_checkpoint + 1) % track->num_control_points;
+	if (vehicle->current_checkpoint == 1)
+	{
+		++vehicle->current_lap;
 	}
 }
 

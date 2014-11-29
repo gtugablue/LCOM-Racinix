@@ -53,6 +53,16 @@ double vectorNorm(vector2D_t vector)
 	return sqrt(pow(vector.x, 2) + pow(vector.y, 2));
 }
 
+double vectorAngle(vector2D_t vector1, vector2D_t vector2)
+{
+	return acos(vectorScalarProduct(vector1, vector2) / (vectorNorm(vector1) * vectorNorm(vector2)));
+}
+
+double vectorScalarProduct(vector2D_t vector1, vector2D_t vector2)
+{
+	return vector1.x * vector2.x + vector1.y * vector2.y;
+}
+
 void normalize(vector2D_t* vector)
 {
 	double norm = vectorNorm(*vector);
