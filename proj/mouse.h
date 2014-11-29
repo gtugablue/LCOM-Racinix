@@ -1,3 +1,6 @@
+#ifndef _MOUSE_H
+#define _MOUSE_H
+
 #include "kbc.h"
 #include <stdbool.h>
 
@@ -152,3 +155,5 @@ int mouse_reset(unsigned num_tries);
 void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit);
 
 int mouse_unsubscribe_int(unsigned hook_id);
+
+#endif
