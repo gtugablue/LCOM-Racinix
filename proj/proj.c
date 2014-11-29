@@ -378,6 +378,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		}
 
 		// Vehicle-vehicle collision
+		unsigned wheel_ID;
 		size_t j;
 		for (i = 0; i < num_vehicles; ++i)
 		{
@@ -385,9 +386,10 @@ int racinix_race_event_handler(int event, va_list *var_args)
 			{
 				if (i != j)
 				{
-					if (vehicle_check_vehicle_collision(vehicles[i], vehicles[j]))
+					wheel_ID = vehicle_check_vehicle_collision(vehicles[i], vehicles[j]);
+					if (wheel_ID != -1)
 					{
-						vehicle_vehicle_collision_handler(vehicles[i], vehicles[j]);
+						vehicle_vehicle_collision_handler(vehicles[i], wheel_ID, vehicles[j]);
 					}
 				}
 			}

@@ -264,15 +264,15 @@ vehicle_limits_collision_t vehicle_check_limits_collision(vehicle_t *vehicle, un
 	return vehicle_limits_collision;
 }
 
-bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
+int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 {
-	if (vectorDistance(vehicle->position, vehicle2->position) < MIN(vehicle->length, vehicle->width) / 2 + MIN(vehicle2->length, vehicle2->width) / 2)
+	/*if (vectorDistance(vehicle->position, vehicle2->position) < MIN(vehicle->length, vehicle->width) / 2 + MIN(vehicle2->length, vehicle2->width) / 2)
 	{
 		return true; // Inside smaller bounding box
-	}
+	}*/
 	if (vectorDistance(vehicle->position, vehicle2->position) > MAX(vehicle->length, vehicle->width) / 2 + MAX(vehicle2->length, vehicle2->width) / 2)
 	{
-		return false; // Outside larger bounding box
+		return -1; // Outside larger bounding box
 	}
 
 	// Outside smaller bounding box but inside larger bounding box
@@ -281,18 +281,19 @@ bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 	{
 		if (isPointInPolygon(vehicle2->wheels, VEHICLE_NUM_WHEELS, vehicle->wheels[i]))
 		{
-			return true; // Wheel inside the other vehicle
+			return i; // Wheel inside the other vehicle
 		}
 	}
-	return false;
+	return -1;
 }
 
-void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2)
+void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2)
 {
 	// TODO
 	vehicle2->speed = vehicle->speed;
 	vehicle->speed /= 2;
-	vehicle->heading = vehicle2->heading;
+	vehicle->heading += (vehicle2->heading - vehicle->heading) / 2;
+	vehicle2->heading = vehicle->heading;
 	vehicle->position = vehicle->oldPosition;
 	vehicle2->position = vehicle2->oldPosition;
 }
@@ -363,6 +364,10 @@ int vehicle_draw(vehicle_t *vehicle)
 	}
 	bitmap_draw_alpha(rotated_bitmap, vehicle->position.x - rotated_bitmap->bitmap_information_header.width / 2, vehicle->position.y - rotated_bitmap->bitmap_information_header.height / 2);
 	bitmap_delete(rotated_bitmap);
+
+	vector2D_t velocity = vectorRotate(vectorCreate(vehicle->speed, 0), vehicle->heading);
+	vg_draw_line(vehicle->position.x, vehicle->position.y, vehicle->position.x + velocity.x, vehicle->position.y + velocity.y, 0xFFFF);
+
 	return 0;
 }
 

@@ -95,9 +95,9 @@ vehicle_limits_collision_t vehicle_check_limits_collision(vehicle_t *vehicle, un
 
 void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, vehicle_limits_collision_t vehicle_limits_collision, unsigned width, unsigned height);
 
-bool vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
+int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
-void vehicle_vehicle_collision_handler(vehicle_t *vehicle, vehicle_t *vehicle2);
+void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2);
 
 bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track);
 

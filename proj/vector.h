@@ -1,26 +1,26 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef _VECTOR_H
+#define _VECTOR_H
 
-/** @defgroup vector vector
- * @{
- * Functions to manage vector ADT
- */
+#include "minix/syslib.h"
 
 typedef struct {
-    void** buf; // Data
-    int size_capacity; // Allocated size of elements
-    int num; // Number of elements
-} vector;
+	void** data;
+	size_t allocated_size;
+	unsigned item_number;
+} vector_t;
 
-void vector_new(vector* v); // Create a new vector
-void vector_free(vector* v); // Delete all elements of the vector
-int vector_size(vector* v); // Size of vector
-int vector_capacity(vector* v); // Capacity of the vector
-void vector_push_back(vector* v, void* number); // Adds element to back of vector
-void vector_insert(vector* v, void* info, int ind); // Adds element at position index
-void* vector_get(vector* v, int ind); // Element at position index
-void vector_erase(vector* v, int ind); // Removes element at position index
+void vector_create(vector_t* v);
 
-/**@}*/
+int vector_size(vector_t* v);
 
-#endif // VECTOR_H
+int vector_push_back(vector_t* vector, void* data);
+
+void vector_insert(vector_t* v, void* info, int index);
+
+void *vector_at(vector_t* v, int index);
+
+void vector_erase(vector_t* v, int index);
+
+void vector_delete(vector_t* v);
+
+#endif

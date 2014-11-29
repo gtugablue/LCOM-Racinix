@@ -1,90 +1,67 @@
 #include "vector.h"
-#include "utilities.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
-#define RATE_CAPACITY 1.5f
-#define SET_CAPACITY_SIZE 10
+#define VECTOR_CAPACITY_GROW_RATE 			2
+#define VECTOR_CAPACITY_GROW_FACTOR 		10
 
-void vector_new(vector* v)
+void vector_create(vector_t* vector)
 {
-	v->buf = NULL;
-	v->size_capacity = 0;
-	v->num = 0;
+	vector->data = NULL;
+	vector->allocated_size = 0;
+	vector->item_number = 0;
 }
 
-void vector_free(vector* v)
+int vector_size(vector_t* vector)
 {
-    free(v->buf);
+	return vector->item_number;
 }
 
-int vector_size(vector* v)
+int vector_push_back(vector_t* vector, void* data)
 {
-	return v->num;
-}
-
-int vector_capacity(vector* v)
-{
-	return v->size_capacity;
-}
-
-void vector_push_back(vector* v, void* number)
-{
-	if (!(v->size_capacity))
+	if (vector->allocated_size == 0) // Vector empty
 	{
-		v->size_capacity = SET_CAPACITY_SIZE;
-
-		v->buf = (void**)malloc(v->size_capacity * sizeof(void*));
-		memset(v->buf, 0, v->size_capacity * sizeof(void*));
-	}
-
-	if (v->size_capacity == v->num)
-	{
-		v->size_capacity *= RATE_CAPACITY; //
-		v->buf = (void**)realloc(v->buf, v->size_capacity * sizeof(void*)); //
-	}
-
-	v->buf[v->num] = number;
-	v->num++;
-}
-
-void vector_insert(vector* v, void* info, int ind)
-{
-	int p = v->num +1;
-	if (v->size_capacity == p)
-	{
-		v->size_capacity *= RATE_CAPACITY; //
-		v->buf = realloc(v->buf, v->size_capacity * sizeof(void*)); //
-	}
-	int n = v->size;
-	for (int i = n; i >= ind; --i)
-	{
-		v->buf[i + 1] = v->buf[i];
-	}
-
-	v->buf[ind] = info;
-	v->num++;
-}
-
-void* vector_get(vector* v, int ind)
-{
-	return v->buf[ind];
-}
-
-void vector_erase(vector* v, int ind)
-{
-	int n = v->num -1;
-	if (ind != n)
-	{
-		int i = ind;
-		while(i!=n)
+		if ((vector->data = malloc(VECTOR_CAPACITY_GROW_FACTOR * sizeof(void *))) == NULL)
 		{
-			v->buf[i] = v->buf[i+1];
-			i++;
+			vector_delete(vector);
+			return 1;
 		}
+		vector->allocated_size = VECTOR_CAPACITY_GROW_FACTOR;
 	}
-	v->buf[n] = NULL;
-	(v->num)--;
+
+	if (vector->allocated_size == vector->item_number) // Vector full
+	{
+		if ((vector->data = (void**)realloc(vector->data, vector->allocated_size * sizeof(void *))) == NULL)
+		{
+			vector_delete(vector);
+			return 1;
+		}
+		vector->allocated_size *= VECTOR_CAPACITY_GROW_RATE;
+	}
+
+	vector->data[vector->item_number] = data;
+	++vector->item_number;
+	return 0;
+}
+
+void *vector_at(vector_t* vector, int index)
+{
+	return vector->data[index];
+}
+
+void vector_erase(vector_t* vector, int index)
+{
+	while (index < vector->item_number)
+	{
+		vector->data[index] = vector->data[++index];
+	}
+	--vector->item_number;
+}
+
+
+void vector_delete(vector_t* vector)
+{
+    free(vector->data);
 }

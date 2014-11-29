@@ -55,7 +55,7 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 
 	track_generate_perturb(track, &seed);
 
-	for (i = 0; i < 10; ++i)
+	for (i = 0; i < 30; ++i)
 	{
 		pushApart(track->control_points, track->num_control_points);
 		track_generate_fix_angles(track);
@@ -490,10 +490,11 @@ static void track_generate_fix_angles(track_t *track)
 		// TODO
 		/*vector1 = vectorSubtract(track->control_points[modulo(i - 1, track->num_control_points)], track->control_points[i]);
 		vector2 = vectorSubtract(track->control_points[(i + 1) % track->num_control_points], track->control_points[i]);
-		double angle = vectorAngle(vector1, vector2);
 
-		printf("angle: %d\n", (int)(angle * 1000));
-		if(abs(angle) >= TRACK_GENERATION_MAX_ANGLE * PI / 180)
+		// To calculate the angle, we need to use the atan instead of simply calculating it, because we need to know wether the rotation was clockwise or counter-clockwise
+		double angle = atan2(vectorPerpendicularDotProduct(vector1, vector2), vectorScalarProduct(vector1, vector2));
+		printf("angle: %d\n", (int)angle);
+		if(abs(angle) <= TRACK_GENERATION_MAX_ANGLE * PI / 180)
 		{
 			// Angle ok
 			continue;
@@ -503,8 +504,8 @@ static void track_generate_fix_angles(track_t *track)
 		float diff = nA - angle;
 
 		track->control_points[(i + 1) % track->num_control_points] = vectorAdd(track->control_points[i], vectorRotate(vector2, diff));
-		//I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
-		*/
+		*///I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
+
 
 		int previous = modulo(i - 1, track->num_control_points);
 		int next = (i + 1) % track->num_control_points;
