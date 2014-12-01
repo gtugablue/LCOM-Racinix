@@ -21,14 +21,17 @@ static bitmap_t *car;
 int main(int argc, char **argv) {
 
 	/* Initialize service */
-
+	printf("N");
 	sef_startup();
+	printf("p");
 
 	if (racinix_start())
 	{
 		racinix_exit();
 		printf("Racinix: An error occurred and the program was stopped.\n");
 	}
+	printf("o");
+
 	racinix_exit();
 
 	return 0;
@@ -36,6 +39,7 @@ int main(int argc, char **argv) {
 
 int racinix_start()
 {
+	printf("N");
 	srand(time(NULL));
 	//vg_exit(); // Fix darker colors first time the mode is changed.
 	vg_init(RACINIX_VIDEO_MODE);
@@ -48,6 +52,7 @@ int racinix_start()
 	{
 		return 1;
 	}
+	printf("p");
 
 	mouse_cursor = bitmap_load("/home/lcom/proj/images/cursor.bmp");
 	if (mouse_cursor == NULL)
@@ -98,6 +103,8 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
+	printf("N");
+
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
@@ -113,6 +120,7 @@ int racinix_dispatcher()
 	{
 		return 1;
 	}
+	printf("N");
 
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
@@ -132,6 +140,8 @@ int racinix_dispatcher()
 	int r, ipc_status;
 	message msg;
 	key_t key;
+	printf("N");
+
 	while(1) // Main loop
 	{
 		// Get a request message.
