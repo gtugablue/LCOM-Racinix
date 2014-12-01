@@ -25,43 +25,59 @@ static void track_generate_fix_angles(track_t *track);
 track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 {
 	track_t *track;
-	if ((track = malloc(sizeof(track_t))) == NULL)
-	{
-		return NULL;
-	}
-	track->width = width;
-	track->height = height;
-	if ((track->track_points = malloc(width * height * sizeof(bool))) == NULL)
-	{
-		return NULL;
-	}
-	unsigned pointCount = track_generate_random(&seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
-
-	vector2D_t random_points[pointCount];
+	int result;
 	size_t i;
-	for(i = 0; i < pointCount; ++i)
+	for (i = 0; i < TRACK_GENERATION_NUM_TRIES; ++i)
 	{
-		random_points[i].x = track_generate_random(&seed) % (int)(0.6 * width) + 0.2 * width;
-		random_points[i].y = track_generate_random(&seed) % (int)(0.6 * height) + 0.2 * height;
+		if ((track = malloc(sizeof(track_t))) == NULL)
+		{
+			return NULL;
+		}
+		track->width = width;
+		track->height = height;
+		if ((track->track_points = malloc(width * height * sizeof(bool))) == NULL)
+		{
+			return NULL;
+		}
+		unsigned pointCount = track_generate_random(&seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
+
+		vector2D_t random_points[pointCount];
+		size_t j;
+		for(j = 0; j < pointCount; ++j)
+		{
+			random_points[j].x = track_generate_random(&seed) % (int)(0.6 * width) + 0.2 * width;
+			random_points[j].y = track_generate_random(&seed) % (int)(0.6 * height) + 0.2 * height;
+		}
+
+		track->control_points = malloc(pointCount * sizeof(vector2D_t));
+		track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
+
+		for (j = 0; j < 10; ++j)
+		{
+			pushApart(track->control_points, track->num_control_points);
+		}
+
+		track_generate_perturb(track, &seed);
+
+		for (j = 0; j < 30; ++j)
+		{
+			pushApart(track->control_points, track->num_control_points);
+			track_generate_fix_angles(track);
+		}
+		result = track_generate_spline(track);
+		if (result == -1)
+		{
+			break;
+		}
+		else if (result == 1)
+		{
+			track_delete(track);
+			continue; // Try again
+		}
+		return track;
 	}
-
-	track->control_points = malloc(pointCount * sizeof(vector2D_t));
-	track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
-
-	for (i = 0; i < 10; ++i)
-	{
-		pushApart(track->control_points, track->num_control_points);
-	}
-
-	track_generate_perturb(track, &seed);
-
-	for (i = 0; i < 30; ++i)
-	{
-		pushApart(track->control_points, track->num_control_points);
-		track_generate_fix_angles(track);
-	}
-	track_generate_spline(track);
-	return track;
+	track_delete(track);
+	return NULL;
 }
 
 void track_draw(track_t *track, unsigned width, unsigned height)
@@ -342,11 +358,11 @@ static int track_generate_spline(track_t *track)
 	vector2D_t normal;
 	if ((track->inside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
-		return 1;
+		return -1;
 	}
 	if ((track->outside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
-		return 1;
+		return -1;
 	}
 	for (i = 0; i < track->spline_size; ++i)
 	{
@@ -442,6 +458,7 @@ static int track_generate_spline(track_t *track)
 	bool *current_point; // For efficiency purposes
 	for (i = 0; i < track->spline_size; ++i)
 	{
+		*(track->track_points + (unsigned)track->spline[i].y * track->width + (unsigned)track->spline[i].x) = true;
 		polygon[0] = track->inside_spline[i];
 		polygon[1] = track->outside_spline[i];
 		polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
@@ -470,8 +487,12 @@ static int track_generate_spline(track_t *track)
 		{
 			for (y = (int)min.y; y <= (int)max.y; ++y)
 			{
-				point = vectorCreate(x, y);
-				current_point = track->track_points + y * track->width + x;
+				if ((unsigned)x >= track->width || (unsigned)y >= track->height)
+				{
+					return 1; // Doesn't fit in the screen
+				}
+				point = vectorCreate((unsigned)x, (unsigned)y);
+				current_point = track->track_points + (unsigned)y * track->width + (unsigned)x;
 				if (!*current_point && isPointInPolygon(polygon, 4, point))
 				{
 					*current_point = true;
@@ -479,6 +500,7 @@ static int track_generate_spline(track_t *track)
 			}
 		}
 	}
+	return 0;
 }
 
 static void track_generate_fix_angles(track_t *track)

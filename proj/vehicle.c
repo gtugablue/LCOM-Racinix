@@ -290,12 +290,64 @@ int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2)
 {
 	// TODO
-	vehicle2->speed = vehicle->speed;
-	vehicle->speed /= 2;
-	vehicle->heading += (vehicle2->heading - vehicle->heading) / 2;
-	vehicle2->heading = vehicle->heading;
-	vehicle->position = vehicle->oldPosition;
-	vehicle2->position = vehicle2->oldPosition;
+
+	// Momentum = r * sin(angle between heading and r)
+	vector2D_t r = vectorSubtract(vehicle2->position, vehicle->wheels[wheel_ID]);
+	double momentum = vectorNorm(vectorMultiply(r, sin(abs(atan2(r.y, r.x) - vehicle->heading))));
+
+
+	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
+	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
+
+	vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
+}
+
+void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned whefel_ID, vehicle_t *vehicle2)
+{
+	// TODO improve performance
+	int wheel_ID;
+	while (1) // Make vehicles collide
+	{
+		wheel_ID = vehicle_check_vehicle_collision(vehicle, vehicle2);
+		if (wheel_ID == -1)
+		{
+			wheel_ID = vehicle_check_vehicle_collision(vehicle2, vehicle);
+			if (wheel_ID == -1)
+			{
+				vector2D_t r = vectorSubtract(vehicle2->position, vehicle->position);
+				vehicle->position = vectorAdd(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
+				vehicle2->position = vectorSubtract(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
+				continue;
+			}
+		}
+		break;
+	}
+
+	while (1) // Separate vehicles
+	{
+		printf("colliding...\n");
+		wheel_ID = vehicle_check_vehicle_collision(vehicle, vehicle2);
+		if (wheel_ID != -1)
+		{
+			vector2D_t r = vectorSubtract(vehicle2->position, vehicle->position);
+			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
+			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
+			vehicle_calculate_wheel_position(vehicle);
+			vehicle_calculate_wheel_position(vehicle2);
+			continue;
+		}
+		wheel_ID = vehicle_check_vehicle_collision(vehicle2, vehicle);
+		if (wheel_ID != -1)
+		{
+			vector2D_t r = vectorSubtract(vehicle->position, vehicle2->position);
+			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
+			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
+			vehicle_calculate_wheel_position(vehicle);
+			vehicle_calculate_wheel_position(vehicle2);
+			continue;
+		}
+		break;
+	}
 }
 
 void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, vehicle_limits_collision_t vehicle_limits_collision, unsigned width, unsigned height)
@@ -365,9 +417,14 @@ int vehicle_draw(vehicle_t *vehicle)
 	bitmap_draw_alpha(rotated_bitmap, vehicle->position.x - rotated_bitmap->bitmap_information_header.width / 2, vehicle->position.y - rotated_bitmap->bitmap_information_header.height / 2);
 	bitmap_delete(rotated_bitmap);
 
+#ifdef VEHICLE_DRAW_VELOCITY
 	vector2D_t velocity = vectorRotate(vectorCreate(vehicle->speed, 0), vehicle->heading);
-	vg_draw_line(vehicle->position.x, vehicle->position.y, vehicle->position.x + velocity.x, vehicle->position.y + velocity.y, 0xFFFF);
-
+	velocity = vectorAdd(vehicle->position, velocity);
+	vg_draw_line(vehicle->position.x, vehicle->position.y, velocity.x, velocity.y, 0xFFFF);
+	vector2D_t arrow = vectorRotate(vectorCreate(7 * ((vehicle->speed > 0) - (vehicle->speed < 0)), 0), vehicle->heading);
+	vg_draw_line(velocity.x, velocity.y, vectorAdd(velocity, vectorRotate(arrow, 5 * PI / 6)).x, vectorAdd(velocity, vectorRotate(arrow, 5 * PI / 6)).y, VIDEO_GR_WHITE);
+	vg_draw_line(velocity.x, velocity.y, vectorAdd(velocity, vectorRotate(arrow, 7 * PI / 6)).x, vectorAdd(velocity, vectorRotate(arrow, 7 * PI / 6)).y, VIDEO_GR_WHITE);
+#endif
 	return 0;
 }
 

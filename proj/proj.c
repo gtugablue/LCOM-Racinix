@@ -348,17 +348,18 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vector2D_t starting_position_increment = vectorDivide(vectorSubtract(track->outside_spline[0], track->inside_spline[0]), num_vehicles + 1);
 		vector2D_t starting_position_offset, temp_vector;
 		vector2D_t starting_position;
-		double heading = atan2(track->spline[1].y - track->spline[0].y, track->spline[1].x - track->spline[0].x);
+		double heading = atan2(track->spline[0].y - track->spline[track->spline_size - 1].y, track->spline[0].x - track->spline[track->spline_size - 1].x);
+
+
+		temp_vector = vectorRotate(starting_position_increment, PI / 2);
+		normalize(&temp_vector);
 
 		size_t i;
 		for (i = 0; i < num_vehicles; ++i)
 		{
-			//temp_vector = vectorRotate(starting_position_increment, PI / 2);
-			//normalize(&temp_vector);
-			//starting_position_offset = vectorMultiply(temp_vector, vehicles[i]->length / 2);
-			//starting_position = vectorAdd(vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1)), starting_position_offset);
-			starting_position = vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1));
-			vehicles[i] = vehicle_create(20, 40, &starting_position, heading, car, vehicle_keys[i], vehicle_colors[i]);
+			starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
+			starting_position = vectorAdd(vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1)), starting_position_offset);
+			vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, car, vehicle_keys[i], vehicle_colors[i]);
 		}
 
 	}
@@ -403,6 +404,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
+				track_delete(track);
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}

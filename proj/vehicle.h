@@ -10,16 +10,21 @@
 #include "vbe.h"
 #include "track.h"
 
-#define VEHICLE_ACCELERATE			150.0
-#define VEHICLE_REVERSE				75.0
-#define VEHICLE_BREAK				200.0
-#define VEHICLE_STEER				0.15
-#define VEHICLE_STOP_SPEED			10.0
-#define VEHICLE_NUM_WHEELS			4
-#define VEHICLE_MAX_STEER			1.0
-#define VEHICLE_COLLISION_FRICTION	200.0
-#define VEHICLE_DRAG				0.8
-#define VEHICLE_NITROUS				500			///////mine
+#define VEHICLE_ACCELERATE							150.0
+#define VEHICLE_REVERSE								75.0
+#define VEHICLE_BREAK								200.0
+#define VEHICLE_STEER								0.15
+#define VEHICLE_STOP_SPEED							10.0
+#define VEHICLE_NUM_WHEELS							4
+#define VEHICLE_MAX_STEER							1.0
+#define VEHICLE_COLLISION_FRICTION					200.0
+#define VEHICLE_DRAG								0.8
+#define VEHICLE_NITROUS								500			///////mine
+#define VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR	0.0025
+#define VEHICLE_WIDTH								20
+#define VEHICLE_LENGTH								38
+
+#define VEHICLE_DRAW_VELOCITY // Uncomment to show velocity vector
 
 typedef struct
 {
@@ -98,6 +103,8 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2);
+
+void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2);
 
 bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track);
 
