@@ -339,24 +339,24 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT:
 	{
-		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+		// Click outside or press ESC
+		if ((event == RACINIX_EVENT_MOUSE_LEFT_BTN && va_arg(*var_args, int)) || (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)))
 		{
-			if (va_arg(*var_args, int)) // pressed
+			int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y);
+			switch (click)
 			{
-				int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y);
-				switch (click)
-				{
-				case CONTEXT_MENU_CLICK_BACKGROUND:
-				{
-					state = RACINIX_STATE_MAIN_MENU_BASE;
-					break;
-				}
-				case CONTEXT_MENU_CLICK_NO_BUTTON:
-				default:
-				{
-					break;
-				}
-				}
+			case CONTEXT_MENU_CLICK_BACKGROUND:
+			{
+				state = RACINIX_STATE_MAIN_MENU_BASE;
+				context_menu_delete(context_menu);
+				return RACINIX_STATE_MAIN_MENU;
+				break;
+			}
+			case CONTEXT_MENU_CLICK_NO_BUTTON:
+			default:
+			{
+				break;
+			}
 			}
 		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)

@@ -81,7 +81,7 @@ static int context_menu_background_lose_focus(context_menu_t *context_menu, vbe_
 
 void context_menu_delete(context_menu_t *context_menu)
 {
-	free(context_menu->items);
+	//free(context_menu->items);
 	free(context_menu->background);
 	free(context_menu);
 }
