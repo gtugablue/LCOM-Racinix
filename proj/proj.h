@@ -24,15 +24,16 @@
 #define RACINIX_MAIN_MENU_NUM_BTN					6
 #define RACINIX_MAIN_MENU_CHAR_HEIGHT				30
 #define RACINIX_MAIN_MENU_CHAR_WIDTH				10
-
+#define RACINIX_TRACK_DESIGN_SELECT_POINT_RANGE		30
+#define RACINIX_TRACK_DESIGN_MIN_POINTS				3
 #define RACINIX_COLOR_MENU_BUTTONS					VIDEO_GR_BLUE
 #define RACINIX_COLOR_GRASS							rgb(0, 90, 0)
+#define RACINIX_COLOR_CONTROL_POINT					VIDEO_GR_WHITE
 
 // States
 enum
 {
 	RACINIX_STATE_MAIN_MENU,
-	RACINIX_STATE_PICK_TRACK,
 	RACINIX_STATE_DESIGN_TRACK,
 	RACINIX_STATE_RACE,
 	RACINIX_STATE_END
@@ -44,6 +45,15 @@ enum
 	RACINIX_STATE_RACE_RACING_1_PLAYER,
 	RACINIX_STATE_RACE_RACING_2_PLAYERS_SAME_PC,
 	RACINIX_STATE_RACE_RACING_2_PLAYERS_SERIAL_PORT
+};
+
+// Track design states
+enum
+{
+	// TODO
+	RACINIX_STATE_TRACK_DESIGN_NEW,
+	RACINIX_STATE_TRACK_DESIGN_DESIGNING,
+	RACINIX_STATE_TRACK_DESIGN_MOVING
 };
 
 int racinix_start();
@@ -60,6 +70,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args);
 
 int racinix_race_event_handler(int event, va_list *var_args);
 
+int racinix_track_design_event_handler(int event, va_list *var_args);
+
 void racinix_update_vehicle(vehicle_t *vehicle);
 
 int racinix_keyboard_int_handler();
@@ -73,11 +85,12 @@ void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 void racinix_draw_mouse();
 
 // Events
-enum asda
+enum
 {
 	RACINIX_EVENT_KEYSTROKE, // int key, bool pressed
 	RACINIX_EVENT_MOUSE_MOVEMENT, // mouse_data_packet_t *mouse_data_packet
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
+	RACINIX_EVENT_MOUSE_RIGHT_BTN, // bool pressed
 	RACINIX_EVENT_NEW_FRAME,
 	RACINIX_EVENT_NEW_RACE // unsigned num_players, bool serial_port
 };

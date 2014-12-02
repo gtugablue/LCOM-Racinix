@@ -1,7 +1,6 @@
 #include "vector.h"
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 #define VECTOR_CAPACITY_GROW_RATE 			2

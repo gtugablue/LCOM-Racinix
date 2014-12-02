@@ -98,7 +98,6 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
-
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
@@ -178,6 +177,13 @@ int racinix_dispatcher()
 								break;
 							}
 						}
+						if (new_mouse_data_packet.right_button != old_mouse_data_packet.right_button)
+						{
+							if (racinix_event_handler(RACINIX_EVENT_MOUSE_RIGHT_BTN, new_mouse_data_packet.right_button) == -1)
+							{
+								break;
+							}
+						}
 						old_mouse_data_packet = new_mouse_data_packet;
 					}
 				}
@@ -211,9 +217,11 @@ int racinix_event_handler(int event, ...)
 		}
 		break;
 	}
-	case RACINIX_STATE_PICK_TRACK:
 	case RACINIX_STATE_DESIGN_TRACK:
+	{
+		state = racinix_track_design_event_handler(event, &var_args);
 		break;
+	}
 	case RACINIX_STATE_RACE:
 	{
 		state = racinix_race_event_handler(event, &var_args);
@@ -264,8 +272,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 1, false);
 				return RACINIX_STATE_RACE;
 			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
-				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
-				return RACINIX_STATE_RACE;
+				//racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
+				return RACINIX_STATE_DESIGN_TRACK;
 			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
 				return RACINIX_STATE_MAIN_MENU;
 			case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
@@ -343,7 +351,11 @@ int racinix_race_event_handler(int event, va_list *var_args)
 			}
 			num_vehicles = 2;
 		}
-		track = track_generate(vmi.XResolution, vmi.YResolution, rand());
+		if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
+		{
+			return 1;
+		}
+		track = track_random_generate(track, rand());
 
 		vector2D_t starting_position_increment = vectorDivide(vectorSubtract(track->outside_spline[0], track->inside_spline[0]), num_vehicles + 1);
 		vector2D_t starting_position_offset, temp_vector;
@@ -368,7 +380,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		static vehicle_keys_t vehicle_keys;
 		vg_swap_mouse_buffer();
 		vg_fill(RACINIX_COLOR_GRASS);
-		track_draw(track, vmi.XResolution, vmi.YResolution);
+		track_draw(track);
 		size_t i;
 		for (i = 0; i < num_vehicles; ++i)
 		{
@@ -411,6 +423,111 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	}
 	}
 	return RACINIX_STATE_RACE;
+}
+
+int racinix_track_design_event_handler(int event, va_list *var_args)
+{
+	static int state = RACINIX_STATE_TRACK_DESIGN_NEW;
+	static int point_ID;
+	static track_t *track;
+	switch (state)
+	{
+	case RACINIX_STATE_TRACK_DESIGN_NEW:
+	{
+		if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
+		{
+			return 1;
+		}
+		state = RACINIX_STATE_TRACK_DESIGN_DESIGNING;
+		break;
+	}
+	case RACINIX_STATE_TRACK_DESIGN_MOVING:
+	{
+		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+		{
+			state = RACINIX_STATE_TRACK_DESIGN_DESIGNING;
+			break;
+		}
+		else if (event == RACINIX_EVENT_MOUSE_RIGHT_BTN)
+		{
+			state = RACINIX_STATE_TRACK_DESIGN_DESIGNING;
+			track_erase_control_point(track, point_ID);
+			break;
+		}
+		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+		{
+			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+		}
+		track->control_points[point_ID] = mouse_position;
+		track_generate_spline(track);
+		//track_update_track_points(track);
+		break;
+	}
+	case RACINIX_STATE_TRACK_DESIGN_DESIGNING:
+	{
+		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+		{
+			if (va_arg(*var_args, int)) // pressed
+			{
+				if (track->num_control_points > 0)
+				{
+					point_ID = track_get_closest_control_point(track, mouse_position);
+					if (vectorDistance(mouse_position, track->control_points[point_ID]) < RACINIX_TRACK_DESIGN_SELECT_POINT_RANGE)
+					{
+						state = RACINIX_STATE_TRACK_DESIGN_MOVING;
+						break;
+					}
+					else
+					{
+						point_ID = track_spline_to_control_point(track, track_get_closest_spline_point(track, mouse_position));
+						track_add_control_point(track, point_ID);
+						track->control_points[++point_ID] = mouse_position;
+						track_generate_spline(track);
+						state = RACINIX_STATE_TRACK_DESIGN_MOVING;
+						break;
+					}
+				}
+				if ((track->control_points = realloc(track->control_points, ++(track->num_control_points) * sizeof(vector2D_t))) == NULL)
+				{
+					return 1;
+				}
+				track->control_points[track->num_control_points - 1] = mouse_position;
+
+				track_generate_spline(track);
+				//track_update_track_points(track);
+			}
+		}
+		else if (event == RACINIX_EVENT_MOUSE_RIGHT_BTN)
+		{
+			if (va_arg(*var_args, int)) // pressed
+			{
+				if (track->num_control_points > 0)
+				{
+					point_ID = track_get_closest_control_point(track, mouse_position);
+					if (vectorDistance(mouse_position, track->control_points[point_ID]) < RACINIX_TRACK_DESIGN_SELECT_POINT_RANGE)
+					{
+						track_erase_control_point(track, point_ID);
+						track_generate_spline(track);
+					}
+				}
+			}
+		}
+		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+		{
+			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+		}
+		break;
+	}
+	}
+
+	vg_fill(RACINIX_COLOR_GRASS);
+
+	track_draw_control_points(track);
+	track_draw_spline(track);
+	//track_draw(track);
+
+	racinix_draw_mouse();
+	return RACINIX_STATE_DESIGN_TRACK;
 }
 
 void racinix_update_vehicle(vehicle_t *vehicle)
