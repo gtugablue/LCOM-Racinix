@@ -297,7 +297,6 @@ void vg_swap_mouse_buffer()
 
 uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 {
-	// TODO FIX
 	uint16_t rgb = 0x0;
 	rgb |= (r * (1 << vbe_mode_info.RedMaskSize) / (1 << 8)) << vbe_mode_info.RedFieldPosition;
 	rgb |= (g * (1 << vbe_mode_info.GreenMaskSize) / (1 << 8)) << vbe_mode_info.GreenFieldPosition;

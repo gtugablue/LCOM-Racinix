@@ -11,12 +11,14 @@ static vbe_mode_info_t vmi;
 static track_t *track;
 static vehicle_keys_t vehicle_keys[2];
 static uint16_t vehicle_colors[2];
+static bitmap_t *vehicle_bitmaps[2];
 
 // Bitmaps
 static bitmap_t *background;
 static bitmap_t *mouse_cursor;
 static bitmap_t *logo;
-static bitmap_t *car;
+static bitmap_t *bitmap_red_car;
+static bitmap_t *bitmap_blue_car;
 
 int main(int argc, char **argv) {
 
@@ -61,8 +63,14 @@ int racinix_start()
 		return 1;
 	}
 
-	car = bitmap_load("/home/lcom/proj/images/car.bmp");
-	if (logo == NULL)
+	bitmap_red_car = bitmap_load("/home/lcom/proj/images/red_car.bmp");
+	if (bitmap_red_car == NULL)
+	{
+		return 1;
+	}
+
+	bitmap_blue_car = bitmap_load("/home/lcom/proj/images/blue_car.bmp");
+	if (bitmap_blue_car == NULL)
 	{
 		return 1;
 	}
@@ -79,10 +87,13 @@ int racinix_start()
 	vehicle_keys[1].turn_right = KEY_ARR_RIGHT;
 	vehicle_keys[1].nitrous = KEY_R_CTRL;
 
-	vehicle_colors[0] = rgb(0, 0, 255);
-	vehicle_colors[1] = rgb(255, 0, 0);
+	vehicle_colors[0] = VIDEO_GR_RED;
+	vehicle_colors[1] = VIDEO_GR_BLUE;
 
-	if (racinix_dispatcher() != 0)
+	vehicle_bitmaps[0] = bitmap_red_car;
+	vehicle_bitmaps[1] = bitmap_blue_car;
+
+	if (racinix_dispatcher())
 	{
 		return 1;
 	}
@@ -240,6 +251,8 @@ int racinix_event_handler(int event, ...)
 
 int racinix_main_menu_event_handler(int event, va_list *var_args)
 {
+	static context_menu_t *context_menu;
+	static int state = RACINIX_STATE_MAIN_MENU_BASE;
 	char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
 	buttons[0] = "1 Player", '\0';
 	buttons[1] = "2 Players in the same PC", '\0';
@@ -247,70 +260,114 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	buttons[3] = "Settings", '\0';
 	buttons[4] = "Credits", '\0';
 	buttons[5] = "Exit", '\0';
-	if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+	switch (state)
 	{
-		if (va_arg(*var_args, int)) // pressed
+	case RACINIX_STATE_MAIN_MENU_BASE:
+	{
+		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
 		{
-			vector2D_t top_left_corner;
-			size_t i;
-			for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+			if (va_arg(*var_args, int)) // pressed
 			{
-				top_left_corner = vectorCreate((vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
-						i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
-				if (isPointInAxisAlignedRectangle(
-						top_left_corner,
-						RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
-						RACINIX_MAIN_MENU_CHAR_HEIGHT,
-						mouse_position))
+				vector2D_t top_left_corner;
+				size_t i;
+				for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+				{
+					top_left_corner = vectorCreate((vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
+							i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
+					if (isPointInAxisAlignedRectangle(
+							top_left_corner,
+							RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
+							RACINIX_MAIN_MENU_CHAR_HEIGHT,
+							mouse_position))
+					{
+						break;
+					}
+				}
+				switch (i) // TODO
+				{
+				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
+				{
+					char *items[RACINIX_MAIN_MENU_TRACK_CHOICE_CONTEXT_MENU_NUM_BTN];
+					items[0] = "Random track", "\0";
+					items[1] = "Design track", "\0";
+					context_menu = context_menu_create(items, RACINIX_MAIN_MENU_TRACK_CHOICE_CONTEXT_MENU_NUM_BTN, &vmi);
+					state = RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT;
+					return RACINIX_STATE_MAIN_MENU;
+				}
+				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
+					racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
+					return RACINIX_STATE_RACE;
+				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
+					return RACINIX_STATE_MAIN_MENU;
+				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
+					break;
+				case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
+					break;
+				case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
+					return RACINIX_STATE_END;
+				default:
+					break; // A button wasn't clicked
+				}
+			}
+		}
+		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+		{
+			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+			racinix_draw_mouse();
+			return RACINIX_STATE_MAIN_MENU;
+		}
+
+		// Show menu
+		bitmap_draw(background, 0, 0);
+
+		// Show logo
+		bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2);
+
+		size_t i;
+		for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+		{
+			// TODO Write text
+			vg_draw_rectangle(
+					(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
+					i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
+					RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
+					RACINIX_MAIN_MENU_CHAR_HEIGHT,
+					VIDEO_GR_BLUE
+			);
+		}
+		break;
+	}
+	case RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT:
+	{
+		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+		{
+			if (va_arg(*var_args, int)) // pressed
+			{
+				int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y);
+				switch (click)
+				{
+				case CONTEXT_MENU_CLICK_BACKGROUND:
+				{
+					state = RACINIX_STATE_MAIN_MENU_BASE;
+					break;
+				}
+				case CONTEXT_MENU_CLICK_NO_BUTTON:
+				default:
 				{
 					break;
 				}
-			}
-			switch (i) // TODO
-			{
-			case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
-				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 1, false);
-				return RACINIX_STATE_RACE;
-			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
-				//racinix_event_handler(RACINIX_EVENT_NEW_RACE, 2, false);
-				return RACINIX_STATE_DESIGN_TRACK;
-			case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
-				return RACINIX_STATE_MAIN_MENU;
-			case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
-				break;
-			case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
-				break;
-			case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
-				return RACINIX_STATE_END;
-			default:
-				break; // A button wasn't clicked
+				}
 			}
 		}
+		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+		{
+			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+			racinix_draw_mouse();
+			return RACINIX_STATE_MAIN_MENU;
+		}
+		context_menu_draw(context_menu, &vmi);
+		break;
 	}
-	else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
-	{
-		racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
-		racinix_draw_mouse();
-		return RACINIX_STATE_MAIN_MENU;
-	}
-
-	// Show menu
-	bitmap_draw(background, 0, 0);
-
-	// Show logo
-	bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2);
-
-	size_t i;
-	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
-	{
-		// TODO Write text
-		vg_draw_rectangle(
-				(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
-				i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
-				RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
-				RACINIX_MAIN_MENU_CHAR_HEIGHT,
-				VIDEO_GR_BLUE
-		);
 	}
 	racinix_draw_mouse();
 	return RACINIX_STATE_MAIN_MENU;
@@ -371,7 +428,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
 			starting_position = vectorAdd(vectorAdd(track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1)), starting_position_offset);
-			vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, car, vehicle_keys[i], vehicle_colors[i]);
+			vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, vehicle_bitmaps[i], vehicle_keys[i], vehicle_colors[i]);
 		}
 
 	}
@@ -382,9 +439,16 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		vg_fill(RACINIX_COLOR_GRASS);
 		track_draw(track);
 		size_t i;
-		for (i = 0; i < num_vehicles; ++i)
+		if (num_vehicles == 2 && vehicles[0]->current_checkpoint == vehicles[1]->current_checkpoint) // Same checkpoint
 		{
-			vg_draw_circle(track->control_points[vehicles[i]->current_checkpoint].x, track->control_points[vehicles[i]->current_checkpoint].y, 5, vehicles[i]->checkpoint_color);
+			vg_draw_circle(track->control_points[vehicles[0]->current_checkpoint].x, track->control_points[vehicles[1]->current_checkpoint].y, 5, vehicles[0]->checkpoint_color | vehicles[1]->checkpoint_color);
+		}
+		else
+		{
+			for (i = 0; i < num_vehicles; ++i)
+			{
+				vg_draw_circle(track->control_points[vehicles[i]->current_checkpoint].x, track->control_points[vehicles[i]->current_checkpoint].y, 5, vehicles[i]->checkpoint_color);
+			}
 		}
 		for (i = 0; i < num_vehicles; ++i)
 		{
@@ -522,8 +586,8 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 
 	vg_fill(RACINIX_COLOR_GRASS);
 
-	track_draw_control_points(track);
 	track_draw_spline(track);
+	track_draw_control_points(track);
 	//track_draw(track);
 
 	racinix_draw_mouse();
