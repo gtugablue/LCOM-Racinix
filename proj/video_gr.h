@@ -105,6 +105,8 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
 
+int vg_box_blur();
+
 vbe_mode_info_t *vg_get_vbe_mode_info();
 
 void *vg_get_double_buffer();
