@@ -34,11 +34,35 @@ typedef struct
 	unsigned num_control_points;
 } track_t;
 
-track_t *track_generate(unsigned width, unsigned height, unsigned long seed);
+track_t *track_create(unsigned width, unsigned height);
 
-void track_draw(track_t *track, unsigned width, unsigned height);
+track_t *track_random_generate(track_t *track, unsigned long seed);
+
+int track_generate_spline(track_t *track);
+
+int track_update_track_points(track_t *track);
+
+void track_draw(track_t *track);
+
+void track_draw_spline(track_t *track);
+
+void track_draw_control_points(track_t *track);
+
+void track_draw_finish_line(track_t *track);
 
 double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsigned height);
+
+int track_generate_control_points(track_t *track, unsigned long seed);
+
+unsigned track_get_closest_control_point(track_t *track, vector2D_t point);
+
+unsigned track_get_closest_spline_point(track_t *track, vector2D_t point);
+
+int track_add_control_point(track_t *track, unsigned after_point_ID);
+
+int track_erase_control_point(track_t *track, unsigned point_ID);
+
+unsigned track_spline_to_control_point(track_t *track, unsigned spline_point_ID);
 
 void track_delete(track_t *track);
 

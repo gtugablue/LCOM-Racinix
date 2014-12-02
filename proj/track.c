@@ -19,57 +19,56 @@ static int partition(vector2D_t *a, int left, int right, int pivot);
 static void quickSort(vector2D_t *a, int left, int right);
 static unsigned modulo(int a, int b);
 static int track_generate_perturb(track_t *track, unsigned long *seed);
-static int track_generate_spline(track_t *track);
 static void track_generate_fix_angles(track_t *track);
+static void track_delete_spline(track_t *track);
 
-track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
+track_t *track_create(unsigned width, unsigned height)
 {
 	track_t *track;
+	if ((track = (track_t *)malloc(sizeof(track_t))) == NULL)
+	{
+		return NULL;
+	}
+	if ((track->track_points = (bool *)malloc(width * height * sizeof(bool))) == NULL)
+	{
+		return NULL;
+	}
+	track->control_points = NULL;
+	track->num_control_points = 0;
+	track->spline_size = 0;
+	track->spline = NULL;
+	track->inside_spline = NULL;
+	track->outside_spline = NULL;
+	track->width = width;
+	track->height = height;
+	return track;
+}
+
+track_t *track_random_generate(track_t *track, unsigned long seed)
+{
 	int result;
 	size_t i;
 	for (i = 0; i < TRACK_GENERATION_NUM_TRIES; ++i)
 	{
-		if ((track = malloc(sizeof(track_t))) == NULL)
+		if (track_generate_control_points(track, seed))
 		{
-			return NULL;
-		}
-		track->width = width;
-		track->height = height;
-		if ((track->track_points = malloc(width * height * sizeof(bool))) == NULL)
-		{
-			return NULL;
-		}
-		unsigned pointCount = track_generate_random(&seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
-
-		vector2D_t random_points[pointCount];
-		size_t j;
-		for(j = 0; j < pointCount; ++j)
-		{
-			random_points[j].x = track_generate_random(&seed) % (int)(0.6 * width) + 0.2 * width;
-			random_points[j].y = track_generate_random(&seed) % (int)(0.6 * height) + 0.2 * height;
+			track_delete(track);
+			continue; // Try again
 		}
 
-		track->control_points = malloc(pointCount * sizeof(vector2D_t));
-		track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
-
-		for (j = 0; j < 10; ++j)
-		{
-			pushApart(track->control_points, track->num_control_points);
-		}
-
-		track_generate_perturb(track, &seed);
-
-		for (j = 0; j < 30; ++j)
-		{
-			pushApart(track->control_points, track->num_control_points);
-			track_generate_fix_angles(track);
-		}
 		result = track_generate_spline(track);
 		if (result == -1)
 		{
+			track_delete(track);
 			break;
 		}
 		else if (result == 1)
+		{
+			track_delete(track);
+			continue; // Try again;
+		}
+
+		if (track_update_track_points(track))
 		{
 			track_delete(track);
 			continue; // Try again
@@ -80,25 +79,53 @@ track_t *track_generate(unsigned width, unsigned height, unsigned long seed)
 	return NULL;
 }
 
-void track_draw(track_t *track, unsigned width, unsigned height)
+int track_generate_control_points(track_t *track, unsigned long seed)
+{
+	unsigned pointCount = track_generate_random(&seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
+
+	vector2D_t random_points[pointCount];
+	size_t j;
+	for(j = 0; j < pointCount; ++j)
+	{
+		random_points[j].x = track_generate_random(&seed) % (int)(0.6 * track->width) + 0.2 * track->width;
+		random_points[j].y = track_generate_random(&seed) % (int)(0.6 * track->height) + 0.2 * track->height;
+	}
+
+	track->control_points = malloc(pointCount * sizeof(vector2D_t));
+	track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
+
+	for (j = 0; j < 10; ++j)
+	{
+		pushApart(track->control_points, track->num_control_points);
+	}
+
+	track_generate_perturb(track, &seed);
+
+	for (j = 0; j < 30; ++j)
+	{
+		pushApart(track->control_points, track->num_control_points);
+		track_generate_fix_angles(track);
+	}
+	return 0;
+}
+
+void track_draw(track_t *track)
 {
 	size_t x, y;
-	for (x = 0; x < width; ++x)
+	for (x = 0; x < track->width; ++x)
 	{
-		for (y = 0; y < height; ++y)
+		for (y = 0; y < track->height; ++y)
 		{
-			if (*(track->track_points + x + y * width))
+			if (*(track->track_points + x + y * track->width))
 			{
 				vg_set_pixel(x, y, RACINIX_COLOR_TRACK);
 			}
 		}
 	}
 	size_t i;
-	for (i = 0; i < track->num_control_points; ++i)
-	{
-		vg_draw_circle(track->control_points[i].x, track->control_points[i].y, 2, 0xFFFF);
-	}
-	vg_draw_line(track->inside_spline[0].x, track->inside_spline[0].y, track->outside_spline[0].x, track->outside_spline[0].y, rgb(255, 255, 255));
+	track_draw_control_points(track);
+	track_draw_finish_line(track);
+
 	/*size_t i;
 	for (i = 0; i < track->num_control_points; ++i)
 	{
@@ -109,6 +136,39 @@ void track_draw(track_t *track, unsigned width, unsigned height)
 		polygon[3] = track->inside_spline[((int)(1.0 / TRACK_INTERP_PERIOD) * i) % track->spline_size];
 		vg_draw_polygon(polygon, 4, rgb(255, 255, 255));
 	}*/
+}
+
+void track_draw_spline(track_t *track)
+{
+	if (track->num_control_points >= 3)
+	{
+		size_t i;
+		for (i = 0; i < track->spline_size; ++i)
+		{
+			// DRAW CENTRAL SPLINE
+			vg_draw_line(track->spline[i].x, track->spline[i].y, track->spline[(i + 1) % track->spline_size].x, track->spline[(i + 1) % track->spline_size].y, RACINIX_COLOR_TRACK);
+
+			// DRAW INSIDE SPLINE
+			vg_draw_line(track->inside_spline[i].x, track->inside_spline[i].y, track->inside_spline[(i + 1) % track->spline_size].x, track->inside_spline[(i + 1) % track->spline_size].y, RACINIX_COLOR_TRACK);
+
+			// DRAW OUTSIDE SPLINE
+			vg_draw_line(track->outside_spline[i].x, track->outside_spline[i].y, track->outside_spline[(i + 1) % track->spline_size].x, track->outside_spline[(i + 1) % track->spline_size].y, RACINIX_COLOR_TRACK);
+		}
+	}
+}
+
+void track_draw_control_points(track_t *track)
+{
+	size_t i;
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		vg_draw_circle(track->control_points[i].x, track->control_points[i].y, 2, 0xFFFF);
+	}
+}
+
+void track_draw_finish_line(track_t *track)
+{
+	vg_draw_line(track->inside_spline[0].x, track->inside_spline[0].y, track->outside_spline[0].x, track->outside_spline[0].y, rgb(255, 255, 255));
 }
 
 static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_t p2, vector2D_t p3, double t)
@@ -339,15 +399,17 @@ static int track_generate_perturb(track_t *track, unsigned long *seed)
 	return 0;
 }
 
-static int track_generate_spline(track_t *track)
+int track_generate_spline(track_t *track)
 {
 	track->spline_size = 0;
-	double t;
-	track->spline = malloc((unsigned)ceil(20 * (1.0 / TRACK_INTERP_PERIOD)) * sizeof(vector2D_t));
+	if ((track->spline = realloc(track->spline, track->num_control_points * ceil(1.0 / TRACK_INTERP_PERIOD) * sizeof(vector2D_t))) == NULL)
+	{
+		return -1;
+	}
 	int i;
+	double t;
 	for(i = 0; i < track->num_control_points; ++i)
 	{
-		//vg_draw_circle(hull[i].x, hull[i].y, 10, 0x33);
 		for(t = 0.0f; t <= 1.0f; t += TRACK_INTERP_PERIOD)
 		{
 			track->spline[track->spline_size] = createCatmullRomSpline(track->control_points[modulo(i - 1, track->num_control_points)], track->control_points[i % track->num_control_points], track->control_points[(i + 1) % track->num_control_points], track->control_points[(i + 2) % track->num_control_points], t);
@@ -356,11 +418,11 @@ static int track_generate_spline(track_t *track)
 	}
 	double temp;
 	vector2D_t normal;
-	if ((track->inside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
+	if ((track->inside_spline = realloc(track->inside_spline, track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
 		return -1;
 	}
-	if ((track->outside_spline = malloc(track->spline_size * sizeof(vector2D_t))) == NULL)
+	if ((track->outside_spline = realloc(track->outside_spline, track->spline_size * sizeof(vector2D_t))) == NULL)
 	{
 		return -1;
 	}
@@ -383,75 +445,75 @@ static int track_generate_spline(track_t *track)
 
 		// CALCULATE INSIDE SPLINE
 		track->inside_spline[i] = vectorAdd(track->spline[i], normal);
+		if (track->inside_spline[i].x < 0 || track->inside_spline[i].y < 0 || track->inside_spline[i].x > track->width || track->inside_spline[i].y > track->height)
+		{
+			return 1;
+		}
 
 		// CALCULATE OUTSIDE SPLINE
 		track->outside_spline[i] = vectorSubtract(track->spline[i], normal);
-	}
-
-	/*for (i = 0; i < spline_size; ++i)
+		if (track->outside_spline[i].x < 0 || track->outside_spline[i].y < 0 || track->outside_spline[i].x > track->width || track->outside_spline[i].y > track->height)
 		{
-			// DRAW CENTRAL SPLINE
-			vg_draw_line(spline[i].x, spline[i].y, spline[(i + 1) % spline_size].x, spline[(i + 1) % spline_size].y, 0x4);
+			return 1;
+		}
+	}
+	return 0;
+}
 
-			// DRAW INSIDE SPLINE
-			vg_draw_line(inside_spline[i].x, inside_spline[i].y, inside_spline[(i + 1) % spline_size].x, y + inside_spline[(i + 1) % spline_size].y, 0xCC);
-
-			// DRAW OUTSIDE SPLINE
-			vg_draw_line(outside_spline[i].x, outside_spline[i].y, outside_spline[(i + 1) % spline_size].x, outside_spline[(i + 1) % spline_size].y, 0x4);
-		}*/
-
+int track_update_track_points(track_t *track)
+{
 	/* This loop was too slow, so it was replaced by a much faster one...
-			 size_t j;
-			 size_t counter = 0;
-			 vector2D_t point;
-			 for (i = 0; i < width; ++i)
-			 {
-				 point.x = i;
-				 for (j = 0; j < height; ++j)
+				 size_t j;
+				 size_t counter = 0;
+				 vector2D_t point;
+				 for (i = 0; i < width; ++i)
 				 {
-					 point.y = j;
-					 counter++;
-					 if (isPointInPolygon(outside_spline, spline_size, &point) && !isPointInPolygon(spline, spline_size, &point))
+					 point.x = i;
+					 for (j = 0; j < height; ++j)
 					 {
-						vg_set_pixel(x + i, y + j, 0x00);
+						 point.y = j;
+						 counter++;
+						 if (isPointInPolygon(outside_spline, spline_size, &point) && !isPointInPolygon(spline, spline_size, &point))
+						 {
+							vg_set_pixel(x + i, y + j, 0x00);
+						 }
 					 }
 				 }
-			 }
-			 printf("Method 1 iterations: %d\n", counter);*/
+				 printf("Method 1 iterations: %d\n", counter);*/
 
 	/* This loop was much faster, however we came up with a better idea...
-		size_t x, y;
-		vector2D_t polygon[4];
-		vector2D_t point;
-		bool found;
-		for (i = 0; i < track->spline_size; ++i)
-		{
-			polygon[0] = track->inside_spline[i];
-			polygon[1] = track->outside_spline[i];
-			polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
-			polygon[3] = track->inside_spline[(i + 1) % track->spline_size];
-
-			for (x = MAX(track->spline[i].x - 71, 0); x < MIN(track->spline[i].x + 71, width); ++x)
+			size_t x, y;
+			vector2D_t polygon[4];
+			vector2D_t point;
+			bool found;
+			for (i = 0; i < track->spline_size; ++i)
 			{
-				point.x = x;
-				found = false;
-				for (y = MAX(track->spline[i].y - 71, 0); y < MIN(track->spline[i].y + 71, height); y++)
+				polygon[0] = track->inside_spline[i];
+				polygon[1] = track->outside_spline[i];
+				polygon[2] = track->outside_spline[(i + 1) % track->spline_size];
+				polygon[3] = track->inside_spline[(i + 1) % track->spline_size];
+
+				for (x = MAX(track->spline[i].x - 71, 0); x < MIN(track->spline[i].x + 71, width); ++x)
 				{
-					point.y = y;
-					if (!*(track->track_points + y * width + x))
+					point.x = x;
+					found = false;
+					for (y = MAX(track->spline[i].y - 71, 0); y < MIN(track->spline[i].y + 71, height); y++)
 					{
-						if (isPointInPolygon(polygon, sizeof(polygon) / sizeof(vector2D_t), &point))
+						point.y = y;
+						if (!*(track->track_points + y * width + x))
 						{
+							if (isPointInPolygon(polygon, sizeof(polygon) / sizeof(vector2D_t), &point))
+							{
 	 *(track->track_points + y * width + x) = true;
+							}
 						}
 					}
 				}
-			}
-		}*/
+			}*/
 
 	/* This loop is really fast. It loops through all spline points and creates a 4-side polygon. Then it checks all points that are in the range (min.x, min.y) to (max.x, max.y). */
 	memset(track->track_points, false, track->width * track->height); // Initialize track_points
-	size_t x, y, j;
+	size_t x, y, i, j;
 	vector2D_t polygon[4];
 	vector2D_t point;
 	vector2D_t min, max;
@@ -489,7 +551,7 @@ static int track_generate_spline(track_t *track)
 			{
 				if ((unsigned)x >= track->width || (unsigned)y >= track->height)
 				{
-					return 1; // Doesn't fit in the screen
+					return 1;
 				}
 				point = vectorCreate((unsigned)x, (unsigned)y);
 				current_point = track->track_points + (unsigned)y * track->width + (unsigned)x;
@@ -526,7 +588,7 @@ static void track_generate_fix_angles(track_t *track)
 		float diff = nA - angle;
 
 		track->control_points[(i + 1) % track->num_control_points] = vectorAdd(track->control_points[i], vectorRotate(vector2, diff));
-		*///I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
+		 *///I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
 
 
 		int previous = modulo(i - 1, track->num_control_points);
@@ -562,4 +624,74 @@ static void track_generate_fix_angles(track_t *track)
 		track->control_points[next].x = track->control_points[i].x + newX;
 		track->control_points[next].y = track->control_points[i].y + newY;
 	}
+}
+
+unsigned track_get_closest_control_point(track_t *track, vector2D_t point)
+{
+	size_t i;
+	double min_distance = vectorDistance(point, track->control_points[0]);
+	double curr_distance;
+	unsigned closest_point = 0;
+	for (i = 1; i < track->num_control_points; ++i)
+	{
+		curr_distance = vectorDistance(point, track->control_points[i]);
+		if (curr_distance < min_distance)
+		{
+			min_distance = curr_distance;
+			closest_point = i;
+		}
+	}
+	return closest_point;
+}
+
+unsigned track_get_closest_spline_point(track_t *track, vector2D_t point)
+{
+	size_t i;
+	double min_distance = vectorDistance(point, track->spline[0]);
+	double curr_distance;
+	unsigned closest_point = 0;
+	for (i = 1; i < track->spline_size; ++i)
+	{
+		curr_distance = vectorDistance(point, track->spline[i]);
+		if (curr_distance < min_distance)
+		{
+			min_distance = curr_distance;
+			closest_point = i;
+		}
+	}
+	return closest_point;
+}
+
+int track_add_control_point(track_t *track, unsigned after_point_ID)
+{
+	if ((track->control_points = realloc(track->control_points, ++track->num_control_points * sizeof(vector2D_t))) == NULL)
+	{
+		return 1;
+	}
+	size_t i;
+	for (i = track->num_control_points - 1; i > after_point_ID + 1; --i)
+	{
+		track->control_points[i] = track->control_points[i - 1];
+	}
+	return 0;
+}
+
+int track_erase_control_point(track_t *track, unsigned point_ID)
+{
+	size_t i;
+	--track->num_control_points;
+	for (i = point_ID; i < track->num_control_points; ++i)
+	{
+		track->control_points[i] = track->control_points[i + 1];
+	}
+	if ((track->control_points = realloc(track->control_points, track->num_control_points * sizeof(vector2D_t))) == NULL) // Will probably not fail, but since there's nothing stating that in the C standard, better safe than sorry
+	{
+		return 1;
+	}
+	return 0;
+}
+
+unsigned track_spline_to_control_point(track_t *track, unsigned spline_point_ID)
+{
+	return spline_point_ID / (ceil(1.0 / TRACK_INTERP_PERIOD));
 }
