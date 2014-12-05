@@ -15,6 +15,7 @@
 #define TRACK_THICKNESS								65
 #define RACINIX_COLOR_TRACK							rgb(20, 20, 20)
 
+#define TRACK_GENERATION_SIZE_FACTOR				0.6
 #define TRACK_GENERATION_MIN_POINTS					10
 #define TRACK_GENERATION_MAX_POINTS					20
 #define TRACK_GENERATION_MIN_POINT_DISTANCE			100
@@ -52,7 +53,7 @@ void track_draw_finish_line(track_t *track);
 
 double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsigned height);
 
-int track_generate_control_points(track_t *track, unsigned long seed);
+int track_generate_control_points(track_t *track, unsigned long *seed);
 
 unsigned track_get_closest_control_point(track_t *track, vector2D_t point);
 

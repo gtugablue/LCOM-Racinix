@@ -20,7 +20,8 @@ static void quickSort(vector2D_t *a, int left, int right);
 static unsigned modulo(int a, int b);
 static int track_generate_perturb(track_t *track, unsigned long *seed);
 static void track_generate_fix_angles(track_t *track);
-static void track_delete_spline(track_t *track);
+static void track_free_try_again(track_t *track);
+static void track_initialize_arguments(track_t *track);
 
 track_t *track_create(unsigned width, unsigned height)
 {
@@ -29,18 +30,9 @@ track_t *track_create(unsigned width, unsigned height)
 	{
 		return NULL;
 	}
-	if ((track->track_points = (bool *)malloc(width * height * sizeof(bool))) == NULL)
-	{
-		return NULL;
-	}
-	track->control_points = NULL;
-	track->num_control_points = 0;
-	track->spline_size = 0;
-	track->spline = NULL;
-	track->inside_spline = NULL;
-	track->outside_spline = NULL;
 	track->width = width;
 	track->height = height;
+	track_initialize_arguments(track);
 	return track;
 }
 
@@ -50,12 +42,11 @@ track_t *track_random_generate(track_t *track, unsigned long seed)
 	size_t i;
 	for (i = 0; i < TRACK_GENERATION_NUM_TRIES; ++i)
 	{
-		if (track_generate_control_points(track, seed))
+		if (track_generate_control_points(track, &seed))
 		{
-			track_delete(track);
+			track_free_try_again(track);
 			continue; // Try again
 		}
-
 		result = track_generate_spline(track);
 		if (result == -1)
 		{
@@ -64,13 +55,12 @@ track_t *track_random_generate(track_t *track, unsigned long seed)
 		}
 		else if (result == 1)
 		{
-			track_delete(track);
+			track_free_try_again(track);
 			continue; // Try again;
 		}
-
 		if (track_update_track_points(track))
 		{
-			track_delete(track);
+			track_free_try_again(track);
 			continue; // Try again
 		}
 		return track;
@@ -79,28 +69,31 @@ track_t *track_random_generate(track_t *track, unsigned long seed)
 	return NULL;
 }
 
-int track_generate_control_points(track_t *track, unsigned long seed)
+int track_generate_control_points(track_t *track, unsigned long *seed)
 {
-	unsigned pointCount = track_generate_random(&seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
+	unsigned pointCount = track_generate_random(seed) % (TRACK_GENERATION_MAX_POINTS - TRACK_GENERATION_MIN_POINTS) + TRACK_GENERATION_MIN_POINTS;
 
 	vector2D_t random_points[pointCount];
 	size_t j;
 	for(j = 0; j < pointCount; ++j)
 	{
-		random_points[j].x = track_generate_random(&seed) % (int)(0.6 * track->width) + 0.2 * track->width;
-		random_points[j].y = track_generate_random(&seed) % (int)(0.6 * track->height) + 0.2 * track->height;
+		random_points[j].x = track_generate_random(seed) % (int)(TRACK_GENERATION_SIZE_FACTOR * track->width) + (1 - TRACK_GENERATION_SIZE_FACTOR) * track->width / 2;
+		random_points[j].y = track_generate_random(seed) % (int)(TRACK_GENERATION_SIZE_FACTOR * track->height) + (1 - TRACK_GENERATION_SIZE_FACTOR) * track->height / 2;
 	}
-
-	track->control_points = malloc(pointCount * sizeof(vector2D_t));
+	if ((track->control_points = malloc(pointCount * sizeof(vector2D_t))) == NULL)
+	{
+		return 1;
+	}
 	track->num_control_points = convexHull(random_points, pointCount, track->control_points) - 1;
-
+	if ((track->control_points = realloc(track->control_points, track->num_control_points * sizeof(vector2D_t))) == NULL)
+	{
+		return 1;
+	}
 	for (j = 0; j < 10; ++j)
 	{
 		pushApart(track->control_points, track->num_control_points);
 	}
-
-	track_generate_perturb(track, &seed);
-
+	track_generate_perturb(track, seed);
 	for (j = 0; j < 30; ++j)
 	{
 		pushApart(track->control_points, track->num_control_points);
@@ -462,6 +455,11 @@ int track_generate_spline(track_t *track)
 
 int track_update_track_points(track_t *track)
 {
+	if ((track->track_points = realloc(track->track_points, track->width * track->height * sizeof(bool))) == NULL)
+	{
+		return 1;
+	}
+
 	/* This loop was too slow, so it was replaced by a much faster one...
 				 size_t j;
 				 size_t counter = 0;
@@ -694,4 +692,25 @@ int track_erase_control_point(track_t *track, unsigned point_ID)
 unsigned track_spline_to_control_point(track_t *track, unsigned spline_point_ID)
 {
 	return spline_point_ID / (ceil(1.0 / TRACK_INTERP_PERIOD));
+}
+
+static void track_free_try_again(track_t *track)
+{
+	free(track->track_points);
+	free(track->spline);
+	free(track->inside_spline);
+	free(track->outside_spline);
+	free(track->control_points);
+	track_initialize_arguments(track);
+}
+
+static void track_initialize_arguments(track_t *track)
+{
+	track->track_points = NULL;
+	track->control_points = NULL;
+	track->num_control_points = 0;
+	track->spline_size = 0;
+	track->spline = NULL;
+	track->inside_spline = NULL;
+	track->outside_spline = NULL;
 }

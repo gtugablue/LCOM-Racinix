@@ -17,13 +17,13 @@
 #include <stdarg.h>
 #include "bitmap.h"
 #include "context_menu.h"
+#include "font.h"
 
 #define FPS														30
 #define INTERP_PERIOD											0.07f
 #define RACINIX_MOUSE_SENSITIVITY								1.7
 #define RACINIX_VIDEO_MODE										VBE_MODE_GRAPHICS_1024_768_64K
 #define RACINIX_MAIN_MENU_NUM_BTN								6
-#define RACINIX_MAIN_MENU_TRACK_CHOICE_CONTEXT_MENU_NUM_BTN		2
 #define RACINIX_MAIN_MENU_CHAR_HEIGHT							30
 #define RACINIX_MAIN_MENU_CHAR_WIDTH							10
 #define RACINIX_TRACK_DESIGN_SELECT_POINT_RANGE					30

@@ -414,7 +414,7 @@ int vehicle_draw(vehicle_t *vehicle)
 	{
 		return 1;
 	}
-	bitmap_draw_alpha(rotated_bitmap, vehicle->position.x - rotated_bitmap->bitmap_information_header.width / 2, vehicle->position.y - rotated_bitmap->bitmap_information_header.height / 2);
+	bitmap_draw_alpha(rotated_bitmap, vehicle->position.x - rotated_bitmap->bitmap_information_header.width / 2, vehicle->position.y - rotated_bitmap->bitmap_information_header.height / 2, VIDEO_GR_64K_TRANSPARENT);
 	bitmap_delete(rotated_bitmap);
 
 #ifdef VEHICLE_DRAW_VELOCITY
