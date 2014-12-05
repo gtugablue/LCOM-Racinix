@@ -1,11 +1,16 @@
 #include "race.h"
 
+static int race_show(race_t *race)
+{
+
+}
+
 race_t *race_create(track_t *track, vehicle_t *vehicles[], unsigned num_vehicles, double freeze_time, unsigned num_laps)
 {
 	race_t *race;
 	if ((race = malloc(sizeof(race_t))) == NULL)
 	{
-		return NULL
+		return NULL;
 	}
 
 	race->track = track;
@@ -27,5 +32,5 @@ int race_tick(race_t *race, double delta_time)
 
 void race_delete(race_t *race)
 {
-	delete(rate);
+	free(race);
 }
