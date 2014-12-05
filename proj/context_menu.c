@@ -35,7 +35,7 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 		{
 			string_width = font_calculate_string_width(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT);
 			if (isPointInAxisAlignedRectangle(
-					vectorCreate(vbe_mode_info->XResolution / 2 - string_width, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
+					vectorCreate((vbe_mode_info->XResolution - string_width) / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
 					string_width,
 					CONTEXT_MENU_CHAR_HEIGHT,
 					vectorCreate(x, y)))
@@ -57,7 +57,6 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 
 void context_menu_draw(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info)
 {
-	// TODO
 	uint16_t *double_buffer = vg_get_double_buffer();
 	memcpy(double_buffer, context_menu->background, vbe_mode_info->XResolution * vbe_mode_info->YResolution * vbe_mode_info->BitsPerPixel / 8);
 	vg_draw_rectangle((vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2, 0, CONTEXT_MENU_WIDTH, vbe_mode_info->YResolution, CONTEXT_MENU_COLOR);
