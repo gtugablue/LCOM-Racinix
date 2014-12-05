@@ -269,7 +269,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	buttons[3] = "Settings", '\0';
 	buttons[4] = "Credits", '\0';
 	buttons[5] = "Exit", '\0';
-	char *context_menu_1_player_items[] = { "PickTrack", "DesignTrack" };
+	char *context_menu_track_choice_items[] = { "RANDOMTRACK", "DESIGNTRACK" };
 	switch (state)
 	{
 	case RACINIX_STATE_MAIN_MENU_BASE:
@@ -297,7 +297,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
-					context_menu = context_menu_create(context_menu_1_player_items, 2, &vmi, font_impact);
+					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT;
 					return RACINIX_STATE_MAIN_MENU;
 				}
@@ -351,6 +351,19 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y, &vmi);
 			switch (click)
 			{
+			case 0:
+			{
+				state = RACINIX_STATE_MAIN_MENU_BASE;
+				context_menu_delete(context_menu);
+				racinix_event_handler(RACINIX_EVENT_NEW_RACE, 1, false);
+				return RACINIX_STATE_RACE;
+			}
+			case 1:
+			{
+				state = RACINIX_STATE_MAIN_MENU_BASE;
+				context_menu_delete(context_menu);
+				return RACINIX_STATE_DESIGN_TRACK;
+			}
 			case CONTEXT_MENU_CLICK_BACKGROUND:
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
@@ -359,9 +372,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				break;
 			}
 			case CONTEXT_MENU_CLICK_NO_BUTTON:
-			default: // Button clicked
 			{
-
 				break;
 			}
 			}
@@ -379,7 +390,6 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
 		}
-		printf("derp\n");
 		context_menu_draw(context_menu, &vmi);
 		break;
 	}
@@ -539,6 +549,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 		{
 			state = RACINIX_STATE_TRACK_DESIGN_DESIGNING;
 			track_erase_control_point(track, point_ID);
+			track_generate_spline(track);
 			break;
 		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)

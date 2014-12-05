@@ -140,13 +140,14 @@ font_t *font_load(const char* folder)
 static int font_show_character(font_t *font, bitmap_t *character, unsigned height, unsigned x, unsigned y)
 {
 	double ratio = (double)character->bitmap_information_header.width / character->bitmap_information_header.height;
-	unsigned width = ratio * height;
 	bitmap_t *scaled_bitmap;
-	if ((scaled_bitmap = bitmap_scale(character, width, height * ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT))) == NULL)
+	unsigned width = ratio * height;
+	if ((scaled_bitmap = bitmap_scale(character, ratio * height, height * ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT))) == NULL)
 	{
-		return 1;
+		return -1;
 	}
 	bitmap_draw_alpha(scaled_bitmap, x, y + (1 - ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT)) * height, FONT_TRANSPARENT_COLOR);
+
 	free(scaled_bitmap);
 	return width;
 }
@@ -248,4 +249,5 @@ static bitmap_t *font_character_to_bitmap(font_t *font, char character)
 	{
 		return font->digit[character - '0'];
 	}
+	return NULL;
 }
