@@ -40,7 +40,7 @@ bitmap_t *bitmap_scale(bitmap_t *bitmap, unsigned new_width, unsigned new_height
 
 bitmap_t *bitmap_rotate(bitmap_t *bitmap, double angle);
 
-void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y);
+void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y, unsigned long alpha_color);
 
 void bitmap_draw(bitmap_t *bitmap, int x, int y); // For efficiency purposes
 

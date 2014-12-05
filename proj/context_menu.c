@@ -3,9 +3,8 @@
 
 static int context_menu_background_lose_focus(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info);
 
-context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info)
+context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
-	// TODO
 	context_menu_t *context_menu;
 	if ((context_menu = malloc(sizeof(context_menu_t))) == NULL)
 	{
@@ -22,12 +21,37 @@ context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_i
 	}
 	context_menu->items = items;
 	context_menu->num_items = num_items;
+	context_menu->font = font;
 	return context_menu;
 }
 
-int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y)
+int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe_mode_info_t *vbe_mode_info)
 {
-	// TODO
+	if (x >= (vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2 && x <= (vbe_mode_info->XResolution + CONTEXT_MENU_WIDTH) / 2)
+	{
+		unsigned string_width;
+		size_t i;
+		for (i = 0; i < context_menu->num_items; ++i)
+		{
+			string_width = font_calculate_string_width(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT);
+			if (isPointInAxisAlignedRectangle(
+					vectorCreate(vbe_mode_info->XResolution / 2 - string_width, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
+					string_width,
+					CONTEXT_MENU_CHAR_HEIGHT,
+					vectorCreate(x, y)))
+			{
+				break;
+			}
+		}
+		if (i == context_menu->num_items)
+		{
+			return CONTEXT_MENU_CLICK_NO_BUTTON;
+		}
+		else
+		{
+			return i;
+		}
+	}
 	return CONTEXT_MENU_CLICK_BACKGROUND;
 }
 
@@ -37,6 +61,12 @@ void context_menu_draw(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_i
 	uint16_t *double_buffer = vg_get_double_buffer();
 	memcpy(double_buffer, context_menu->background, vbe_mode_info->XResolution * vbe_mode_info->YResolution * vbe_mode_info->BitsPerPixel / 8);
 	vg_draw_rectangle((vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2, 0, CONTEXT_MENU_WIDTH, vbe_mode_info->YResolution, CONTEXT_MENU_COLOR);
+
+	size_t i;
+	for (i = 0; i < context_menu->num_items; ++i)
+	{
+		font_show_string(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)), FONT_ALIGNMENT_MIDDLE);
+	}
 }
 
 static int context_menu_background_lose_focus(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info)

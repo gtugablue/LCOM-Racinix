@@ -16,7 +16,7 @@ bitmap_t *bitmap_load(const char* filename)
 	FILE *fp;
 	if ((fp = fopen(filename, "rb")) == NULL) // "read + binary" mode
 	{
-		bitmap_delete(bmp);
+		free(bmp);
 		return NULL;
 	}
 	// read the bitmap file header
@@ -44,7 +44,7 @@ bitmap_t *bitmap_load(const char* filename)
 
 	if ((bmp->pixel_array = (void *)malloc(bmp->bitmap_information_header.image_size)) == NULL)
 	{
-		bitmap_delete(bmp);
+		free(bmp);
 		return NULL;
 	}
 
@@ -74,11 +74,10 @@ bitmap_t *bitmap_load(const char* filename)
 
 	// Close file
 	fclose(fp);
-
 	return bmp;
 }
 
-void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y)
+void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y, unsigned long alpha_color)
 {
 	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
 	uint16_t *double_buffer = vg_get_double_buffer();
@@ -89,7 +88,7 @@ void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y)
 		for (j = MAX(y, 0); j < MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution); ++j)
 		{
 			color = *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width);
-			if (color != VIDEO_GR_64K_TRANSPARENT)
+			if (color != alpha_color)
 			{
 				*(double_buffer + i + (2 * y + bitmap->bitmap_information_header.height - j) * vbe_mode_info->XResolution) = color;
 				//vg_set_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, color);
@@ -121,9 +120,9 @@ bitmap_t *bitmap_scale(bitmap_t *bitmap, unsigned new_width, unsigned new_height
 		return NULL;
 	}
 	memcpy(&scaled_bitmap->bitmap_information_header, &bitmap->bitmap_information_header, sizeof(bitmap_information_header_t));
-	scaled_bitmap->bitmap_information_header.width = ceil(scale_x * bitmap->bitmap_information_header.width);
-	scaled_bitmap->bitmap_information_header.height = ceil(scale_y * bitmap->bitmap_information_header.height);
-	scaled_bitmap->bitmap_information_header.image_size = scaled_bitmap->bitmap_information_header.width * scaled_bitmap->bitmap_information_header.height * scaled_bitmap->bitmap_information_header.bits_per_pixel / 8;
+	scaled_bitmap->bitmap_information_header.width = new_width;
+	scaled_bitmap->bitmap_information_header.height = new_height;
+	scaled_bitmap->bitmap_information_header.image_size = new_width * new_height * scaled_bitmap->bitmap_information_header.bits_per_pixel / 8;
 	if ((scaled_bitmap->pixel_array = malloc(scaled_bitmap->bitmap_information_header.image_size)) == NULL)
 	{
 		return NULL;

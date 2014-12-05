@@ -20,6 +20,9 @@ static bitmap_t *logo;
 static bitmap_t *bitmap_red_car;
 static bitmap_t *bitmap_blue_car;
 
+// Fonts
+static font_t *font_impact;
+
 int main(int argc, char **argv) {
 
 	/* Initialize service */
@@ -71,6 +74,12 @@ int racinix_start()
 
 	bitmap_blue_car = bitmap_load("/home/lcom/proj/images/blue_car.bmp");
 	if (bitmap_blue_car == NULL)
+	{
+		return 1;
+	}
+
+	font_impact = font_load("/home/lcom/proj/fonts/impact");
+	if (font_impact == NULL)
 	{
 		return 1;
 	}
@@ -260,6 +269,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	buttons[3] = "Settings", '\0';
 	buttons[4] = "Credits", '\0';
 	buttons[5] = "Exit", '\0';
+	char *context_menu_1_player_items[] = { "PickTrack", "DesignTrack" };
 	switch (state)
 	{
 	case RACINIX_STATE_MAIN_MENU_BASE:
@@ -287,10 +297,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
-					char *items[RACINIX_MAIN_MENU_TRACK_CHOICE_CONTEXT_MENU_NUM_BTN];
-					items[0] = "Random track", "\0";
-					items[1] = "Design track", "\0";
-					context_menu = context_menu_create(items, RACINIX_MAIN_MENU_TRACK_CHOICE_CONTEXT_MENU_NUM_BTN, &vmi);
+					context_menu = context_menu_create(context_menu_1_player_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT;
 					return RACINIX_STATE_MAIN_MENU;
 				}
@@ -321,7 +328,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		bitmap_draw(background, 0, 0);
 
 		// Show logo
-		bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2);
+		bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
 
 		size_t i;
 		for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
@@ -339,10 +346,9 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT:
 	{
-		// Click outside or press ESC
-		if ((event == RACINIX_EVENT_MOUSE_LEFT_BTN && va_arg(*var_args, int)) || (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)))
+		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN && va_arg(*var_args, int)) // Left mouse click
 		{
-			int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y);
+			int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y, &vmi);
 			switch (click)
 			{
 			case CONTEXT_MENU_CLICK_BACKGROUND:
@@ -353,18 +359,27 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				break;
 			}
 			case CONTEXT_MENU_CLICK_NO_BUTTON:
-			default:
+			default: // Button clicked
 			{
+
 				break;
 			}
 			}
 		}
+		else if (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)) // Esc pressed
+		{
+			state = RACINIX_STATE_MAIN_MENU_BASE;
+			context_menu_delete(context_menu);
+			return RACINIX_STATE_MAIN_MENU;
+		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+			context_menu_draw(context_menu, &vmi);
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
 		}
+		printf("derp\n");
 		context_menu_draw(context_menu, &vmi);
 		break;
 	}
@@ -480,7 +495,15 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
+				printf("vai deletar\n");
 				track_delete(track);
+				printf("deletou\n");
+				size_t i;
+				for (i = 0; i < num_vehicles; ++i)
+				{
+					vehicle_delete(vehicles[i]);
+				}
+				printf("deletou os vehicles\n");
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
