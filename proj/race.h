@@ -8,7 +8,7 @@ typedef struct
 {
 	track_t *track;
 	unsigned num_vehicles;
-	vehicle_t *vehicles[];
+	vehicle_t **vehicles;
 	double time; // A negative value means the race is in freeze time and about to start.
 	unsigned num_laps;
 } race_t;
