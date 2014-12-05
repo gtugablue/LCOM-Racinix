@@ -459,7 +459,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_EVENT_NEW_FRAME:
 	{
-		static vehicle_keys_t vehicle_keys;
 		vg_swap_mouse_buffer();
 		vg_fill(RACINIX_COLOR_GRASS);
 		track_draw(track);
@@ -505,15 +504,12 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
-				printf("vai deletar\n");
 				track_delete(track);
-				printf("deletou\n");
 				size_t i;
 				for (i = 0; i < num_vehicles; ++i)
 				{
 					vehicle_delete(vehicles[i]);
 				}
-				printf("deletou os vehicles\n");
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
