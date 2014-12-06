@@ -36,7 +36,7 @@ track_t *track_create(unsigned width, unsigned height)
 	return track;
 }
 
-track_t *track_random_generate(track_t *track, unsigned long seed)
+int track_random_generate(track_t *track, unsigned long seed)
 {
 	int result;
 	size_t i;
@@ -63,10 +63,10 @@ track_t *track_random_generate(track_t *track, unsigned long seed)
 			track_free_try_again(track);
 			continue; // Try again
 		}
-		return track;
+		return 0;
 	}
 	track_delete(track);
-	return NULL;
+	return 1;
 }
 
 int track_generate_control_points(track_t *track, unsigned long *seed)

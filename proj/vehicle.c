@@ -418,7 +418,7 @@ int vehicle_draw(vehicle_t *vehicle)
 	bitmap_delete(rotated_bitmap);
 
 #ifdef VEHICLE_DRAW_VELOCITY
-	vector2D_t velocity = vectorRotate(vectorCreate(vehicle->speed, 0), vehicle->heading);
+	vector2D_t velocity = vectorRotate(vectorCreate(0.5 * vehicle->speed, 0), vehicle->heading);
 	velocity = vectorAdd(vehicle->position, velocity);
 	vg_draw_line(vehicle->position.x, vehicle->position.y, velocity.x, velocity.y, 0xFFFF);
 	vector2D_t arrow = vectorRotate(vectorCreate(7 * ((vehicle->speed > 0) - (vehicle->speed < 0)), 0), vehicle->heading);
