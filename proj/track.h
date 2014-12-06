@@ -38,7 +38,7 @@ typedef struct
 
 track_t *track_create(unsigned width, unsigned height);
 
-track_t *track_random_generate(track_t *track, unsigned long seed);
+int track_random_generate(track_t *track, unsigned long seed);
 
 int track_generate_spline(track_t *track);
 

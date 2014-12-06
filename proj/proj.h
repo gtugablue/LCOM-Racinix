@@ -18,8 +18,10 @@
 #include "bitmap.h"
 #include "context_menu.h"
 #include "font.h"
+#include "race.h"
 
-#define FPS														30
+#define RACINIX_FPS												60
+#define RACINIX_DELTA_TIME										1.0 / RACINIX_FPS
 #define INTERP_PERIOD											0.07f
 #define RACINIX_MOUSE_SENSITIVITY								1.7
 #define RACINIX_VIDEO_MODE										VBE_MODE_GRAPHICS_1024_768_64K
@@ -30,6 +32,8 @@
 #define RACINIX_TRACK_DESIGN_MIN_POINTS							3
 #define RACINIX_COLOR_MENU_BUTTONS								VIDEO_GR_BLUE
 #define RACINIX_COLOR_CONTROL_POINT								VIDEO_GR_WHITE
+#define RACINIX_RACE_FREEZE_TIME								5
+#define RACINIX_RACE_NUM_LAPS									6
 
 // States
 enum
@@ -37,6 +41,7 @@ enum
 	RACINIX_STATE_MAIN_MENU,
 	RACINIX_STATE_DESIGN_TRACK,
 	RACINIX_STATE_RACE,
+	RACINIX_STATE_ERROR,
 	RACINIX_STATE_END
 };
 
@@ -44,7 +49,9 @@ enum
 enum
 {
 	RACINIX_STATE_MAIN_MENU_BASE,
-	RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT
+	RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT_MENU,
+	RACINIX_STATE_MAIN_MENU_2_PLAYERS_SAME_PC_CONTEXT_MENU,
+	RACINIX_STATE_MAIN_MENU_2_PLAYERS_SERIAL_PORT_CONTEXT_MENU
 };
 
 // Race states
@@ -100,9 +107,9 @@ enum
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
 	RACINIX_EVENT_MOUSE_RIGHT_BTN, // bool pressed
 	RACINIX_EVENT_NEW_FRAME,
-	RACINIX_EVENT_NEW_RACE // unsigned num_players, bool serial_port
 };
 
+// Main menu buttons
 enum
 {
 	RACINIX_MAIN_MENU_BUTTON_1_PLAYER,
