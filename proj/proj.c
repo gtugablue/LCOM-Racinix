@@ -241,6 +241,7 @@ int racinix_event_handler(int event, ...)
 		state = racinix_race_event_handler(event, &var_args);
 		break;
 	}
+	case RACINIX_STATE_ERROR:
 	case RACINIX_STATE_END:
 	{
 		va_end(var_args);
@@ -296,9 +297,11 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
+				{
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_2_PLAYERS_SAME_PC_CONTEXT_MENU;
-					return RACINIX_STATE_RACE;
+					return RACINIX_STATE_MAIN_MENU;
+				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
 					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
