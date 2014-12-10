@@ -8,11 +8,12 @@
 
 static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
-static track_t *track;
 static race_t *race;
 static vehicle_keys_t vehicle_keys[2];
 static uint16_t vehicle_colors[2];
 static bitmap_t *vehicle_bitmaps[2];
+static unsigned num_players;
+static bool serial_port;
 
 // Bitmaps
 static bitmap_t *background;
@@ -151,6 +152,7 @@ int racinix_dispatcher()
 	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
+	unsigned fps_counter;
 	message msg;
 	key_t key;
 	while(1) // Main loop
@@ -176,9 +178,9 @@ int racinix_dispatcher()
 					continue;
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
-					if (racinix_timer_int_handler() == 0)
+					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
-						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME) == -1)
+						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
 						}
@@ -187,20 +189,20 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
 					if (racinix_mouse_int_handler(&new_mouse_data_packet) == 0) // Packet ready
 					{
-						if (racinix_event_handler(RACINIX_EVENT_MOUSE_MOVEMENT, &new_mouse_data_packet) == -1)
+						if (racinix_event_handler(RACINIX_EVENT_MOUSE_MOVEMENT, &new_mouse_data_packet) == RACINIX_STATE_END)
 						{
 							break;
 						}
 						if (new_mouse_data_packet.left_button != old_mouse_data_packet.left_button)
 						{
-							if (racinix_event_handler(RACINIX_EVENT_MOUSE_LEFT_BTN, new_mouse_data_packet.left_button) == -1)
+							if (racinix_event_handler(RACINIX_EVENT_MOUSE_LEFT_BTN, new_mouse_data_packet.left_button) == RACINIX_STATE_END)
 							{
 								break;
 							}
 						}
 						if (new_mouse_data_packet.right_button != old_mouse_data_packet.right_button)
 						{
-							if (racinix_event_handler(RACINIX_EVENT_MOUSE_RIGHT_BTN, new_mouse_data_packet.right_button) == -1)
+							if (racinix_event_handler(RACINIX_EVENT_MOUSE_RIGHT_BTN, new_mouse_data_packet.right_button) == RACINIX_STATE_END)
 							{
 								break;
 							}
@@ -245,7 +247,7 @@ int racinix_event_handler(int event, ...)
 	case RACINIX_STATE_END:
 	{
 		va_end(var_args);
-		return -1;
+		return RACINIX_STATE_END;
 	}
 	break;
 	}
@@ -293,13 +295,17 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
-					state = RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT_MENU;
+					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
+					num_players = 1;
+					serial_port = false;
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
 				{
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
-					state = RACINIX_STATE_MAIN_MENU_2_PLAYERS_SAME_PC_CONTEXT_MENU;
+					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
+					num_players = 2;
+					serial_port = false;
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
@@ -323,6 +329,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		}
 
 		// Show menu
+
 		bitmap_draw(background, 0, 0);
 
 		// Show logo
@@ -342,19 +349,18 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		}
 		break;
 	}
-	case RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT_MENU:
-	case RACINIX_STATE_MAIN_MENU_2_PLAYERS_SAME_PC_CONTEXT_MENU:
-	case RACINIX_STATE_MAIN_MENU_2_PLAYERS_SERIAL_PORT_CONTEXT_MENU:
+	case RACINIX_STATE_MAIN_MENU_PICK_TRACK:
 	{
 		if (event == RACINIX_EVENT_MOUSE_LEFT_BTN && va_arg(*var_args, int)) // Left mouse click
 		{
 			int click = context_menu_click(context_menu, (unsigned)mouse_position.x, (unsigned)mouse_position.y, &vmi);
 			switch (click)
 			{
-			case 0:
+			case 0: // Random track
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
+				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
@@ -363,16 +369,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				unsigned num_players;
-				if (state == RACINIX_STATE_MAIN_MENU_1_PLAYER_CONTEXT_MENU)
-				{
-					num_players = 1;
-				}
-				else
-				{
-					num_players = 2;
-				}
-				if ((race = race_create(track, num_players, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi)) == NULL)
+				if ((race = race_create(track, num_players, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
@@ -381,13 +378,14 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_ERROR;
 				}
 				// TODO DELETE DA RACE!
-
+				state = RACINIX_STATE_MAIN_MENU_BASE;
 				return RACINIX_STATE_RACE;
 			}
 			case 1:	// Design track
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
+
 				return RACINIX_STATE_DESIGN_TRACK;
 			}
 			case CONTEXT_MENU_CLICK_BACKGROUND:
@@ -426,14 +424,11 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 
 int racinix_race_event_handler(int event, va_list *var_args)
 {
-	static int state;
-	static unsigned num_vehicles;
-	static vehicle_t **vehicles;
 	switch (event)
 	{
 	case RACINIX_EVENT_NEW_FRAME:
 	{
-		race_tick(race, RACINIX_DELTA_TIME);
+		race_tick(race, RACINIX_DELTA_TIME, va_arg(*var_args, unsigned));
 	}
 	case RACINIX_EVENT_KEYSTROKE: // int key, bool pressed
 	{
@@ -441,12 +436,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
-				track_delete(track);
-				size_t i;
-				for (i = 0; i < num_vehicles; ++i)
-				{
-					vehicle_delete(vehicles[i]);
-				}
+				race_delete(race);
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
@@ -520,7 +510,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 				}
 				if ((track->control_points = realloc(track->control_points, ++(track->num_control_points) * sizeof(vector2D_t))) == NULL)
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				track->control_points[track->num_control_points - 1] = mouse_position;
 
@@ -547,6 +537,35 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
 		}
+		else if (event == RACINIX_EVENT_KEYSTROKE) // int key, bool pressed
+		{
+			int key = va_arg(*var_args, int);
+			if (va_arg(*var_args, int)) // pressed
+			{
+				if (key == KEY_ESC)
+				{
+					track_delete(track);
+					state = RACINIX_STATE_TRACK_DESIGN_NEW;
+					return RACINIX_STATE_MAIN_MENU;
+				}
+				else if (key == KEY_ENTER)
+				{
+					if (track_update_track_points(track) == 0)
+					{
+						if ((race = race_create(track, num_players, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+						{
+							return RACINIX_STATE_ERROR;
+						}
+						if (race_start(race))
+						{
+							return RACINIX_STATE_ERROR;
+						}
+						state = RACINIX_STATE_TRACK_DESIGN_NEW;
+						return RACINIX_STATE_RACE;
+					}
+				}
+			}
+		}
 		break;
 	}
 	}
@@ -554,8 +573,15 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 	vg_fill(RACINIX_COLOR_GRASS);
 
 	track_draw_spline(track);
+	if (track->num_control_points >= 3)
+	{
+		track_draw_finish_line(track);
+	}
 	track_draw_control_points(track);
 	//track_draw(track);
+
+	font_show_string(font_impact, "TRACK DESIGNER", 30, vmi.XResolution / 2, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 2);
+	font_show_string(font_impact, "PRESSENTERTOSTARTTHERACEORESCTOEXIT", 15, vmi.XResolution - 11, vmi.YResolution - 25, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
 
 	racinix_draw_mouse();
 	return RACINIX_STATE_DESIGN_TRACK;
@@ -569,13 +595,26 @@ int racinix_keyboard_int_handler()
 int racinix_timer_int_handler()
 {
 	static double counter = 0;
-	static unsigned reset_number = TIMER_DEFAULT_FREQ / RACINIX_FPS; // For efficiency purposes (avoid calculating it every frame)
+	static unsigned long timer = 0;
+	static unsigned fps_last = 0;
+	static unsigned fps_counter = 0;
+	static const double reset_number = (double)TIMER_DEFAULT_FREQ / RACINIX_FPS; // For efficiency purposes (avoid calculating it every frame)
+	printf("reset number * 10000: %d, counter * 10000: %d\n", (int)(reset_number * 10000), (int)(counter * 10000));
+	if (time(NULL) > timer)
+	{
+		fps_last = fps_counter;
+		fps_counter = 0;
+		timer = time(NULL);
+	}
+	counter += 1.0;
 	if (counter >= reset_number)
 	{
 		counter -= reset_number;
-		return 0;
+
+		++fps_counter;
+		return fps_last;
 	}
-	return ++counter;
+	return -1;
 }
 
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet)

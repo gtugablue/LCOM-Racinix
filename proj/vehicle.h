@@ -10,15 +10,15 @@
 #include "vbe.h"
 #include "track.h"
 
-#define VEHICLE_ACCELERATE							350.0
-#define VEHICLE_REVERSE								75.0
-#define VEHICLE_BREAK								250.0
-#define VEHICLE_STEER								0.25
+#define VEHICLE_ACCELERATE							100.0
+#define VEHICLE_REVERSE								VEHICLE_ACCELERATE / 4
+#define VEHICLE_BREAK								VEHICLE_ACCELERATE
+#define VEHICLE_STEER								0.15
 #define VEHICLE_STOP_SPEED							10.0
 #define VEHICLE_NUM_WHEELS							4
-#define VEHICLE_MAX_STEER							0.8
+#define VEHICLE_MAX_STEER							0.6
 #define VEHICLE_COLLISION_FRICTION					200.0
-#define VEHICLE_DRAG								0.7
+#define VEHICLE_DRAG								0.3
 #define VEHICLE_NITROUS								500			///////mine
 #define VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR	0.0025
 #define VEHICLE_WIDTH								20

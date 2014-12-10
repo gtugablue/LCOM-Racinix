@@ -1,13 +1,15 @@
 #include "race.h"
+#include <string.h>
+#include "sys/times.h"
 
 #define PI 					3.14159265358979323846
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time);
+static void race_show_info(race_t *race, unsigned fps);
 
-race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info)
+race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	race_t *race;
-	printf("creating race...\n");
 	if ((race = malloc(sizeof(race_t))) == NULL)
 	{
 		return NULL;
@@ -18,7 +20,6 @@ race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bit
 		race_delete(race);
 		return NULL;
 	}
-
 	race->track = track;
 	race->num_players = num_players;
 	race->vehicle_bitmaps = vehicle_bitmaps;
@@ -27,6 +28,7 @@ race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bit
 	race->time = -freeze_time;
 	race->num_laps = num_laps;
 	race->vbe_mode_info = vbe_mode_info;
+	race->font = font;
 	return race;
 }
 
@@ -48,7 +50,7 @@ int race_start(race_t *race)
 	return 0;
 }
 
-int race_tick(race_t *race, double delta_time)
+int race_tick(race_t *race, double delta_time, unsigned fps)
 {
 	vg_swap_mouse_buffer();
 	vg_fill(RACINIX_COLOR_GRASS);
@@ -87,7 +89,9 @@ int race_tick(race_t *race, double delta_time)
 			}
 		}
 	}
+	race_show_info(race, fps);
 	vg_swap_buffer();
+	race->time += delta_time;
 }
 
 void race_delete(race_t *race)
@@ -104,4 +108,13 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 		drag += track_get_point_drag(race->track, (int)vehicle->wheels[i].x, (int)vehicle->wheels[i].y, race->vbe_mode_info->XResolution, race->vbe_mode_info->YResolution);
 	}
 	vehicle_tick(vehicle, race->track, race->vbe_mode_info, delta_time, drag);
+}
+
+static void race_show_info(race_t *race, unsigned fps)
+{
+	char string[100];
+	sprintf(string, "%d", (int)floor(race->time));
+	font_show_string(race->font, string, 10, race->vbe_mode_info->XResolution - 11, 11, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
+	sprintf(string, "FPS: %d", fps);
+	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
 }
