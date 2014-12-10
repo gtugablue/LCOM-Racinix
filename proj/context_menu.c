@@ -34,6 +34,7 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 		for (i = 0; i < context_menu->num_items; ++i)
 		{
 			string_width = font_calculate_string_width(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT);
+			printf("string: %s, string_width: %d\n", context_menu->items[i], string_width);
 			if (isPointInAxisAlignedRectangle(
 					vectorCreate((vbe_mode_info->XResolution - string_width) / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
 					string_width,
@@ -64,7 +65,7 @@ void context_menu_draw(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_i
 	size_t i;
 	for (i = 0; i < context_menu->num_items; ++i)
 	{
-		font_show_string(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)), FONT_ALIGNMENT_MIDDLE);
+		font_show_string(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)), FONT_ALIGNMENT_MIDDLE, VIDEO_GR_BLACK, 0);
 	}
 }
 
