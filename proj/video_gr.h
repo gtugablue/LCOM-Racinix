@@ -9,6 +9,7 @@
 #define	VIDEO_GR_BLUE					rgb(0, 0, 255)
 #define VIDEO_GR_BLACK					rgb(0, 0, 0)
 #define VIDEO_GR_WHITE					rgb(255, 255, 255)
+#define VIDEO_GR_RGB_MAX				(1 << 8)
 
 #include <stdbool.h>
 #include <minix/syslib.h>

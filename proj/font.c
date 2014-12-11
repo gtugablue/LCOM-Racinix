@@ -147,17 +147,17 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 	{
 		return -1;
 	}
-	//bitmap_draw_alpha(scaled_bitmap, x, y + (1 - ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT)) * height, FONT_TRANSPARENT_COLOR);
+	bitmap_draw_alpha(scaled_bitmap, x, y + (1 - ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT)) * height, FONT_TRANSPARENT_COLOR);
 
 	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
 	uint16_t *double_buffer = vg_get_double_buffer();
 	size_t i, j;
 
 	// Shade
-	if (shade != 0)
+	if (shade > 0)
 	{
-		x += 2;
-		y += 2;
+		x += shade;
+		y += shade;
 		// Shade
 		for (i = MAX(x, 0); i < MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution); ++i)
 		{
@@ -169,8 +169,8 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 				}
 			}
 		}
-		x -= 2;
-		y -= 2;
+		x -= shade;
+		y -= shade;
 	}
 
 	// Character
@@ -185,7 +185,7 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 		}
 	}
 
-	free(scaled_bitmap);
+	bitmap_delete(scaled_bitmap);
 	return width;
 }
 
@@ -262,7 +262,6 @@ void font_delete(font_t *font)
 				{
 					free(font->digit[i]);
 				}
-				free(font->digit);
 				free(font->digit);
 				free(font->dot);
 				free(font->exclamation_mark);

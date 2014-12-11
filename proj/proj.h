@@ -20,6 +20,9 @@
 #include "font.h"
 #include "race.h"
 
+#define RACINIX_FOLDER_ROOT										"/home/lcom/proj/"
+#define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
+#define RACINIX_FOLDER_FONTS									RACINIX_FOLDER_ROOT "fonts/"
 #define RACINIX_FPS												60
 #define RACINIX_DELTA_TIME										1.0 / TIMER_DEFAULT_FREQ
 #define INTERP_PERIOD											0.07f
@@ -28,12 +31,15 @@
 #define RACINIX_MAIN_MENU_NUM_BTN								6
 #define RACINIX_MAIN_MENU_CHAR_HEIGHT							30
 #define RACINIX_MAIN_MENU_CHAR_WIDTH							10
+#define RACINIX_MAIN_MENU_BTN_TEXT_SHADE						3
+#define RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET					2
 #define RACINIX_TRACK_DESIGN_SELECT_POINT_RANGE					30
 #define RACINIX_TRACK_DESIGN_MIN_POINTS							3
 #define RACINIX_COLOR_MENU_BUTTONS								VIDEO_GR_BLUE
 #define RACINIX_COLOR_CONTROL_POINT								VIDEO_GR_WHITE
 #define RACINIX_RACE_FREEZE_TIME								5
 #define RACINIX_RACE_NUM_LAPS									6
+#define RACINIX_COLOR_ORANGE									rgb(255, 174, 0)
 
 // States
 enum
