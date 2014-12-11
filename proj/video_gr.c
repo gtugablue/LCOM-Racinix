@@ -298,9 +298,9 @@ void vg_swap_mouse_buffer()
 uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 {
 	uint16_t rgb = 0x0;
-	rgb |= (r * (1 << vbe_mode_info.RedMaskSize) / (1 << 8)) << vbe_mode_info.RedFieldPosition;
-	rgb |= (g * (1 << vbe_mode_info.GreenMaskSize) / (1 << 8)) << vbe_mode_info.GreenFieldPosition;
-	rgb |= (b * (1 << vbe_mode_info.BlueMaskSize) / (1 << 8)) << vbe_mode_info.BlueFieldPosition;
+	rgb |= (r * (1 << vbe_mode_info.RedMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.RedFieldPosition;
+	rgb |= (g * (1 << vbe_mode_info.GreenMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.GreenFieldPosition;
+	rgb |= (b * (1 << vbe_mode_info.BlueMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.BlueFieldPosition;
 	return rgb;
 }
 

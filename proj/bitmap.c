@@ -136,7 +136,7 @@ bitmap_t *bitmap_scale(bitmap_t *bitmap, unsigned new_width, unsigned new_height
 			old_x = (int)(x / scale_x);
 			old_y = (int)(y / scale_y);
 
-			if (old_x >= 0 && old_x < bitmap->bitmap_information_header.width && old_y >= 0 && old_y < bitmap->bitmap_information_header.height)
+			if ((unsigned)old_x < bitmap->bitmap_information_header.width && (unsigned)old_y < bitmap->bitmap_information_header.height) // The 'unsigned' cast is here for efficiency purposes, as it reduces the number of comparisons from 4 to 2
 			{
 				*((uint16_t *)scaled_bitmap->pixel_array + x + y * scaled_bitmap->bitmap_information_header.width) = *((uint16_t *)bitmap->pixel_array + old_x + old_y * bitmap->bitmap_information_header.width);
 			}
@@ -182,7 +182,7 @@ bitmap_t *bitmap_transform(bitmap_t *bitmap, unsigned new_width, unsigned new_he
 			old_x = (int)((transform_x * angle_cos - transform_y * angle_sin) / scale_x + (double)bitmap->bitmap_information_header.width / 2);
 			old_y = (int)((transform_y * angle_cos + transform_x * angle_sin) / scale_y + (double)bitmap->bitmap_information_header.height / 2);
 
-			if (old_x >= 0 && old_x < bitmap->bitmap_information_header.width && old_y >= 0 && old_y < bitmap->bitmap_information_header.height)
+			if ((unsigned)old_x < bitmap->bitmap_information_header.width && (unsigned)old_y < bitmap->bitmap_information_header.height) // The 'unsigned' cast is here for efficiency purposes, as it reduces the number of comparisons from 4 to 2
 			{
 				*((uint16_t *)rotated_bitmap->pixel_array + x + y * rotated_bitmap->bitmap_information_header.width) = *((uint16_t *)bitmap->pixel_array + old_x + old_y * bitmap->bitmap_information_header.width);
 			}

@@ -115,6 +115,10 @@ int racinix_exit()
 {
 	bitmap_delete(background);
 	bitmap_delete(mouse_cursor);
+	bitmap_delete(logo);
+	bitmap_delete(bitmap_red_car);
+	bitmap_delete(bitmap_blue_car);
+	font_delete(font_impact);
 	return vg_exit();
 }
 
@@ -259,13 +263,14 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 {
 	static context_menu_t *context_menu;
 	static int state = RACINIX_STATE_MAIN_MENU_BASE;
+	static size_t button_ID = RACINIX_MAIN_MENU_NUM_BTN;
 	char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
-	buttons[0] = "1 Player", '\0';
-	buttons[1] = "2 Players in the same PC", '\0';
-	buttons[2] = "2 Players via serial port", '\0';
-	buttons[3] = "Settings", '\0';
-	buttons[4] = "Credits", '\0';
-	buttons[5] = "Exit", '\0';
+	buttons[0] = "1 PLAYER", '\0';
+	buttons[1] = "2 PLAYERS IN THE SAME PC", '\0';
+	buttons[2] = "2 PLAYERS VIA SERIAL PORT", '\0';
+	buttons[3] = "SETTINGS", '\0';
+	buttons[4] = "CREDITS", '\0';
+	buttons[5] = "EXIT", '\0';
 	char *context_menu_track_choice_items[] = { "RANDOMTRACK", "DESIGNTRACK" };
 	switch (state)
 	{
@@ -275,23 +280,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int)) // pressed
 			{
-				vector2D_t top_left_corner;
-				size_t i;
-				for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
-				{
-					top_left_corner = vectorCreate((vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
-							i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
-					if (isPointInAxisAlignedRectangle(
-							top_left_corner,
-							RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
-							RACINIX_MAIN_MENU_CHAR_HEIGHT,
-							mouse_position))
-					{
-						break;
-					}
-				}
-				switch (i) // TODO
-				{
+				switch (button_ID) // TODO
+						{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
@@ -318,13 +308,29 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_END;
 				default:
 					break; // A button wasn't clicked
-				}
+						}
 			}
 		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
 			racinix_draw_mouse();
+
+			vector2D_t top_left_corner;
+			for (button_ID = 0; button_ID < RACINIX_MAIN_MENU_NUM_BTN; ++button_ID)
+			{
+				top_left_corner = vectorCreate((vmi.XResolution - font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
+						button_ID * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
+				if (isPointInAxisAlignedRectangle(
+						top_left_corner,
+						font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT),
+						RACINIX_MAIN_MENU_CHAR_HEIGHT,
+						mouse_position))
+				{
+					break;
+				}
+			}
+
 			return RACINIX_STATE_MAIN_MENU;
 		}
 
@@ -338,14 +344,21 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		size_t i;
 		for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
 		{
-			// TODO Write text
-			vg_draw_rectangle(
-					(vmi.XResolution - RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i])) / 2,
+			/*vg_draw_rectangle(
+					(vmi.XResolution - font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
 					i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
-					RACINIX_MAIN_MENU_CHAR_WIDTH * strlen(buttons[i]),
+					font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT),
 					RACINIX_MAIN_MENU_CHAR_HEIGHT,
 					VIDEO_GR_BLUE
-			);
+			);*/
+			if (i == button_ID)
+			{
+				font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, FONT_ALIGNMENT_MIDDLE, RACINIX_COLOR_ORANGE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE + RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET);
+			}
+			else
+			{
+				font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE);
+			}
 		}
 		break;
 	}
@@ -599,7 +612,6 @@ int racinix_timer_int_handler()
 	static unsigned fps_last = 0;
 	static unsigned fps_counter = 0;
 	static const double reset_number = (double)TIMER_DEFAULT_FREQ / RACINIX_FPS; // For efficiency purposes (avoid calculating it every frame)
-	printf("reset number * 10000: %d, counter * 10000: %d\n", (int)(reset_number * 10000), (int)(counter * 10000));
 	if (time(NULL) > timer)
 	{
 		fps_last = fps_counter;

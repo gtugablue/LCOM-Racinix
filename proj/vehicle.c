@@ -55,11 +55,11 @@ void vehicle_update_steering(vehicle_t *vehicle, double delta_time)
 {
 	if (kbd_keys[vehicle->vehicle_keys.turn_left].pressed && !kbd_keys[vehicle->vehicle_keys.turn_right].pressed)
 	{
-		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
+		vehicle->steering += -(VEHICLE_STEER * vehicle->length) / (abs(vehicle->speed) * VEHICLE_STEERING_VS_SPEED_FACTOR);
 	}
 	else if (kbd_keys[vehicle->vehicle_keys.turn_right].pressed && !kbd_keys[vehicle->vehicle_keys.turn_left].pressed)
 	{
-		vehicle->steering += (VEHICLE_STEER * vehicle->length) / abs(vehicle->speed);
+		vehicle->steering += (VEHICLE_STEER * vehicle->length) / (abs(vehicle->speed) * VEHICLE_STEERING_VS_SPEED_FACTOR);
 	}
 	else
 	{
