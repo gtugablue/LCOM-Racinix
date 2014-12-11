@@ -50,37 +50,37 @@ int racinix_start()
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
 
-	background = bitmap_load("/home/lcom/proj/images/background.bmp");
+	background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
 	if (background == NULL)
 	{
 		return 1;
 	}
 
-	mouse_cursor = bitmap_load("/home/lcom/proj/images/cursor.bmp");
+	mouse_cursor = bitmap_load(RACINIX_FOLDER_IMAGES "cursor.bmp");
 	if (mouse_cursor == NULL)
 	{
 		return 1;
 	}
 
-	logo = bitmap_load("/home/lcom/proj/images/logo.bmp");
+	logo = bitmap_load(RACINIX_FOLDER_IMAGES "logo.bmp");
 	if (logo == NULL)
 	{
 		return 1;
 	}
 
-	bitmap_red_car = bitmap_load("/home/lcom/proj/images/red_car.bmp");
+	bitmap_red_car = bitmap_load(RACINIX_FOLDER_IMAGES "red_car.bmp");
 	if (bitmap_red_car == NULL)
 	{
 		return 1;
 	}
 
-	bitmap_blue_car = bitmap_load("/home/lcom/proj/images/blue_car.bmp");
+	bitmap_blue_car = bitmap_load(RACINIX_FOLDER_IMAGES "blue_car.bmp");
 	if (bitmap_blue_car == NULL)
 	{
 		return 1;
 	}
 
-	font_impact = font_load("/home/lcom/proj/fonts/impact");
+	font_impact = font_load(RACINIX_FOLDER_FONTS "impact");
 	if (font_impact == NULL)
 	{
 		return 1;
