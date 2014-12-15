@@ -27,8 +27,10 @@ context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_i
 
 int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe_mode_info_t *vbe_mode_info)
 {
+	printf("context menu processing click...\n");
 	if (x >= (vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2 && x <= (vbe_mode_info->XResolution + CONTEXT_MENU_WIDTH) / 2)
 	{
+		printf("entered\n");
 		unsigned string_width;
 		size_t i;
 		for (i = 0; i < context_menu->num_items; ++i)
@@ -44,6 +46,7 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 				break;
 			}
 		}
+		printf("i outside: %d\n", i);
 		if (i == context_menu->num_items)
 		{
 			return CONTEXT_MENU_CLICK_NO_BUTTON;

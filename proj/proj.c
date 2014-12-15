@@ -311,9 +311,10 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
 					break;
 				case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
-					racinix_draw_menu(-1, buttons); // No button being hovered
+					//racinix_draw_menu(-1, buttons); // No button being hovered
 					//bitmap_draw_alpha(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
-					bitmap_draw(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2);
+					//bitmap_draw(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2);
+					bitmap_draw(bitmap_credits, 0, 0);
 					state = RACINIX_STATE_MAIN_MENU_CREDITS;
 					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
@@ -424,25 +425,12 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
 			racinix_draw_mouse();
 		}
-		else if (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)) // Esc pressed
+		else if ((event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC || event == RACINIX_EVENT_MOUSE_LEFT_BTN) && va_arg(*var_args, int)) // Esc or LMB pressed
 		{
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 			racinix_draw_menu(-1, buttons);
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
-		}
-		else if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
-		{
-			if (va_arg(*var_args, int)) // pressed
-			{
-				if (mouse_position.x < (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2 || mouse_position.x > (vmi.XResolution + bitmap_credits->bitmap_information_header.width) / 2 || mouse_position.y < (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2 || mouse_position.y > (vmi.YResolution + bitmap_credits->bitmap_information_header.height) / 2)
-				{
-						state = RACINIX_STATE_MAIN_MENU_BASE;
-						racinix_draw_menu(-1, buttons);
-						racinix_draw_mouse();
-						return RACINIX_STATE_MAIN_MENU;
-				}
-			}
 		}
 	}
 	}
