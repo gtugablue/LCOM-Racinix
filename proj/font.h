@@ -31,6 +31,7 @@ typedef struct
 	bitmap_t *brackets_close;
 	bitmap_t *hyphen;
 	bitmap_t *colon;
+	bitmap_t *space;
 } font_t;
 
 font_t *font_load(const char* folder);
