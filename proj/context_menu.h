@@ -29,7 +29,7 @@ context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_i
 
 int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe_mode_info_t *vbe_mode_info);
 
-void context_menu_draw(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info);
+void context_menu_draw(context_menu_t *context_menu, vector2D_t mouse_position, vbe_mode_info_t *vbe_mode_info);
 
 void context_menu_delete(context_menu_t *context_menu);
 
