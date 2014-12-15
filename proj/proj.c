@@ -21,6 +21,7 @@ static bitmap_t *mouse_cursor;
 static bitmap_t *logo;
 static bitmap_t *bitmap_red_car;
 static bitmap_t *bitmap_blue_car;
+static bitmap_t *bitmap_credits;
 
 // Fonts
 static font_t *font_impact;
@@ -80,6 +81,12 @@ int racinix_start()
 		return 1;
 	}
 
+	bitmap_credits = bitmap_load(RACINIX_FOLDER_IMAGES "credits.bmp");
+	if (bitmap_credits == NULL)
+	{
+		return 1;
+	}
+
 	font_impact = font_load(RACINIX_FOLDER_FONTS "impact");
 	if (font_impact == NULL)
 	{
@@ -118,6 +125,7 @@ int racinix_exit()
 	bitmap_delete(logo);
 	bitmap_delete(bitmap_red_car);
 	bitmap_delete(bitmap_blue_car);
+	bitmap_delete(bitmap_credits);
 	font_delete(font_impact);
 	return vg_exit();
 }
@@ -423,12 +431,16 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
-			context_menu_draw(context_menu, &vmi);
+			context_menu_draw(context_menu, mouse_position, &vmi);
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
 		}
-		context_menu_draw(context_menu, &vmi);
+		context_menu_draw(context_menu, mouse_position, &vmi);
 		break;
+	}
+	case RACINIX_STATE_MAIN_MENU_CREDITS:
+	{
+
 	}
 	}
 	racinix_draw_mouse();

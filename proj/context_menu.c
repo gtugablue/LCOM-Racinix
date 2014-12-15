@@ -55,16 +55,37 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 	return CONTEXT_MENU_CLICK_BACKGROUND;
 }
 
-void context_menu_draw(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info)
+void context_menu_draw(context_menu_t *context_menu, vector2D_t mouse_position, vbe_mode_info_t *vbe_mode_info)
 {
 	uint16_t *double_buffer = vg_get_double_buffer();
 	memcpy(double_buffer, context_menu->background, vbe_mode_info->XResolution * vbe_mode_info->YResolution * vbe_mode_info->BitsPerPixel / 8);
 	vg_draw_rectangle((vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2, 0, CONTEXT_MENU_WIDTH, vbe_mode_info->YResolution, CONTEXT_MENU_COLOR);
 
-	size_t i;
+	size_t i, j;
+
 	for (i = 0; i < context_menu->num_items; ++i)
 	{
-		font_show_string(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)), FONT_ALIGNMENT_MIDDLE, VIDEO_GR_BLACK, 0);
+		unsigned string_width = font_calculate_string_width(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT);
+		if (isPointInAxisAlignedRectangle(
+				vectorCreate((vbe_mode_info->XResolution - string_width) / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
+				string_width,
+				CONTEXT_MENU_CHAR_HEIGHT,
+				mouse_position))
+		{
+			break;
+		}
+	}
+
+	for (j = 0; j < context_menu->num_items; ++j)
+	{
+		if (i == j)
+		{
+			font_show_string(context_menu->font, context_menu->items[j], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2 - 2, (j + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)) - 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		}
+		else
+		{
+			font_show_string(context_menu->font, context_menu->items[j], CONTEXT_MENU_CHAR_HEIGHT, vbe_mode_info->XResolution / 2, (j + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1)), FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 2);
+		}
 	}
 }
 
