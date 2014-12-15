@@ -40,6 +40,7 @@ int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe
 					CONTEXT_MENU_CHAR_HEIGHT,
 					vectorCreate(x, y)))
 			{
+				printf("i: %d\n", i);
 				break;
 			}
 		}

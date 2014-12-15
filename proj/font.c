@@ -26,6 +26,7 @@ font_t *font_load(const char* folder)
 	font->brackets_close == NULL;
 	font->hyphen == NULL;
 	font->colon == NULL;
+	font->space = NULL;
 
 	if ((font->lower_case = malloc(FONT_NUM_LETTERS * sizeof(bitmap_t *))) == NULL)
 	{
@@ -91,6 +92,11 @@ font_t *font_load(const char* folder)
 		font_delete(font);
 		return NULL;
 	}
+	if ((font->space = malloc(sizeof(bitmap_t *))) == NULL)
+	{
+		font_delete(font);
+		return NULL;
+	}
 	char *s;
 	size_t i;
 	for (i = 0; i < FONT_NUM_LETTERS; ++i)
@@ -134,6 +140,17 @@ font_t *font_load(const char* folder)
 		}
 		free(s);
 	}
+
+	if (asprintf(&s, "%s/space.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->space = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
 
 	return font;
 }
@@ -272,6 +289,7 @@ void font_delete(font_t *font)
 				free(font->brackets_close);
 				free(font->hyphen);
 				free(font->colon);
+				free(font->space);
 			}
 		}
 	}
@@ -291,6 +309,10 @@ static bitmap_t *font_character_to_bitmap(font_t *font, char character)
 	else if (character >= '0' && character <= '9')
 	{
 		return font->digit[character - '0'];
+	}
+	switch (character)
+	{
+	case ' ': return font->space;
 	}
 	return NULL;
 }

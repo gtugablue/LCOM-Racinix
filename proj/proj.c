@@ -279,7 +279,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	buttons[3] = "SETTINGS", '\0';
 	buttons[4] = "CREDITS", '\0';
 	buttons[5] = "EXIT", '\0';
-	char *context_menu_track_choice_items[] = { "RANDOMTRACK", "DESIGNTRACK" };
+	char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
 	switch (state)
 	{
 	case RACINIX_STATE_MAIN_MENU_BASE:
@@ -311,7 +311,11 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
 					break;
 				case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
-					break;
+					racinix_draw_menu(-1, buttons); // No button being hovered
+					//bitmap_draw_alpha(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
+					bitmap_draw(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2);
+					state = RACINIX_STATE_MAIN_MENU_CREDITS;
+					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
 					return RACINIX_STATE_END;
 				default:
@@ -342,32 +346,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			return RACINIX_STATE_MAIN_MENU;
 		}
 
-		// Show menu
-
-		bitmap_draw(background, 0, 0);
-
-		// Show logo
-		bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
-
-		size_t i;
-		for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
-		{
-			/*vg_draw_rectangle(
-					(vmi.XResolution - font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
-					i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
-					font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT),
-					RACINIX_MAIN_MENU_CHAR_HEIGHT,
-					VIDEO_GR_BLUE
-			);*/
-			if (i == button_ID)
-			{
-				font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, FONT_ALIGNMENT_MIDDLE, RACINIX_COLOR_ORANGE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE + RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET);
-			}
-			else
-			{
-				font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE);
-			}
-		}
+		racinix_draw_menu(button_ID, buttons);
 		break;
 	}
 	case RACINIX_STATE_MAIN_MENU_PICK_TRACK:
@@ -440,7 +419,31 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_STATE_MAIN_MENU_CREDITS:
 	{
-
+		if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
+		{
+			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
+			racinix_draw_mouse();
+		}
+		else if (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)) // Esc pressed
+		{
+			state = RACINIX_STATE_MAIN_MENU_BASE;
+			racinix_draw_menu(-1, buttons);
+			racinix_draw_mouse();
+			return RACINIX_STATE_MAIN_MENU;
+		}
+		else if (event == RACINIX_EVENT_MOUSE_LEFT_BTN)
+		{
+			if (va_arg(*var_args, int)) // pressed
+			{
+				if (mouse_position.x < (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2 || mouse_position.x > (vmi.XResolution + bitmap_credits->bitmap_information_header.width) / 2 || mouse_position.y < (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2 || mouse_position.y > (vmi.YResolution + bitmap_credits->bitmap_information_header.height) / 2)
+				{
+						state = RACINIX_STATE_MAIN_MENU_BASE;
+						racinix_draw_menu(-1, buttons);
+						racinix_draw_mouse();
+						return RACINIX_STATE_MAIN_MENU;
+				}
+			}
+		}
 	}
 	}
 	racinix_draw_mouse();
@@ -606,7 +609,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 	//track_draw(track);
 
 	font_show_string(font_impact, "TRACK DESIGNER", 30, vmi.XResolution / 2, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 2);
-	font_show_string(font_impact, "PRESSENTERTOSTARTTHERACEORESCTOEXIT", 15, vmi.XResolution - 11, vmi.YResolution - 25, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
+	font_show_string(font_impact, "PRESS ENTER TO START THE RACE OR ESC TO EXIT", 15, vmi.XResolution - 11, vmi.YResolution - 25, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
 
 	racinix_draw_mouse();
 	return RACINIX_STATE_DESIGN_TRACK;
@@ -683,4 +686,31 @@ void racinix_draw_mouse()
 	vg_swap_buffer();
 	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, mouse_cursor);
 	vg_swap_mouse_buffer();
+}
+
+void racinix_draw_menu(size_t button_ID, char *buttons[])
+{
+	bitmap_draw(background, 0, 0);
+	// Show logo
+	bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
+
+	size_t i;
+	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
+	{
+		/*vg_draw_rectangle(
+						(vmi.XResolution - font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
+						i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2,
+						font_calculate_string_width(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT),
+						RACINIX_MAIN_MENU_CHAR_HEIGHT,
+						VIDEO_GR_BLUE
+				);*/
+		if (i == button_ID)
+		{
+			font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2 - RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET, FONT_ALIGNMENT_MIDDLE, RACINIX_COLOR_ORANGE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE + RACINIX_MAIN_MENU_BTN_TEXT_HOVER_OFFSET);
+		}
+		else
+		{
+			font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE);
+		}
+	}
 }
