@@ -150,9 +150,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		}
 		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
 		{
-			printf("num_queued_strings: %d\n", num_queued_strings[port_number]);
 			++num_queued_strings[port_number];
-			printf("num_queued_strings: %d\n", num_queued_strings[port_number]);
 		}
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
@@ -176,13 +174,11 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 		character = queue_pop(serial_receive_queue[port_number]);
-		(*string)[i] = (unsigned char)*((unsigned long *)character);
-		printf("Read char %d\n", *(unsigned char *)character);
+		(*string)[i] = *(unsigned char *)character);
 		free(character);
 		++i;
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
 	--num_queued_strings[port_number];
-	printf("num_queued_strings: %d\n", num_queued_strings[port_number]);
 
 	return 0;
 }
