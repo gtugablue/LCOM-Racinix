@@ -120,20 +120,30 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 	{
 		return 1;
 	}
-
 	--port_number;
 	unsigned char *character;
 	size_t i;
-	for (i = 0; i < strlen(string); ++i)
+	while (strlen(string) > 0)
 	{
 		if ((character = malloc(sizeof(unsigned char))) == NULL)
 		{
 			return 1;
 		}
-		if (queue_push(serial_transmit_queue[port_number], character) == 1)
+		*character = *string;
+		if (!queue_push(serial_transmit_queue[port_number], character))
 		{
 			return 1;
 		}
+		++string;
+	}
+	if ((character = malloc(sizeof(unsigned char))) == NULL)
+	{
+		return 1;
+	}
+	*character = SERIAL_STRING_TERMINATION_CHAR;
+	if (!queue_push(serial_transmit_queue[port_number], character))
+	{
+		return 1;
 	}
 
 	// TODO TAKE THIS STEP OUTTA HERE
