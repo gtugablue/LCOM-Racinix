@@ -1,0 +1,49 @@
+#ifndef _UART_H
+#define _UART_H
+
+// UART Ports
+#define UART_PORT_COM1_BASE_ADDRESS				0x3F8
+#define UART_PORT_COM1_IRQ						4
+#define UART_PORT_COM1_VECTOR					0x0C
+#define UART_PORT_COM2_BASE_ADDRESS				0x2F8
+#define UART_PORT_COM2_IRQ						3
+#define UART_PORT_COM2_VECTOR					0x0B
+
+#define UART_MAX_BITRATE						115200
+
+// UART Readable and Writable (8-bit) Registers
+#define UART_REGISTER_DLL						0 // DLAB 1
+#define UART_REGISTER_DLM						1 // DLAB 1
+#define UART_REGISTER_IER						1
+#define UART_REGISTER_LCR						3
+#define UART_REGISTER_MCR						4
+#define UART_REGISTER_SR						7
+
+// UART Read-only (8-bit) Registers
+#define UART_REGISTER_RBR						0
+#define UART_REGISTER_IIR						2
+#define UART_REGISTER_LSR						5
+#define UART_REGISTER_MSR						6
+
+// UART Write-only (8-bit) Registers
+#define UART_REGISTER_THR						0
+#define UART_REGISTER_FCR						2
+
+// Line Control Register (LCR)
+#define UART_REGISTER_LCR_BITS_PER_CHAR_BIT		0 // 2 bits
+#define UART_REGISTER_LCR_NUM_STOP_BITS_BIT		2
+#define UART_REGISTER_LCR_PARITY_CONTROL_BIT	3 // 3 bits
+#define UART_REGISTER_LCR_BREAK_CONTROL_BIT		6
+#define UART_REGISTER_LCR_DLAB_BIT				7
+
+// Line Status Register (LSR) (Read only)
+#define UART_REGISTER_LSR_RECEIVER_DATA_BIT		0
+#define UART_REGISTER_LSR_OVERRUN_ERROR_BIT		1
+#define UART_REGISTER_LSR_PARITY_ERROR_BIT		2
+#define UART_REGISTER_LSR_FRAMING_ERROR_BIT		3
+#define UART_REGISTER_LSR_BREAK_INTERRUPT_BIT	4
+#define UART_REGISTER_LSR_THR_EMPTY_BIT			5
+#define UART_REGISTER_LSR_THR_AND_TSR_EMPTY_BIT	6
+#define UART_REGISTER_LSR_FIFO_ERROR_BIT		7
+
+#endif
