@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 typedef struct queue_node_t queue_node_t;
+
 struct queue_node_t{
 	void* p;
 	queue_node_t* next;
