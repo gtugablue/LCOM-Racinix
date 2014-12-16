@@ -146,11 +146,9 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 		return 1;
 	}
 
-	// TODO TAKE THIS STEP OUTTA HERE
-	int result;
-	if ((result = serial_clear_transmit_queue(port_number + 1)) != 0)
+	if (serial_clear_transmit_queue(port_number + 1))
 	{
-		return result;
+		return 1;
 	}
 
 	return 0;
@@ -218,10 +216,14 @@ int serial_int_handler(unsigned char port_number)
 	case 0: // Modem Status
 		break;
 	case 1: // Transmitter Empty
+		if (serial_clear_transmit_queue(port_number + 1))
+		{
+			return 1;
+		}
 		break;
 	case 2: // Received Data Available
 	case 4: // Character Timeout Indication
-		if (serial_clear_UART_receive_queue(port_number) == 1)
+		if (serial_clear_UART_receive_queue(port_number))
 		{
 			return 1;
 		}
