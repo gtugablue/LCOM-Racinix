@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 		}
 	}*/
 
-	char string[] = "teste.";
+	char string[] = "teste";
 	serial_interrupt_transmit_string(1, string);
 
 	printf("Unsubscribing...\n");
