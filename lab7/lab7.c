@@ -20,9 +20,11 @@ int main(int argc, char **argv) {
 
 	serial_set(1, 8, 1, 0, 9600);
 
-	serial_fifo_receive_string(1, &string);
-	printf("String recebida: %s\n", string);
-	free(string);
+	if (serial_fifo_receive_string(1, &string) == 0)
+	{
+		printf("String recebida: %s\n", string);
+		free(string);
+	}
 
 	serial_unsubscribe_int(hook_id, 1);
 
