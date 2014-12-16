@@ -1,6 +1,5 @@
 #include "serial.h"
 #include "minix/driver.h"
-#include "queue.h"
 
 int main(int argc, char **argv) {
 
@@ -9,6 +8,7 @@ int main(int argc, char **argv) {
 	serial_subscribe_int(&hook_id, 1);
 
 	unsigned char *string;
+
 	/*while (1)
 	{
 		if (serial_receive_string(1, &string) == 0)
@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}*/
+
 	serial_fifo_receive_string(1, &string);
 	printf("String recebida: %s\n", string);
 	free(string);
