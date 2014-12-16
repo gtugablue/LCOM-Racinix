@@ -165,26 +165,24 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		}
 		printf("queue size1: %d\n", queue_size(serial_receive_queue[port_number]));
 	}
-printf("ahah\n");
+
 	// Step 2: empty receive queue
 	size_t i;
 	*string = NULL;
 	for (i = 0; !queue_empty(serial_receive_queue[port_number]); ++i)
 	{
 		printf("queue size2: %d\n", queue_size(serial_receive_queue[port_number]));
-		printf("before alo\n");
 		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
 		{
 			return 1;
 		}
-		printf("alo\n");
 		character = queue_pop(serial_receive_queue[port_number]);
+		printf("Popped char %d from queue.\n", character);
 		printf("queue size3: %d\n", queue_size(serial_receive_queue[port_number]));
 		(*string)[i] = (unsigned char)*((unsigned long *)character);
 		free(character);
 		if ((*string)[i] == '.') break;
 	}
-	printf("fim\n");
 
 	return 0;
 }
