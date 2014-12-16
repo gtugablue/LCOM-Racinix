@@ -149,7 +149,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 
-		printf("Read char %c.\n", (unsigned char)*((unsigned long *)character));
+		printf("Read char %d.\n", (unsigned char)*((unsigned long *)character));
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
 			free(character);
