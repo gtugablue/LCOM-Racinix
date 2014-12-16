@@ -11,8 +11,10 @@
 #define WORD_MSB(x)			((x) >> 8)
 #define WORD_LSB(x)			((x) & 0xFF)
 
-queue_t *serial_transmit_queue[SERIAL_NUM_PORTS] = { NULL };
-queue_t *serial_receive_queue[SERIAL_NUM_PORTS] = { NULL };
+static queue_t *serial_transmit_queue[SERIAL_NUM_PORTS] = { NULL };
+static queue_t *serial_receive_queue[SERIAL_NUM_PORTS] = { NULL };
+
+static unsigned num_queued_strings[SERIAL_NUM_PORTS] = { 0 };
 
 static int serial_port_number_to_address(unsigned char port_number);
 static int serial_port_number_to_irq_line(unsigned char port_number);
@@ -147,9 +149,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 
-		unsigned long lcr;
-		sys_inb(base_address + UART_REGISTER_LCR, &lcr);
-
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
 			free(character);
@@ -160,12 +159,16 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			free(character);
 			return 1;
 		}
+		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
+		{
+			++num_queued_strings[port_number];
+		}
 	}
 
 	// Step 2: empty receive queue
-	size_t i;
+	size_t i = 0;
 	*string = NULL;
-	for (i = 0; !queue_empty(serial_receive_queue[port_number]); ++i)
+	do
 	{
 		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
 		{
@@ -174,10 +177,17 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		character = queue_pop(serial_receive_queue[port_number]);
 		(*string)[i] = (unsigned char)*((unsigned long *)character);
 		free(character);
-		if ((*string)[i] == '.') break;
-	}
+		++i;
+	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
 
 	return 0;
+}
+
+int serial_get_num_queued_strings(unsigned char port_number)
+{
+	--port_number;
+	if (port_number > SERIAL_NUM_PORTS - 1) return -1;
+	else return num_queued_strings[port_number - 1];
 }
 
 int serial_int_handler(unsigned char port_number)
