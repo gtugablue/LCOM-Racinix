@@ -148,7 +148,11 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		{
 			return 1;
 		}
-
+		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
+		{
+			printf("inc :)\n");
+			++num_queued_strings[port_number];
+		}
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
 			free(character);
@@ -158,11 +162,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		{
 			free(character);
 			return 1;
-		}
-		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
-		{
-			printf("inc :)\n");
-			++num_queued_strings[port_number];
 		}
 	}
 
