@@ -101,7 +101,7 @@ int serial_set(unsigned char port_number, unsigned long bits, unsigned long stop
 		return 1;
 	}
 
-	if (sys_outb(base_address + UART_REGISTER_LCR, lcr | BIT(UART_REGISTER_LCR_DLAB_BIT)))
+	if (sys_outb(base_address + UART_REGISTER_LCR, lcr & ~BIT(UART_REGISTER_LCR_DLAB_BIT)))
 	{
 		return 1;
 	}
