@@ -72,5 +72,7 @@ void queue_delete(queue_t* queue)
 	{
 		queue_node = queue->first->next;
 		free(queue->first);
+		queue->first = queue_node;
+		--queue->size;
 	}
 }

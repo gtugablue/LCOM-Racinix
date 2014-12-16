@@ -35,6 +35,8 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 	{
 		return -1;
 	}
+
+	// Set FIFO
 	if (trigger_level > 2) return -1;
 	if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_FCR,
 			BIT(UART_REGISTER_FCR_ENABLE_FIFO) |
@@ -42,6 +44,15 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 			BIT(UART_REGISTER_FCR_CLEAR_TRANSMIT_FIFO) |
 			(trigger_level << UART_REGISTER_FCR_FIFO_INT_TRIGGER_LVL)
 	)) return -1;
+
+	// Set interrupts
+	if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_IER,
+			BIT(UART_REGISTER_IER_RECEIVED_DATA_INT) |
+			BIT(UART_REGISTER_IER_TRANSMITTER_EMPTY_INT) |
+			BIT(UART_REGISTER_IER_RECEIVER_LSR_INT)
+			)) return -1;
+
+	// Create queues
 	--port_number;
 	if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
 	{
@@ -51,6 +62,8 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 	{
 		return -1;
 	}
+
+	// Tell Minix we want to subscribe the interrupts
 	if (sys_irqsetpolicy(irq_line, IRQ_REENABLE | IRQ_EXCLUSIVE, hook_id) == OK)
 	{
 		return hook_bit;
@@ -221,21 +234,26 @@ int serial_int_handler(unsigned char port_number)
 	switch (iir)
 	{
 	case 0: // Modem Status
+		printf("---- Interrupt: Modem Status ----\n");
 		break;
 	case 1: // Transmitter Empty
+		printf("---- Interrupt: Transmitter Empty ----\n");
 		if (serial_clear_transmit_queue(port_number + 1))
 		{
 			return 1;
 		}
 		break;
 	case 2: // Received Data Available
+		printf("---- Interrupt: Received Data Available ----\n");
 	case 4: // Character Timeout Indication
+		printf("---- Interrupt: Character Timeout Indication ----\n");
 		if (serial_clear_UART_receive_queue(port_number))
 		{
 			return 1;
 		}
 		break;
 	case 3: // Line Status
+		printf("---- Interrupt: Line Status ----\n");
 		break;
 	default:
 		break;
@@ -292,11 +310,20 @@ int serial_polled_receive_string(unsigned char port_number, unsigned char **stri
 
 int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number)
 {
+	// Unsubscribe interrupts
+	if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_IER, 0)) return 1;
+
+	// Delete queues
 	--port_number;
+	printf("aaa\n");
 	queue_delete(serial_transmit_queue[port_number]);
+	printf("bbb\n");
 	serial_transmit_queue[port_number] = NULL;
 	queue_delete(serial_receive_queue[port_number]);
+	printf("ccc\n");
 	serial_receive_queue[port_number] = NULL;
+
+	// Tell Minix we don't want to subscribe the interrupts anymore
 	if (sys_irqrmpolicy(&hook_id) == OK)
 	{
 		return 0;
