@@ -132,7 +132,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	{
 		return 1;
 	}
-	printf("teste\n");
 	while (lsr & BIT(UART_REGISTER_LSR_RECEIVER_DATA_BIT))
 	{
 		if ((character = malloc(sizeof(unsigned long))) == NULL)
@@ -150,9 +149,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 
 		unsigned long lcr;
 		sys_inb(base_address + UART_REGISTER_LCR, &lcr);
-		printf("lcr: %d\n", lcr);
 
-		printf("Read char %d from register 0x%X.\n", (unsigned char)*((unsigned long *)character), base_address + UART_REGISTER_LSR);
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
 			free(character);
@@ -163,7 +160,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			free(character);
 			return 1;
 		}
-		printf("queue size1: %d\n", queue_size(serial_receive_queue[port_number]));
 	}
 
 	// Step 2: empty receive queue
@@ -171,14 +167,11 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	*string = NULL;
 	for (i = 0; !queue_empty(serial_receive_queue[port_number]); ++i)
 	{
-		printf("queue size2: %d\n", queue_size(serial_receive_queue[port_number]));
 		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
 		{
 			return 1;
 		}
 		character = queue_pop(serial_receive_queue[port_number]);
-		printf("Popped char %d from queue.\n", (unsigned char)*((unsigned long *)character));
-		printf("queue size3: %d\n", queue_size(serial_receive_queue[port_number]));
 		(*string)[i] = (unsigned char)*((unsigned long *)character);
 		free(character);
 		if ((*string)[i] == '.') break;
