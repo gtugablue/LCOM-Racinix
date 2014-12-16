@@ -177,7 +177,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		}
 		character = queue_pop(serial_receive_queue[port_number]);
 		(*string)[i] = (unsigned char)*((unsigned long *)character);
-		printf("Read char %d\n", *character);
+		printf("Read char %d\n", *(unsigned char *)character);
 		free(character);
 		++i;
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
