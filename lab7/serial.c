@@ -23,7 +23,7 @@ static int serial_polled_receive_char(int base_address, unsigned long *character
 static int serial_clear_UART_receive_queue(unsigned char port_number);
 static int serial_clear_transmit_queue(unsigned char port_number);
 
-int serial_subscribe_int(unsigned *hook_id, unsigned char port_number)
+int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned char trigger_level)
 {
 	unsigned char hook_bit = (unsigned char)*hook_id;
 	if (hook_bit != *hook_id)
@@ -35,6 +35,13 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number)
 	{
 		return -1;
 	}
+	if (trigger_level > 2) return -1;
+	if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_FCR,
+			BIT(UART_REGISTER_FCR_ENABLE_FIFO) |
+			BIT(UART_REGISTER_FCR_CLEAR_RECEIVE_FIFO) |
+			BIT(UART_REGISTER_FCR_CLEAR_TRANSMIT_FIFO) |
+			(trigger_level << UART_REGISTER_FCR_FIFO_INT_TRIGGER_LVL)
+	)) return -1;
 	--port_number;
 	if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
 	{
@@ -285,14 +292,11 @@ int serial_polled_receive_string(unsigned char port_number, unsigned char **stri
 
 int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number)
 {
-	size_t i;
-	for (i = 0; i < SERIAL_NUM_PORTS; ++i)
-	{
-		queue_delete(serial_transmit_queue[i]);
-		serial_transmit_queue[i] = NULL;
-		queue_delete(serial_receive_queue[i]);
-		serial_receive_queue[i] = NULL;
-	}
+	--port_number;
+	queue_delete(serial_transmit_queue[port_number]);
+	serial_transmit_queue[port_number] = NULL;
+	queue_delete(serial_receive_queue[port_number]);
+	serial_receive_queue[port_number] = NULL;
 	if (sys_irqrmpolicy(&hook_id) == OK)
 	{
 		return 0;
