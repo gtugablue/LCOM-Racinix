@@ -161,6 +161,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		}
 		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
 		{
+			printf("inc :)\n");
 			++num_queued_strings[port_number];
 		}
 	}
@@ -179,6 +180,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		free(character);
 		++i;
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
+	--num_queued_strings[port_number];
 
 	return 0;
 }
