@@ -19,14 +19,14 @@ int main(int argc, char **argv) {
 		}
 	}*/
 
-	serial_fifo_receive_string(1, &string);
+	serial_interrupt_receive_string(1, &string);
 	printf("Queue size: %d, String recebida: %s\n", serial_get_num_queued_strings(1), string);
 	free(string);
 	serial_set(1, 8, 1, 0, 9600);
 
 	while (serial_get_num_queued_strings(1) > 0)
 	{
-		if (serial_fifo_receive_string(1, &string) == 0)
+		if (serial_interrupt_receive_string(1, &string) == 0)
 		{
 			printf("Queue size: %d, String recebida: %s\n", serial_get_num_queued_strings(1), string);
 			free(string);
