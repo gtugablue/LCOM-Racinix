@@ -5,7 +5,7 @@ int main(int argc, char **argv) {
 
 	sef_startup();
 	unsigned hook_id = 5;
-	serial_subscribe_int(&hook_id, 1);
+	serial_subscribe_int(&hook_id, 1, 2);
 
 	//unsigned char *string;
 
