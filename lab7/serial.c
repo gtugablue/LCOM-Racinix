@@ -124,7 +124,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	{
 		return 1;
 	}
-	--port_number;
 
 	// Step 1: move chars from the UART queue to the receive queue
 	int result;
@@ -132,6 +131,8 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	{
 		return result;
 	}
+
+	--port_number;
 
 	// Step 2: return string from the receive queue
 	void *character;
