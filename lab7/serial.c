@@ -20,6 +20,7 @@ static int serial_port_number_to_address(unsigned char port_number);
 static int serial_port_number_to_irq_line(unsigned char port_number);
 static int serial_polled_transmit_char(int base_address, unsigned char character);
 static int serial_polled_receive_char(int base_address, unsigned long *character);
+static int serial_clear_UART_queue(unsigned char port_number);
 
 int serial_subscribe_int(unsigned *hook_id, unsigned char port_number)
 {
@@ -125,46 +126,15 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	}
 	--port_number;
 
-	void *character;
-
 	// Step 1: move chars from the UART queue to the receive queue
-	// TODO
-	unsigned long lsr;
-	if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
+	int result;
+	if ((result = serial_clear_UART_queue(port_number)) != 0)
 	{
-		return 1;
+		return result;
 	}
 
-	while (lsr & BIT(UART_REGISTER_LSR_RECEIVER_DATA_BIT))
-	{
-		if ((character = malloc(sizeof(unsigned long))) == NULL)
-		{
-			return 1;
-		}
-		if (lsr & (BIT(UART_REGISTER_LSR_OVERRUN_ERROR_BIT) | BIT(UART_REGISTER_LSR_PARITY_ERROR_BIT) | BIT(UART_REGISTER_LSR_FRAMING_ERROR_BIT)))
-		{
-			return -1;
-		}
-		if (sys_inb(base_address + UART_REGISTER_RBR, character))
-		{
-			return 1;
-		}
-		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
-		{
-			++num_queued_strings[port_number];
-		}
-		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
-		{
-			free(character);
-			return 1;
-		}
-		if (!queue_push(serial_receive_queue[port_number], character))
-		{
-			free(character);
-			return 1;
-		}
-	}
 	// Step 2: return string from the receive queue
+	void *character;
 	int i = -1;
 	*string = NULL;
 	do
@@ -357,4 +327,46 @@ static int serial_port_number_to_irq_line(unsigned char port_number)
 	default:
 		return -1;
 	}
+}
+
+static int serial_clear_UART_queue(unsigned char port_number)
+{
+	int base_address = serial_port_number_to_address(port_number);
+	unsigned long lsr;
+	if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
+	{
+		return 1;
+	}
+
+	void *character;
+	while (lsr & BIT(UART_REGISTER_LSR_RECEIVER_DATA_BIT))
+	{
+		if ((character = malloc(sizeof(unsigned long))) == NULL)
+		{
+			return 1;
+		}
+		if (lsr & (BIT(UART_REGISTER_LSR_OVERRUN_ERROR_BIT) | BIT(UART_REGISTER_LSR_PARITY_ERROR_BIT) | BIT(UART_REGISTER_LSR_FRAMING_ERROR_BIT)))
+		{
+			return -1;
+		}
+		if (sys_inb(base_address + UART_REGISTER_RBR, character))
+		{
+			return 1;
+		}
+		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
+		{
+			++num_queued_strings[port_number];
+		}
+		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
+		{
+			free(character);
+			return 1;
+		}
+		if (!queue_push(serial_receive_queue[port_number], character))
+		{
+			free(character);
+			return 1;
+		}
+	}
+	return 0;
 }
