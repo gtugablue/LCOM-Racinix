@@ -15,8 +15,6 @@
 queue_t *serial_transmit_queue[SERIAL_NUM_PORTS] = { NULL };
 queue_t *serial_receive_queue[SERIAL_NUM_PORTS] = { NULL };
 
-bool serial_string_ready[SERIAL_NUM_PORTS] = { false };
-
 static int serial_port_number_to_address(unsigned char port_number);
 static int serial_port_number_to_irq_line(unsigned char port_number);
 static int serial_polled_transmit_char(int base_address, unsigned char character);
@@ -35,16 +33,13 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number)
 		return -1;
 	}
 	--port_number;
-	if (port_number > SERIAL_NUM_PORTS - 1)
+	if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
 	{
-		if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
-		{
-			return -1;
-		}
-		if ((serial_receive_queue[port_number] = queue_create()) == NULL)
-		{
-			return -1;
-		}
+		return -1;
+	}
+	if ((serial_receive_queue[port_number] = queue_create()) == NULL)
+	{
+		return -1;
 	}
 	if (sys_irqsetpolicy(irq_line, IRQ_REENABLE | IRQ_EXCLUSIVE, hook_id) == OK)
 	{
@@ -129,18 +124,16 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	}
 	--port_number;
 
-	// Step 1: if string is not ready yet, return 1
-	if (!serial_string_ready[port_number]) return 1;
-
 	void *character;
 
-	// Step 2: move chars from the UART queue to the receive queue
+	// Step 1: move chars from the UART queue to the receive queue
 	// TODO
 	unsigned long lsr;
 	if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 	{
 		return 1;
 	}
+	printf("teste\n");
 	while (lsr & BIT(UART_REGISTER_LSR_RECEIVER_DATA_BIT))
 	{
 		if ((character = malloc(sizeof(unsigned long))) == NULL)
@@ -166,20 +159,24 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 	}
-
-	// Step 3: empty receive queue
+printf("ahah\n");
+	// Step 2: empty receive queue
 	size_t i;
+	*string = NULL;
 	for (i = 0; !queue_empty(serial_receive_queue[port_number]); ++i)
 	{
+		printf("before alo\n");
 		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
 		{
 			return 1;
 		}
+		printf("alo\n");
 		character = queue_pop(serial_receive_queue[port_number]);
 		(*string)[i] = (char)*((unsigned long *)character);
 		free(character);
 		if ((*string)[i] == '.') break;
 	}
+	printf("fim\n");
 
 	return 0;
 }

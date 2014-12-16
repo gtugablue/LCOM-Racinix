@@ -22,10 +22,11 @@ int main(int argc, char **argv) {
 
 	if (serial_fifo_receive_string(1, &string) == 0)
 	{
+		printf("Retornou 0.\n");
 		printf("String recebida: %s\n", string);
 		free(string);
 	}
-
+	printf("Unsubscribing...\n");
 	serial_unsubscribe_int(hook_id, 1);
 
 	return 0;

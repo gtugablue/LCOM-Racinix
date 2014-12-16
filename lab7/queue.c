@@ -20,7 +20,7 @@ unsigned queue_size(queue_t* queue)
 
 bool queue_empty(queue_t* queue)
 {
-	return queue_size(queue) == 0;
+	return queue->size == 0;
 }
 
 bool queue_push(queue_t* queue, void* p)
