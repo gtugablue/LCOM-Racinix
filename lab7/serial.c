@@ -115,12 +115,12 @@ int serial_set(unsigned char port_number, unsigned long bits, unsigned long stop
 	return 0;
 }
 
-int serial_fifo_transmit_string(unsigned char port_number, char *string)
+int serial_fifo_transmit_string(unsigned char port_number, unsigned char *string)
 {
 
 }
 
-int serial_fifo_receive_string(unsigned char port_number, char **string)
+int serial_fifo_receive_string(unsigned char port_number, unsigned char **string)
 {
 	int base_address;
 	if ((base_address = serial_port_number_to_address(port_number)) == -1)
