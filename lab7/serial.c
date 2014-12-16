@@ -148,7 +148,6 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		(*string)[i] = *(unsigned char *)character;
 		free(character);
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
-
 	--num_queued_strings[port_number];
 
 	return 0;
