@@ -21,6 +21,8 @@ queue_t *queue_create();
 
 unsigned queue_size(queue_t* queue);
 
+bool queue_empty(queue_t* queue);
+
 bool queue_push(queue_t* queue, void* p);
 
 void* queue_pop(queue_t* queue);
