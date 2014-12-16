@@ -148,6 +148,8 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		{
 			return 1;
 		}
+
+		printf("Read char %c.\n", (unsigned char)*((unsigned long *)character));
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
 			free(character);
@@ -172,7 +174,7 @@ printf("ahah\n");
 		}
 		printf("alo\n");
 		character = queue_pop(serial_receive_queue[port_number]);
-		(*string)[i] = (char)*((unsigned long *)character);
+		(*string)[i] = (unsigned char)*((unsigned long *)character);
 		free(character);
 		if ((*string)[i] == '.') break;
 	}
