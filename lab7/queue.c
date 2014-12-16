@@ -18,6 +18,11 @@ unsigned queue_size(queue_t* queue)
 	return queue->size;
 }
 
+bool queue_empty(queue_t* queue)
+{
+	return queue_size(queue) == 0;
+}
+
 bool queue_push(queue_t* queue, void* p)
 {
 	queue_node_t* node;
