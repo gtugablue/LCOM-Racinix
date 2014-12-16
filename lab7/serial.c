@@ -288,9 +288,9 @@ int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number)
 	size_t i;
 	for (i = 0; i < SERIAL_NUM_PORTS; ++i)
 	{
-		free(serial_transmit_queue[i]);
+		queue_delete(serial_transmit_queue[i]);
 		serial_transmit_queue[i] = NULL;
-		free(serial_receive_queue[i]);
+		queue_delete(serial_receive_queue[i]);
 		serial_receive_queue[i] = NULL;
 	}
 	if (sys_irqrmpolicy(&hook_id) == OK)
