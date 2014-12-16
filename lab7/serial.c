@@ -177,7 +177,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 		character = queue_pop(serial_receive_queue[port_number]);
-		printf("Popped char %d from queue.\n", character);
+		printf("Popped char %d from queue.\n", (unsigned char)*((unsigned long *)character));
 		printf("queue size3: %d\n", queue_size(serial_receive_queue[port_number]));
 		(*string)[i] = (unsigned char)*((unsigned long *)character);
 		free(character);
