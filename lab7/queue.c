@@ -23,6 +23,17 @@ bool queue_empty(queue_t* queue)
 	return queue->size == 0;
 }
 
+// For debugging char queues
+/*void queue_print(queue_t* queue)
+{
+	queue_node_t* next = queue->first;
+	while (next != NULL)
+	{
+		printf("Queue print: %d\n", *(unsigned char *)(next->p));
+		next = next->next;
+	}
+}*/
+
 bool queue_push(queue_t* queue, void* p)
 {
 	queue_node_t* node;
@@ -39,6 +50,7 @@ bool queue_push(queue_t* queue, void* p)
 	else
 	{
 		queue->last->next = node;
+		queue->last = node;
 	}
 	queue->size++;
 	return true;
