@@ -174,7 +174,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 		character = queue_pop(serial_receive_queue[port_number]);
-		(*string)[i] = *(unsigned char *)character);
+		(*string)[i] = *(unsigned char *)character;
 		free(character);
 		++i;
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
