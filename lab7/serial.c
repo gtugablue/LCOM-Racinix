@@ -134,6 +134,7 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 	{
 		return 1;
 	}
+
 	while (lsr & BIT(UART_REGISTER_LSR_RECEIVER_DATA_BIT))
 	{
 		if ((character = malloc(sizeof(unsigned long))) == NULL)
@@ -163,12 +164,12 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 			return 1;
 		}
 	}
-
-	// Step 2: empty receive queue
-	size_t i = 0;
+	// Step 2: return string from the receive queue
+	int i = -1;
 	*string = NULL;
 	do
 	{
+		++i;
 		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
 		{
 			return 1;
@@ -176,8 +177,8 @@ int serial_fifo_receive_string(unsigned char port_number, unsigned char **string
 		character = queue_pop(serial_receive_queue[port_number]);
 		(*string)[i] = *(unsigned char *)character;
 		free(character);
-		++i;
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
+
 	--num_queued_strings[port_number];
 
 	return 0;
@@ -187,7 +188,7 @@ int serial_get_num_queued_strings(unsigned char port_number)
 {
 	--port_number;
 	if (port_number > SERIAL_NUM_PORTS - 1) return -1;
-	else return num_queued_strings[port_number - 1];
+	else return num_queued_strings[port_number];
 }
 
 int serial_int_handler(unsigned char port_number)
