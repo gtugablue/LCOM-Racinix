@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
 	unsigned hook_id = 5;
 	unsigned serial_hook_bit = serial_subscribe_int(&hook_id, 1, 2);
 
-	//unsigned char *string;
+	unsigned char *string;
 
 	/*while (1)
 	{
@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
 		}
 	}*/
 
-	/*char string[] = "teste";
-	serial_interrupt_transmit_string(1, string);*/
+	char string2[] = "teste";
+	serial_interrupt_transmit_string(1, string2);
 
 	int r, ipc_status;
 	message msg;
@@ -55,6 +55,14 @@ int main(int argc, char **argv) {
 					if (serial_int_handler(1))
 					{
 						printf("Error.\n");
+					}
+					while (serial_get_num_queued_strings(1) > 0)
+					{
+						if (serial_interrupt_receive_string(1, &string) == 0)
+						{
+							printf("Queue size: %d, String recebida: %s\n", serial_get_num_queued_strings(1), string);
+							free(string);
+						}
 					}
 				}
 			}

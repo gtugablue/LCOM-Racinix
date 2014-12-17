@@ -182,17 +182,7 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 		return 1;
 	}
 
-	// TODO TAKE STEP 1 OUTTA HERE
-	// Step 1: move chars from the UART queue to the receive queue
-	int result;
-	if ((result = serial_clear_UART_receive_queue(port_number)) != 0)
-	{
-		return result;
-	}
-
 	--port_number;
-
-	// Step 2: return string from the receive queue
 	unsigned char *character;
 	int i = -1;
 	*string = NULL;
@@ -238,7 +228,7 @@ int serial_int_handler(unsigned char port_number)
 		break;
 	case 1: // Transmitter Empty
 		printf("---- Interrupt: Transmitter Empty ----\n");
-		if (serial_clear_transmit_queue(port_number + 1))
+		if (serial_clear_transmit_queue(port_number))
 		{
 			return 1;
 		}
@@ -315,12 +305,9 @@ int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number)
 
 	// Delete queues
 	--port_number;
-	printf("aaa\n");
 	queue_delete(serial_transmit_queue[port_number]);
-	printf("bbb\n");
 	serial_transmit_queue[port_number] = NULL;
 	queue_delete(serial_receive_queue[port_number]);
-	printf("ccc\n");
 	serial_receive_queue[port_number] = NULL;
 
 	// Tell Minix we don't want to subscribe the interrupts anymore
@@ -409,7 +396,8 @@ static int serial_clear_transmit_queue(unsigned char port_number)
 {
 	int base_address = serial_port_number_to_address(port_number);
 	unsigned char *character;
-	while (!queue_empty(serial_transmit_queue[port_number - 1]))
+	--port_number;
+	while (!queue_empty(serial_transmit_queue[port_number]))
 	{
 		unsigned long lsr;
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
@@ -417,7 +405,7 @@ static int serial_clear_transmit_queue(unsigned char port_number)
 		{
 			break;
 		}
-		character = queue_pop(serial_transmit_queue[port_number - 1]);
+		character = queue_pop(serial_transmit_queue[port_number]);
 		if (sys_outb(base_address + UART_REGISTER_THR, *character)) return 1;
 		free(character);
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
