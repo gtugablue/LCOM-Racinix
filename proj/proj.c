@@ -202,6 +202,18 @@ int racinix_dispatcher()
 						{
 							break;
 						}
+
+
+						unsigned char string[50];
+						if (race != NULL && race->vehicles[0] != NULL)
+						{
+							sprintf(string, "%s", (int)race->vehicles[0]->position.x);
+						}
+						serial_interrupt_transmit_string(1, string);
+
+
+
+
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
@@ -230,20 +242,15 @@ int racinix_dispatcher()
 				}
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
+					printf("adsadasd ad sadsa dassd \n");
 					serial_int_handler(1);
-
 					unsigned char string[50];
-					if (race != NULL && race->vehicles[0] != NULL)
-					{
-						sprintf(string, "%s", (int)race->vehicles[0]->position.x);
-					}
-					serial_interrupt_transmit_string(1, string);
-
 					if (serial_get_num_queued_strings(1))
 					{
-						serial_interrupt_receive_string(1, &string);
+						serial_interrupt_receive_string(1, (unsigned char **)&string);
 						if (race != NULL && race->vehicles[1] != NULL)
 						{
+							printf("received string %s\n", string);
 							scanf(string, "%d", (int)race->vehicles[1]->position.x);
 						}
 					}
