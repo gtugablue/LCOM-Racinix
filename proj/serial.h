@@ -6,6 +6,7 @@
 
 #define SERIAL_NUM_TRIES				10
 #define SERIAL_STRING_TERMINATION_CHAR	'.'
+#define SERIAL_HOOK_BIT					5
 
 int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned char trigger_level);
 

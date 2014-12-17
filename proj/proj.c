@@ -161,6 +161,12 @@ int racinix_dispatcher()
 		return 1;
 	}
 
+	unsigned serial_hook_id = SERIAL_HOOK_BIT;
+	if (serial_subscribe_int(&serial_hook_id, 1, 2) == -1)
+	{
+		return 1;
+	}
+
 	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
@@ -221,6 +227,16 @@ int racinix_dispatcher()
 						}
 						old_mouse_data_packet = new_mouse_data_packet;
 					}
+				}
+				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
+				{
+					char string[50];
+					if (race != NULL && race->vehicles[0] != NULL)
+					{
+						sprintf(string, "%s", race->vehicles[0]->position.x);
+					}
+					serial_interrupt_transmit_string(1, string);
+					serial_int_handler(1);
 				}
 			}
 		}
@@ -315,6 +331,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					//bitmap_draw_alpha(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
 					//bitmap_draw(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2);
 					bitmap_draw(bitmap_credits, 0, 0);
+					vg_swap_buffer();
+					vg_swap_mouse_buffer();
 					state = RACINIX_STATE_MAIN_MENU_CREDITS;
 					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
@@ -420,18 +438,14 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_STATE_MAIN_MENU_CREDITS:
 	{
-		if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
-		{
-			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
-			racinix_draw_mouse();
-		}
-		else if ((event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC || event == RACINIX_EVENT_MOUSE_LEFT_BTN) && va_arg(*var_args, int)) // Esc or LMB pressed
+		if ((event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC || event == RACINIX_EVENT_MOUSE_LEFT_BTN) && va_arg(*var_args, int)) // Esc or LMB pressed
 		{
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 			racinix_draw_menu(-1, buttons);
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
 		}
+		return RACINIX_STATE_MAIN_MENU;
 	}
 	}
 	racinix_draw_mouse();

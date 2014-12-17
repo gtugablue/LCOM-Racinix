@@ -19,6 +19,7 @@
 #include "context_menu.h"
 #include "font.h"
 #include "race.h"
+#include "serial.h"
 
 #define RACINIX_FOLDER_ROOT										"/home/lcom/proj/"
 #define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
