@@ -209,8 +209,9 @@ int racinix_dispatcher()
 						if (race != NULL && race->vehicles[0] != NULL)
 						{
 							sprintf(string, "%d", (int)race->vehicles[0]->position.x);
+							printf("Trasmitting: %s\n", string);
+							serial_interrupt_transmit_string(1, string);
 						}
-						serial_interrupt_transmit_string(1, string);
 
 
 
