@@ -204,13 +204,13 @@ int racinix_dispatcher()
 						}
 
 
+
 						unsigned char string[50];
 						if (race != NULL && race->vehicles[0] != NULL)
 						{
-							sprintf(string, "%s", (int)race->vehicles[0]->position.x);
+							sprintf(string, "%d", (int)race->vehicles[0]->position.x);
 						}
 						serial_interrupt_transmit_string(1, string);
-
 
 
 
@@ -245,7 +245,7 @@ int racinix_dispatcher()
 					printf("adsadasd ad sadsa dassd \n");
 					serial_int_handler(1);
 					unsigned char string[50];
-					if (serial_get_num_queued_strings(1))
+					if (serial_get_num_queued_strings(1) > 0)
 					{
 						serial_interrupt_receive_string(1, (unsigned char **)&string);
 						if (race != NULL && race->vehicles[1] != NULL)
