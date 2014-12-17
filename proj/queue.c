@@ -18,7 +18,23 @@ unsigned queue_size(queue_t* queue)
 	return queue->size;
 }
 
-bool queue_push_back(queue_t* queue, void* p)
+bool queue_empty(queue_t* queue)
+{
+	return queue->size == 0;
+}
+
+// For debugging char queues
+/*void queue_print(queue_t* queue)
+{
+	queue_node_t* next = queue->first;
+	while (next != NULL)
+	{
+		printf("Queue print: %d\n", *(unsigned char *)(next->p));
+		next = next->next;
+	}
+}*/
+
+bool queue_push(queue_t* queue, void* p)
 {
 	queue_node_t* node;
 	if ((node = malloc(sizeof(queue_node_t))) == NULL)
@@ -34,12 +50,13 @@ bool queue_push_back(queue_t* queue, void* p)
 	else
 	{
 		queue->last->next = node;
+		queue->last = node;
 	}
 	queue->size++;
 	return true;
 }
 
-void* queue_pop_front(queue_t* queue)
+void* queue_pop(queue_t* queue)
 {
 	void* p = queue->first->p;
 	queue->first = queue->first->next;
@@ -55,6 +72,7 @@ void queue_delete(queue_t* queue)
 	{
 		queue_node = queue->first->next;
 		free(queue->first);
+		queue->first = queue_node;
+		--queue->size;
 	}
-	return;
 }

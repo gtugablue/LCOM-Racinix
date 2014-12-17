@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 typedef struct queue_node_t queue_node_t;
+
 struct queue_node_t{
 	void* p;
 	queue_node_t* next;
@@ -21,9 +22,11 @@ queue_t *queue_create();
 
 unsigned queue_size(queue_t* queue);
 
-bool queue_push_back(queue_t* queue, void* p);
+bool queue_empty(queue_t* queue);
 
-void* queue_pop_front(queue_t* queue);
+bool queue_push(queue_t* queue, void* p);
+
+void* queue_pop(queue_t* queue);
 
 void queue_delete(queue_t* queue);
 
