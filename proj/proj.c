@@ -230,13 +230,23 @@ int racinix_dispatcher()
 				}
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
-					char string[50];
+					serial_int_handler(1);
+
+					unsigned char string[50];
 					if (race != NULL && race->vehicles[0] != NULL)
 					{
-						sprintf(string, "%s", race->vehicles[0]->position.x);
+						sprintf(string, "%s", (int)race->vehicles[0]->position.x);
 					}
 					serial_interrupt_transmit_string(1, string);
-					serial_int_handler(1);
+
+					if (serial_get_num_queued_strings(1))
+					{
+						serial_interrupt_receive_string(1, &string);
+						if (race != NULL && race->vehicles[1] != NULL)
+						{
+							scanf(string, "%d", (int)race->vehicles[1]->position.x);
+						}
+					}
 				}
 			}
 		}
