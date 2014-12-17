@@ -14,18 +14,18 @@ font_t *font_load(const char* folder)
 		return NULL;
 	}
 
-	font->lower_case == NULL;
-	font->upper_case == NULL;
-	font->digit == NULL;
-	font->dot == NULL;
-	font->exclamation_mark == NULL;
-	font->question_mark == NULL;
-	font->comma == NULL;
-	font->quotation_mark == NULL;
-	font->brackets_open == NULL;
-	font->brackets_close == NULL;
-	font->hyphen == NULL;
-	font->colon == NULL;
+	font->lower_case = NULL;
+	font->upper_case = NULL;
+	font->digit = NULL;
+	font->dot = NULL;
+	font->exclamation_mark = NULL;
+	font->question_mark = NULL;
+	font->comma = NULL;
+	font->quotation_mark = NULL;
+	font->brackets_open = NULL;
+	font->brackets_close = NULL;
+	font->hyphen = NULL;
+	font->colon = NULL;
 	font->space = NULL;
 
 	if ((font->lower_case = malloc(FONT_NUM_LETTERS * sizeof(bitmap_t *))) == NULL)
