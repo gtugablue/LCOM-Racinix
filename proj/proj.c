@@ -212,6 +212,7 @@ int racinix_dispatcher()
 							printf("Trasmitting: %s\n", string);
 							printf("Result: %d\n", serial_interrupt_transmit_string(1, string));
 						}
+						serial_int_handler(1);
 
 
 
