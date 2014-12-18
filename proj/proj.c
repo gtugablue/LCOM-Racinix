@@ -260,7 +260,7 @@ int racinix_dispatcher()
 							printf("received string %s\n", string);
 							unsigned magic;
 							scanf(string, "%d", magic);
-							race->vehicles[1]->position.x = magic;
+							last_serial_value = magic;
 						}
 						free(string);
 					}
