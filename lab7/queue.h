@@ -24,9 +24,6 @@ unsigned queue_size(queue_t* queue);
 
 bool queue_empty(queue_t* queue);
 
-// For debugging char queues
-void queue_print(queue_t* queue);
-
 bool queue_push(queue_t* queue, void* p);
 
 void* queue_pop(queue_t* queue);
