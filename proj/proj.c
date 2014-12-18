@@ -258,7 +258,9 @@ int racinix_dispatcher()
 						if (race != NULL && race->vehicles[1] != NULL)
 						{
 							printf("received string %s\n", string);
-							scanf(string, "%d", (int)race->vehicles[1]->position.x);
+							unsigned magic;
+							scanf(string, "%d", magic);
+							race->vehicles[1]->position.x = magic;
 						}
 					}
 				}
