@@ -224,7 +224,7 @@ int serial_int_handler(unsigned char port_number)
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
 	iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
 	iir &= 3;
-	while (!(iir & 1))
+	while (1)
 	{
 		switch (iir)
 		{
@@ -254,6 +254,7 @@ int serial_int_handler(unsigned char port_number)
 			break;
 		}
 		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
+		if (iir & 1) break;
 		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
 		iir &= 3;
 	}
