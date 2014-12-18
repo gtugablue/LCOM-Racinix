@@ -50,7 +50,7 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 			BIT(UART_REGISTER_IER_RECEIVED_DATA_INT) |
 			BIT(UART_REGISTER_IER_TRANSMITTER_EMPTY_INT) |
 			BIT(UART_REGISTER_IER_RECEIVER_LSR_INT)
-			)) return -1;
+	)) return -1;
 
 	// Create queues
 	--port_number;
@@ -165,6 +165,9 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 	{
 		return 1;
 	}
+
+	printf("Queue size: %d\n", queue_size(serial_transmit_queue[port_number]));
+	queue_print(serial_transmit_queue[port_number]);
 
 	if (serial_clear_transmit_queue(port_number + 1))
 	{
