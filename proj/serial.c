@@ -224,39 +224,32 @@ int serial_int_handler(unsigned char port_number)
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
 	iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
 	iir &= 3;
-	while (1)
+	switch (iir)
 	{
-		switch (iir)
+	case 0: // Modem Status
+		printf("---- Interrupt: Modem Status ----\n");
+		break;
+	case 1: // Transmitter Empty
+		printf("---- Interrupt: Transmitter Empty ----\n");
+		if (serial_clear_transmit_queue(port_number))
 		{
-		case 0: // Modem Status
-			printf("---- Interrupt: Modem Status ----\n");
-			break;
-		case 1: // Transmitter Empty
-			printf("---- Interrupt: Transmitter Empty ----\n");
-			if (serial_clear_transmit_queue(port_number))
-			{
-				return 1;
-			}
-			break;
-		case 2: // Received Data Available
-			printf("---- Interrupt: Received Data Available ----\n");
-		case 4: // Character Timeout Indication
-			printf("---- Interrupt: Character Timeout Indication ----\n");
-			if (serial_clear_UART_receive_queue(port_number))
-			{
-				return 1;
-			}
-			break;
-		case 3: // Line Status
-			printf("---- Interrupt: Line Status ----\n");
-			break;
-		default:
-			break;
+			return 1;
 		}
-		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
-		if (iir & 1) break;
-		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
-		iir &= 3;
+		break;
+	case 2: // Received Data Available
+		printf("---- Interrupt: Received Data Available ----\n");
+	case 4: // Character Timeout Indication
+		printf("---- Interrupt: Character Timeout Indication ----\n");
+		if (serial_clear_UART_receive_queue(port_number))
+		{
+			return 1;
+		}
+		break;
+	case 3: // Line Status
+		printf("---- Interrupt: Line Status ----\n");
+		break;
+	default:
+		break;
 	}
 
 	return 0;
