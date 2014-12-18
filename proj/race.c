@@ -70,7 +70,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	{
 		race_update_vehicle(race, race->vehicles[i], delta_time);
 	}
+	double save = race->vehicles[1]->position.x;
+	race->vehicles[1]->position.x = last_serial_value;
 	vehicle_draw(race->vehicles[1]);
+	race->vehicles[1]->position.x = save;
 
 	// Vehicle-vehicle collision
 	unsigned wheel_ID;
@@ -89,7 +92,6 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			}
 		}
 	}
-	race->vehicles[1]->position.x = last_serial_value;
 	race_show_info(race, fps);
 	vg_swap_buffer();
 	race->time += delta_time;
