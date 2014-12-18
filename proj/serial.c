@@ -166,9 +166,6 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 		return 1;
 	}
 
-	printf("Queue size: %d\n", queue_size(serial_transmit_queue[port_number]));
-	queue_print(serial_transmit_queue[port_number]);
-
 	if (serial_clear_transmit_queue(port_number + 1))
 	{
 		return 1;
@@ -201,6 +198,8 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 		free(character);
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
 	--num_queued_strings[port_number];
+
+	printf("Read string %s\n", *string);
 
 	return 0;
 }
