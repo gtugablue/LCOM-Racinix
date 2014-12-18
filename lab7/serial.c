@@ -50,7 +50,7 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 			BIT(UART_REGISTER_IER_RECEIVED_DATA_INT) |
 			BIT(UART_REGISTER_IER_TRANSMITTER_EMPTY_INT) |
 			BIT(UART_REGISTER_IER_RECEIVER_LSR_INT)
-			)) return -1;
+	)) return -1;
 
 	// Create queues
 	--port_number;
@@ -198,6 +198,8 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 		free(character);
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
 	--num_queued_strings[port_number];
+
+	printf("Read string %s\n", *string);
 
 	return 0;
 }
