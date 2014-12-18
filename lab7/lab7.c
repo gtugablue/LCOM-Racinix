@@ -1,5 +1,6 @@
 #include "serial.h"
 #include "minix/driver.h"
+#include "queue.h"
 
 int main(int argc, char **argv) {
 
