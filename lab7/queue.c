@@ -24,7 +24,7 @@ bool queue_empty(queue_t* queue)
 }
 
 // For debugging char queues
-/*void queue_print(queue_t* queue)
+void queue_print(queue_t* queue)
 {
 	queue_node_t* next = queue->first;
 	while (next != NULL)
@@ -32,7 +32,7 @@ bool queue_empty(queue_t* queue)
 		printf("Queue print: %d\n", *(unsigned char *)(next->p));
 		next = next->next;
 	}
-}*/
+}
 
 bool queue_push(queue_t* queue, void* p)
 {
