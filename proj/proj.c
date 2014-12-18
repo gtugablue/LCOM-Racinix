@@ -1,8 +1,7 @@
 #include "proj.h"
 
 #define MOUSE_NUM_TRIES		10
-#define MOUSE_HOOK_BIT		12
-#define SERIAL_HOOK_BIT		5
+#define MOUSE_HOOK_BIT	12
 #define PI 					3.14159265358979323846
 
 #define BIT(n) (0x01<<(n))
@@ -210,15 +209,14 @@ int racinix_dispatcher()
 						if (race != NULL && race->vehicles[0] != NULL)
 						{
 							sprintf(string, "%d", (int)race->vehicles[0]->position.x);
-							//printf("Trasmitting: %s\n", string);
-							serial_interrupt_transmit_string(1, string);
+							printf("Trasmitting: %s\n", string);
+							printf("Result: %d\n", serial_interrupt_transmit_string(1, string));
 						}
 
 
 
 					}
 				}
-				printf("msg.NOTIFY_ARG: %d\n", msg.NOTIFY_ARG);
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
 					if (racinix_mouse_int_handler(&new_mouse_data_packet) == 0) // Packet ready
 					{
@@ -254,16 +252,13 @@ int racinix_dispatcher()
 						if (race != NULL && race->vehicles[1] != NULL)
 						{
 							printf("received string %s\n", string);
-							unsigned read_value;
-							scanf(string, "%d", read_value);
-							race->vehicles[1]->position.x = read_value;
+							scanf(string, "%d", (int)race->vehicles[1]->position.x);
 						}
 					}
 				}
 			}
 		}
 	}
-	serial_unsubscribe_int(serial_hook_id, 1);
 	timer_unsubscribe_int();
 	keyboard_unsubscribe_int();
 	mouse_disable_stream_mode(MOUSE_NUM_TRIES);

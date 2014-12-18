@@ -45,26 +45,27 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 			(trigger_level << UART_REGISTER_FCR_FIFO_INT_TRIGGER_LVL)
 	)) return -1;
 
+	// Set interrupts
+	if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_IER,
+			BIT(UART_REGISTER_IER_RECEIVED_DATA_INT) |
+			BIT(UART_REGISTER_IER_TRANSMITTER_EMPTY_INT) |
+			BIT(UART_REGISTER_IER_RECEIVER_LSR_INT)
+	)) return -1;
+
+	// Create queues
+	--port_number;
+	if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
+	{
+		return -1;
+	}
+	if ((serial_receive_queue[port_number] = queue_create()) == NULL)
+	{
+		return -1;
+	}
+
 	// Tell Minix we want to subscribe the interrupts
 	if (sys_irqsetpolicy(irq_line, IRQ_REENABLE | IRQ_EXCLUSIVE, hook_id) == OK)
 	{
-		// Set interrupts
-		if (sys_outb(serial_port_number_to_address(port_number) + UART_REGISTER_IER,
-				BIT(UART_REGISTER_IER_RECEIVED_DATA_INT) |
-				BIT(UART_REGISTER_IER_TRANSMITTER_EMPTY_INT) |
-				BIT(UART_REGISTER_IER_RECEIVER_LSR_INT)
-		)) return -1;
-
-		// Create queues
-		--port_number;
-		if ((serial_transmit_queue[port_number] = queue_create()) == NULL)
-		{
-			return -1;
-		}
-		if ((serial_receive_queue[port_number] = queue_create()) == NULL)
-		{
-			return -1;
-		}
 		return hook_bit;
 	}
 	return -1;
@@ -165,6 +166,9 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 		return 1;
 	}
 
+	printf("Queue size: %d\n", queue_size(serial_transmit_queue[port_number]));
+	queue_print(serial_transmit_queue[port_number]);
+
 	if (serial_clear_transmit_queue(port_number + 1))
 	{
 		return 1;
@@ -220,32 +224,38 @@ int serial_int_handler(unsigned char port_number)
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
 	iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
 	iir &= 3;
-	switch (iir)
+	while (!(iir & 1))
 	{
-	case 0: // Modem Status
-		printf("---- Interrupt: Modem Status ----\n");
-		break;
-	case 1: // Transmitter Empty
-		printf("---- Interrupt: Transmitter Empty ----\n");
-		if (serial_clear_transmit_queue(port_number))
+		switch (iir)
 		{
-			return 1;
+		case 0: // Modem Status
+			printf("---- Interrupt: Modem Status ----\n");
+			break;
+		case 1: // Transmitter Empty
+			printf("---- Interrupt: Transmitter Empty ----\n");
+			if (serial_clear_transmit_queue(port_number))
+			{
+				return 1;
+			}
+			break;
+		case 2: // Received Data Available
+			printf("---- Interrupt: Received Data Available ----\n");
+		case 4: // Character Timeout Indication
+			printf("---- Interrupt: Character Timeout Indication ----\n");
+			if (serial_clear_UART_receive_queue(port_number))
+			{
+				return 1;
+			}
+			break;
+		case 3: // Line Status
+			printf("---- Interrupt: Line Status ----\n");
+			break;
+		default:
+			break;
 		}
-		break;
-	case 2: // Received Data Available
-		printf("---- Interrupt: Received Data Available ----\n");
-	case 4: // Character Timeout Indication
-		printf("---- Interrupt: Character Timeout Indication ----\n");
-		if (serial_clear_UART_receive_queue(port_number))
-		{
-			return 1;
-		}
-		break;
-	case 3: // Line Status
-		printf("---- Interrupt: Line Status ----\n");
-		break;
-	default:
-		break;
+		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
+		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
+		iir &= 3;
 	}
 
 	return 0;
