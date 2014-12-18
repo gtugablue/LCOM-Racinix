@@ -251,10 +251,10 @@ int racinix_dispatcher()
 				{
 					printf("adsadasd ad sadsa dassd \n");
 					serial_int_handler(1);
-					unsigned char string[50];
+					unsigned char *string;
 					if (serial_get_num_queued_strings(1) > 0)
 					{
-						serial_interrupt_receive_string(1, (unsigned char **)&string);
+						serial_interrupt_receive_string(1, &string);
 						if (race != NULL && race->vehicles[1] != NULL)
 						{
 							printf("received string %s\n", string);
@@ -262,6 +262,7 @@ int racinix_dispatcher()
 							scanf(string, "%d", magic);
 							race->vehicles[1]->position.x = magic;
 						}
+						free(string);
 					}
 				}
 			}
