@@ -66,13 +66,14 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			vg_draw_circle(race->track->control_points[race->vehicles[i]->current_checkpoint].x, race->track->control_points[race->vehicles[i]->current_checkpoint].y, 5, race->vehicles[i]->checkpoint_color);
 		}
 	}
-	for (i = 0; i < race->num_players; ++i)
+	for (i = 0; i < race->num_players - 1; ++i)
 	{
 		race_update_vehicle(race, race->vehicles[i], delta_time);
 	}
+	vehicle_draw(race->vehicles[1]);
 
 	// Vehicle-vehicle collision
-	unsigned wheel_ID;
+	/*unsigned wheel_ID;
 	size_t j;
 	for (i = 0; i < race->num_players; ++i)
 	{
@@ -87,7 +88,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 				}
 			}
 		}
-	}
+	}*/
 	race_show_info(race, fps);
 	vg_swap_buffer();
 	race->time += delta_time;
