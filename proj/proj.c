@@ -210,7 +210,7 @@ int racinix_dispatcher()
 						{
 							sprintf(string, "%d", (int)race->vehicles[0]->position.x);
 							printf("Trasmitting: %s\n", string);
-							serial_interrupt_transmit_string(1, string);
+							printf("Result: %d\n", serial_interrupt_transmit_string(1, string));
 						}
 
 

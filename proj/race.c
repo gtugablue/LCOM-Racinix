@@ -16,7 +16,6 @@ race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bit
 	}
 	if ((race->vehicles = malloc(num_players * sizeof(vehicle_t *))) == NULL)
 	{
-		race->vehicles = NULL;
 		race_delete(race);
 		return NULL;
 	}
@@ -96,7 +95,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 void race_delete(race_t *race)
 {
+	free(race->vehicles);
+	race->vehicles = NULL;
 	free(race);
+	race = NULL;
 }
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time)
