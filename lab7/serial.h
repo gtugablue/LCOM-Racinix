@@ -5,7 +5,7 @@
 #include "queue.h"
 
 #define SERIAL_NUM_TRIES				10
-#define SERIAL_STRING_TERMINATION_CHAR	'\0'
+#define SERIAL_STRING_TERMINATION_CHAR	'.'
 
 int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned char trigger_level);
 
