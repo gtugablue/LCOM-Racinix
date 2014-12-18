@@ -167,6 +167,11 @@ int racinix_dispatcher()
 		return 1;
 	}
 
+	if (serial_set(1, 8, 2, 0, 9600))
+	{
+		return 1;
+	}
+
 	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
