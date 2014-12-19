@@ -6,10 +6,19 @@
 #include "video_gr.h"
 #include "font.h"
 
+#define RACE_SERIAL_PROTO_BASE					10
+#define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
+#define RACE_SERIAL_PROTO_TOKEN					" "
+#define RACE_SERIAL_PROTO_VEHICLE_INFO			"VI" // VI (position) (speed) (heading)
+#define RACE_SERIAL_PROTO_POSITION				"POS" // POS <x> <y>
+#define RACE_SERIAL_PROTO_VELOCITY				"VEL" // SPD <speed>
+#define RACE_SERIAL_PROTO_HEADING				"HDG" // HDG <heading>
+
 typedef struct
 {
 	track_t *track;
 	unsigned num_players;
+	bool serial_port;
 	bitmap_t **vehicle_bitmaps;
 	vehicle_keys_t *vehicle_keys;
 	uint16_t *vehicle_colors;
@@ -20,11 +29,13 @@ typedef struct
 	font_t *font;
 } race_t;
 
-race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 int race_start(race_t *race);
 
 int race_tick(race_t *race, double delta_time, unsigned fps);
+
+int race_serial_receive(race_t *race, char *string);
 
 void race_delete(race_t *race);
 

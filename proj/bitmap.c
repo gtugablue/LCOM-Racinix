@@ -248,5 +248,6 @@ void bitmap_delete(bitmap_t *bitmap)
 			free(bitmap->pixel_array);
 		}
 		free(bitmap);
+		bitmap = NULL;
 	}
 }

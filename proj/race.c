@@ -1,13 +1,15 @@
 #include "race.h"
 #include <string.h>
 #include "sys/times.h"
+#include "serial.h"
 
 #define PI 					3.14159265358979323846
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time);
 static void race_show_info(race_t *race, unsigned fps);
+static int race_serial_transmit(race_t *race);
 
-race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	race_t *race;
 	if ((race = malloc(sizeof(race_t))) == NULL)
@@ -21,6 +23,7 @@ race_t *race_create(track_t *track, unsigned num_players, bitmap_t **vehicle_bit
 	}
 	race->track = track;
 	race->num_players = num_players;
+	race->serial_port = serial_port;
 	race->vehicle_bitmaps = vehicle_bitmaps;
 	race->vehicle_keys = vehicle_keys;
 	race->vehicle_colors = vehicle_colors;
@@ -55,6 +58,8 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	vg_fill(RACINIX_COLOR_GRASS);
 	track_draw(race->track);
 	size_t i;
+
+	// Draw checkpoints
 	if (race->num_players == 2 && race->vehicles[0]->current_checkpoint == race->vehicles[1]->current_checkpoint) // Same checkpoint
 	{
 		vg_draw_circle(race->track->control_points[race->vehicles[0]->current_checkpoint].x, race->track->control_points[race->vehicles[1]->current_checkpoint].y, 5, race->vehicles[0]->checkpoint_color | race->vehicles[1]->checkpoint_color);
@@ -66,9 +71,19 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			vg_draw_circle(race->track->control_points[race->vehicles[i]->current_checkpoint].x, race->track->control_points[race->vehicles[i]->current_checkpoint].y, 5, race->vehicles[i]->checkpoint_color);
 		}
 	}
-	for (i = 0; i < race->num_players; ++i)
+
+	// Update vehicles
+	if (race->serial_port)
 	{
-		race_update_vehicle(race, race->vehicles[i], delta_time);
+		race_update_vehicle(race, race->vehicles[0], delta_time);
+		// TODO
+	}
+	else
+	{
+		for (i = 0; i < race->num_players; ++i)
+		{
+			race_update_vehicle(race, race->vehicles[i], delta_time);
+		}
 	}
 
 	// Vehicle-vehicle collision
@@ -93,8 +108,56 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	race->time += delta_time;
 }
 
+int race_serial_receive(race_t *race, char *string)
+{
+	char *token;
+	if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VEHICLE_INFO))
+	{
+		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_POSITION))
+		{
+			// POS <x> <y>
+			if (race->vehicles[1] != NULL)
+			{
+				race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+				token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+				race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+			}
+		}
+		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VELOCITY))
+		{
+			// SPD <speed>
+			if (race->vehicles[1] != NULL)
+			{
+				race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+			}
+		}
+		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_HEADING))
+		{
+			// HDG <heading>
+			if (race->vehicles[1] != NULL)
+			{
+				race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+			}
+		}
+		else
+		{
+			return 1;
+		}
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 void race_delete(race_t *race)
 {
+	size_t i;
+	for (i = 0; i < race->num_players; ++i)
+	{
+		vehicle_delete(race->vehicles[i]);
+	}
 	free(race->vehicles);
 	race->vehicles = NULL;
 	free(race);
@@ -119,4 +182,9 @@ static void race_show_info(race_t *race, unsigned fps)
 	font_show_string(race->font, string, 10, race->vbe_mode_info->XResolution - 11, 11, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
 	sprintf(string, "FPS: %d", fps);
 	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
+}
+
+static int race_serial_transmit(race_t *race)
+{
+
 }
