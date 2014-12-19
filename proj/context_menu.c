@@ -27,26 +27,24 @@ context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_i
 
 int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe_mode_info_t *vbe_mode_info)
 {
-	printf("context menu processing click...\n");
 	if (x >= (vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2 && x <= (vbe_mode_info->XResolution + CONTEXT_MENU_WIDTH) / 2)
 	{
-		printf("entered\n");
 		unsigned string_width;
 		size_t i;
 		for (i = 0; i < context_menu->num_items; ++i)
 		{
 			string_width = font_calculate_string_width(context_menu->font, context_menu->items[i], CONTEXT_MENU_CHAR_HEIGHT);
+
+			printf("string: %s", context_menu->items[i]);
 			if (isPointInAxisAlignedRectangle(
 					vectorCreate((vbe_mode_info->XResolution - string_width) / 2, (i + 1) * ((double)vbe_mode_info->YResolution / (context_menu->num_items + 1))),
 					string_width,
 					CONTEXT_MENU_CHAR_HEIGHT,
 					vectorCreate(x, y)))
 			{
-				printf("i: %d\n", i);
 				break;
 			}
 		}
-		printf("i outside: %d\n", i);
 		if (i == context_menu->num_items)
 		{
 			return CONTEXT_MENU_CLICK_NO_BUTTON;
