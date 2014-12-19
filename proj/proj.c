@@ -207,20 +207,6 @@ int racinix_dispatcher()
 						{
 							break;
 						}
-
-
-
-						unsigned char string[50];
-						if (race != NULL && race->vehicles[0] != NULL)
-						{
-							sprintf(string, "%d", (int)race->vehicles[0]->position.x);
-							printf("Trasmitting: %s\n", string);
-							printf("Result: %d\n", serial_interrupt_transmit_string(1, string));
-						}
-						serial_int_handler(1);
-
-
-
 					}
 				}
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
