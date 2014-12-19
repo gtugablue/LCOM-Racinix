@@ -111,38 +111,20 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 int race_serial_receive(race_t *race, char *string)
 {
 	char *token;
-	if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VEHICLE_INFO))
+	if (race->vehicles[1] != NULL && strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VEHICLE_INFO))
 	{
-		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_POSITION))
-		{
-			// POS <x> <y>
-			if (race->vehicles[1] != NULL)
-			{
-				race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
-				token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-				race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
-			}
-		}
-		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VELOCITY))
-		{
-			// SPD <speed>
-			if (race->vehicles[1] != NULL)
-			{
-				race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
-			}
-		}
-		if (strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_HEADING))
-		{
-			// HDG <heading>
-			if (race->vehicles[1] != NULL)
-			{
-				race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
-			}
-		}
-		else
-		{
-			return 1;
-		}
+		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
+		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
+		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
+		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+
 		return 0;
 	}
 	else

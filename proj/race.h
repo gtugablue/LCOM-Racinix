@@ -9,10 +9,7 @@
 #define RACE_SERIAL_PROTO_BASE					10
 #define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
 #define RACE_SERIAL_PROTO_TOKEN					" "
-#define RACE_SERIAL_PROTO_VEHICLE_INFO			"VI" // VI (position) (speed) (heading)
-#define RACE_SERIAL_PROTO_POSITION				"POS" // POS <x> <y>
-#define RACE_SERIAL_PROTO_VELOCITY				"VEL" // SPD <speed>
-#define RACE_SERIAL_PROTO_HEADING				"HDG" // HDG <heading>
+#define RACE_SERIAL_PROTO_VEHICLE_INFO			"VI" // VI <x_pos> <y_pos> <speed> <heading>
 
 typedef struct
 {
