@@ -432,4 +432,5 @@ void vehicle_delete(vehicle_t *vehicle)
 {
 	free(vehicle->bitmap);
 	free(vehicle);
+	vehicle = NULL;
 }
