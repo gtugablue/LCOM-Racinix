@@ -249,21 +249,7 @@ int racinix_dispatcher()
 				}
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
-					printf("adsadasd ad sadsa dassd \n");
-					serial_int_handler(1);
-					unsigned char *string;
-					if (serial_get_num_queued_strings(1) > 0)
-					{
-						serial_interrupt_receive_string(1, &string);
-						if (race != NULL && race->vehicles[1] != NULL)
-						{
-							printf("received string %s\n", string);
-							unsigned magic;
-							scanf(string, "%d", magic);
-							last_serial_value = magic;
-						}
-						free(string);
-					}
+					// TODO
 				}
 			}
 		}
