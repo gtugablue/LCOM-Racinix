@@ -213,6 +213,7 @@ int serial_get_num_queued_strings(unsigned char port_number)
 
 int serial_int_handler(unsigned char port_number)
 {
+	printf("Interrupt detected\n");
 	int base_address;
 	if ((base_address = serial_port_number_to_address(port_number)) == -1)
 	{
@@ -221,34 +222,49 @@ int serial_int_handler(unsigned char port_number)
 
 	unsigned long iir;
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
-	iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
-	iir &= 3;
-	switch (iir)
+	while (!(iir & BIT(UART_REGISTER_IIR_INTERRUPT_STATUS_BIT)))
 	{
-	case 0: // Modem Status
-		printf("---- Interrupt: Modem Status ----\n");
-		break;
-	case 1: // Transmitter Empty
-		printf("---- Interrupt: Transmitter Empty ----\n");
-		if (serial_clear_transmit_queue(port_number))
+		printf("iir: 0x%X\n", iir);
+		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
+		iir &= 3;
+		switch (iir)
 		{
-			return 1;
+		// Interrupts ordered by priority
+		case 0: // Modem Status
+			// Reset method: reading MSR
+			printf("---- Interrupt: Modem Status ----\n");
+			unsigned long msr;
+			if (sys_inb(base_address + UART_REGISTER_MSR, &msr)) return 1;
+			break;
+		case 1: // Transmitter Empty
+			// Reset method: reading IIR or writing to THR
+			printf("---- Interrupt: Transmitter Empty ----\n");
+			if (serial_clear_transmit_queue(port_number))
+			{
+				return 1;
+			}
+			break;
+		case 2: // Received Data Available
+			// Reset method: reading RBR
+			printf("---- Interrupt: Received Data Available ----\n");
+		case 4: // Character Timeout Indication
+			// Reset method: reading RBR or receiving new start bit
+			printf("---- Interrupt: Character Timeout Indication ----\n");
+			if (serial_clear_UART_receive_queue(port_number))
+			{
+				return 1;
+			}
+			break;
+		case 3: // Line Status
+			// Reset method: reading LSR
+			printf("---- Interrupt: Line Status ----\n");
+			unsigned long lsr;
+			if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
+			break;
+		default:
+			break;
 		}
-		break;
-	case 2: // Received Data Available
-		printf("---- Interrupt: Received Data Available ----\n");
-	case 4: // Character Timeout Indication
-		printf("---- Interrupt: Character Timeout Indication ----\n");
-		if (serial_clear_UART_receive_queue(port_number))
-		{
-			return 1;
-		}
-		break;
-	case 3: // Line Status
-		printf("---- Interrupt: Line Status ----\n");
-		break;
-	default:
-		break;
+		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
 	}
 
 	return 0;
@@ -399,6 +415,7 @@ static int serial_clear_transmit_queue(unsigned char port_number)
 	int base_address = serial_port_number_to_address(port_number);
 	unsigned char *character;
 	--port_number;
+	printf("Transmit queue size: %d\n", queue_size(serial_transmit_queue[port_number]));
 	while (!queue_empty(serial_transmit_queue[port_number]))
 	{
 		unsigned long lsr;
