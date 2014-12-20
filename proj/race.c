@@ -192,7 +192,7 @@ static int race_serial_transmit(race_t *race)
 		free(string);
 		return 1;
 	}
-	printf("transmitting: %s\n", string);
+	//printf("transmitting: %s\n", string);
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
