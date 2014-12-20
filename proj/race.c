@@ -123,13 +123,13 @@ int race_serial_receive(race_t *race, char *string)
 	if (race->vehicles[1] != NULL && strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VEHICLE_INFO))
 	{
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
@@ -179,17 +179,18 @@ static int race_serial_transmit(race_t *race)
 {
 	// VI <x_pos> <y_pos> <speed> <heading>
 	char *string;
-	if (asprintf(&string, "%s %d %d %d %d",
+	if (asprintf(&string, "%s %lu %lu %lu %lu",
 			RACE_SERIAL_PROTO_VEHICLE_INFO,
-			(unsigned long)(race->vehicles[1]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
-			(unsigned long)(race->vehicles[1]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
-			race->vehicles[1]->speed,
-			race->vehicles[1]->heading) == -1)
+			(unsigned long)(race->vehicles[0]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			(unsigned long)(race->vehicles[0]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			(unsigned long)(race->vehicles[0]->speed * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			(unsigned long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
+			) == -1)
 	{
 		free(string);
 		return 1;
 	}
-
+	printf("trasmitting %s\n", string);
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
