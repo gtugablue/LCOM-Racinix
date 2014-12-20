@@ -1,7 +1,7 @@
 #include "proj.h"
 
 #define MOUSE_NUM_TRIES		10
-#define MOUSE_HOOK_BIT	12
+#define MOUSE_HOOK_BIT		12
 #define PI 					3.14159265358979323846
 
 #define BIT(n) (0x01<<(n))
@@ -320,7 +320,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int)) // pressed
 			{
-				switch (button_ID) // TODO
+				switch (button_ID)
 				{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
@@ -344,12 +344,9 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					num_players = 2;
 					serial_port = true;
 					return RACINIX_STATE_MAIN_MENU;
-				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
+				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // TODO Settings
 					break;
 				case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
-					//racinix_draw_menu(-1, buttons); // No button being hovered
-					//bitmap_draw_alpha(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
-					//bitmap_draw(bitmap_credits, (vmi.XResolution - bitmap_credits->bitmap_information_header.width) / 2, (vmi.YResolution - bitmap_credits->bitmap_information_header.height) / 2);
 					bitmap_draw(bitmap_credits, 0, 0);
 					vg_swap_buffer();
 					vg_swap_mouse_buffer();
