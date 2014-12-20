@@ -166,7 +166,7 @@ int racinix_dispatcher()
 		return 1;
 	}
 
-	if (serial_set(1, 8, 2, 0, 9600))
+	if (serial_set(1, 8, 2, 0, 115200))
 	{
 		return 1;
 	}
