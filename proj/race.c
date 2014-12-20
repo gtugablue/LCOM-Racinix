@@ -182,7 +182,6 @@ static int race_serial_transmit(race_t *race)
 		return 1;
 	}
 
-	// TODO TRANSMIT INFO
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
