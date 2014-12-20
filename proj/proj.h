@@ -24,7 +24,7 @@
 #define RACINIX_FOLDER_ROOT										"/home/lcom/proj/"
 #define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
 #define RACINIX_FOLDER_FONTS									RACINIX_FOLDER_ROOT "fonts/"
-#define RACINIX_FPS												60
+#define RACINIX_FPS												10
 #define RACINIX_DELTA_TIME										1.0 / TIMER_DEFAULT_FREQ
 #define INTERP_PERIOD											0.07f
 #define RACINIX_MOUSE_SENSITIVITY								1.7
