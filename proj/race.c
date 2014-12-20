@@ -9,7 +9,7 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
 
-race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, unsigned port_number, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	race_t *race;
 	if ((race = malloc(sizeof(race_t))) == NULL)
@@ -24,6 +24,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	race->track = track;
 	race->num_players = num_players;
 	race->serial_port = serial_port;
+	race->port_number = port_number;
 	race->vehicle_bitmaps = vehicle_bitmaps;
 	race->vehicle_keys = vehicle_keys;
 	race->vehicle_colors = vehicle_colors;
@@ -168,5 +169,25 @@ static void race_show_info(race_t *race, unsigned fps)
 
 static int race_serial_transmit(race_t *race)
 {
+	// VI <x_pos> <y_pos> <speed> <heading>
+	char *string;
+	if (asprintf(&string, "%s %d %d %d %d",
+			RACE_SERIAL_PROTO_VEHICLE_INFO,
+			(unsigned long)(race->vehicles[1]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			(unsigned long)(race->vehicles[1]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			race->vehicles[1]->speed,
+			race->vehicles[1]->heading) == -1)
+	{
+		free(string);
+		return 1;
+	}
 
+	// TODO TRANSMIT INFO
+	if (serial_interrupt_transmit_string(race->port_number, string))
+	{
+		return 1;
+	}
+
+	free(string);
+	return 0;
 }

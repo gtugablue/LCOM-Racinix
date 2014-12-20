@@ -387,7 +387,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				if ((race = race_create(track, num_players, serial_port, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+				if ((race = race_create(track, num_players, serial_port, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
@@ -581,7 +581,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 				{
 					if (track_update_track_points(track) == 0)
 					{
-						if ((race = race_create(track, num_players, serial_port, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+						if ((race = race_create(track, num_players, serial_port, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 						{
 							return RACINIX_STATE_ERROR;
 						}
