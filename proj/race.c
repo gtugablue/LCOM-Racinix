@@ -77,6 +77,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	if (race->serial_port)
 	{
 		race_update_vehicle(race, race->vehicles[0], delta_time);
+		vehicle_draw(race->vehicles[1]);
 		if (race_serial_transmit(race))
 		{
 			return 1;
