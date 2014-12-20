@@ -16,6 +16,7 @@ typedef struct
 	track_t *track;
 	unsigned num_players;
 	bool serial_port;
+	unsigned port_number;
 	bitmap_t **vehicle_bitmaps;
 	vehicle_keys_t *vehicle_keys;
 	uint16_t *vehicle_colors;
@@ -26,7 +27,7 @@ typedef struct
 	font_t *font;
 } race_t;
 
-race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, unsigned port_number, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 int race_start(race_t *race);
 

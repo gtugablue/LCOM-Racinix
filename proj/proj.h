@@ -41,6 +41,7 @@
 #define RACINIX_RACE_FREEZE_TIME								5
 #define RACINIX_RACE_NUM_LAPS									6
 #define RACINIX_COLOR_ORANGE									rgb(255, 174, 0)
+#define RACINIX_SERIAL_PORT_NUMBER								1
 
 // States
 enum
