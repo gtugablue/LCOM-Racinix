@@ -321,7 +321,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			if (va_arg(*var_args, int)) // pressed
 			{
 				switch (button_ID) // TODO
-						{
+				{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
@@ -339,6 +339,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
+					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
 					num_players = 2;
 					serial_port = true;
@@ -358,7 +359,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_END;
 				default:
 					break; // A button wasn't clicked
-						}
+				}
 			}
 		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
