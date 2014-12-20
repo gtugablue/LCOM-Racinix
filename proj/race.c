@@ -77,6 +77,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	if (race->serial_port)
 	{
 		race_update_vehicle(race, race->vehicles[0], delta_time);
+		if (race_serial_transmit(race))
+		{
+			return 1;
+		}
 		// TODO
 	}
 	else
@@ -104,9 +108,12 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			}
 		}
 	}
+
 	race_show_info(race, fps);
 	vg_swap_buffer();
 	race->time += delta_time;
+
+	return 0;
 }
 
 int race_serial_receive(race_t *race, char *string)

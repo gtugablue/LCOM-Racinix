@@ -235,6 +235,24 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
 					// TODO
+					if (serial_int_handler(RACINIX_SERIAL_PORT_NUMBER))
+					{
+						return 1;
+					}
+
+					unsigned char *string;
+					while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
+					{
+						if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
+						{
+							return 1;
+						}
+						if (race != NULL)
+						{
+							race_serial_receive(race, string);
+						}
+						free(string);
+					}
 				}
 			}
 		}
@@ -321,6 +339,9 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
+					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
+					num_players = 2;
+					serial_port = true;
 					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // Settings
 					break;
