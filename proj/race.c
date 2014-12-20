@@ -132,9 +132,9 @@ int race_serial_receive(race_t *race, char *string)
 		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+		race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-		printf("receiving: posX: %d, posY: %d, speed: %d, hdg: %d\n", (int)(1000 * race->vehicles[1]->position.x), (int)(1000 * race->vehicles[1]->position.y));
+		printf("receiving: posX: %d, posY: %d\n", (int)(1000 * race->vehicles[1]->position.x), (int)(1000 * race->vehicles[1]->position.y));
 
 		return 0;
 	}
@@ -192,7 +192,7 @@ static int race_serial_transmit(race_t *race)
 		free(string);
 		return 1;
 	}
-	printf("trasmitting %s\n", string);
+	printf("transmitting: %s\n", string);
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
