@@ -134,6 +134,8 @@ int race_serial_receive(race_t *race, char *string)
 		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
+		printf("receiving: posX: %d, posY: %d, speed: %d, hdg: %d\n", (int)(1000 * race->vehicles[1]->position.x), (int)(1000 * race->vehicles[1]->position.y));
+
 		return 0;
 	}
 	else
