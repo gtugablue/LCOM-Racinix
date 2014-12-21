@@ -200,6 +200,7 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 	--num_queued_strings[port_number];
 
 	printf("Read string %s\n", *string);
+	printf("heeeeeerp\n");
 
 	return 0;
 }

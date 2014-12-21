@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define TRACK_INTERP_PERIOD							0.07
-#define TRACK_GRASS_DRAG							0.7
+#define TRACK_GRASS_DRAG							0.5
 #define TRACK_CONTROL_POINT_PERTURBATION_MAX		40.0
 #define TRACK_CONTROL_POINT_PERTURBATION_EXP		1.0
 #define TRACK_THICKNESS								65

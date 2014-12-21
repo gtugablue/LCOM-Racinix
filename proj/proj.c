@@ -197,13 +197,12 @@ int racinix_dispatcher()
 					{
 						break;
 					}
-					continue;
 				}
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
 						serial_int_handler(1);
-
+						printf("aaa\n");
 						unsigned char *string;
 						while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
 						{
@@ -211,13 +210,16 @@ int racinix_dispatcher()
 							{
 								return 1;
 							}
+							printf("cccc\n");
 							if (race != NULL)
 							{
+								printf("dddd\n");
 								race_serial_receive(race, string);
+								printf("eeee\n");
 							}
 							free(string);
 						}
-
+						printf("bbbb\n");
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
