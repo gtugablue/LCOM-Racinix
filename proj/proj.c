@@ -214,7 +214,7 @@ int racinix_dispatcher()
 							if (race != NULL)
 							{
 								printf("dddd\n");
-								race_serial_receive(race, string);
+								race_serial_receive(race, string); // Ignore errors
 								printf("eeee\n");
 							}
 							free(string);
