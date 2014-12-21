@@ -201,7 +201,7 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 
 	printf("Read string %s\n", *string);
 	printf("heeeeeerp\n");
-
+	printf("asdadaaasdadasasdsda asasd asd asd as das \n");
 	return 0;
 }
 

@@ -60,6 +60,7 @@ int kbc_wait_for_out_buf(unsigned num_tries)
 		}
 		tickdelay(micros_to_ticks(I8042_KBD_TIMEOUT * 2 / num_tries));
 	}
+	printf("55555\n");
 	return -1; // Error
 }
 
@@ -114,6 +115,7 @@ int kbc_read(unsigned num_tries, unsigned char* output)
 		int result = kbc_wait_for_out_buf(num_tries);
 		if (result == -1)
 		{
+			printf("44444\n");
 			return 1;
 		}
 		else if (result == 0)

@@ -104,6 +104,7 @@ int mouse_write(unsigned num_tries, unsigned char command)
 	size_t i;
 	for (i = 0; i < num_tries; ++i)
 	{
+		printf("2222\n");
 		if (kbc_write_to_mouse(num_tries))
 		{
 			return 1;
@@ -114,6 +115,7 @@ int mouse_write(unsigned num_tries, unsigned char command)
 		}
 		if (kbc_read(num_tries, &response))
 		{
+			printf("33333\n");
 			return 1;
 		}
 		if (response == MOUSE_RESPONSE_ACK)
@@ -197,6 +199,7 @@ int mouse_set_stream_mode(unsigned num_tries)
 {
 	if(mouse_write(num_tries, MOUSE_SET_STREAM_MODE))
 	{
+		printf("1111\n");
 		return 1;
 	}
 	return 0;

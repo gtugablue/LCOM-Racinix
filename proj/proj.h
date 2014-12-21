@@ -94,6 +94,10 @@ int racinix_timer_int_handler();
 
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
+int racinix_serial_int_handler();
+
+int racinix_serial_receive(race_t *race, char *string);
+
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
 void racinix_draw_mouse();
