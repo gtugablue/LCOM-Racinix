@@ -443,6 +443,7 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 	unsigned long lsr;
 	if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 	{
+		printf("debug1\n");
 		return 1;
 	}
 	void *character;
@@ -450,14 +451,17 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 	{
 		if ((character = malloc(sizeof(unsigned long))) == NULL)
 		{
+			printf("debug2\n");
 			return 1;
 		}
 		if (lsr & (BIT(UART_REGISTER_LSR_OVERRUN_ERROR_BIT) | BIT(UART_REGISTER_LSR_PARITY_ERROR_BIT) | BIT(UART_REGISTER_LSR_FRAMING_ERROR_BIT)))
 		{
+			printf("debug3\n");
 			return -1;
 		}
 		if (sys_inb(base_address + UART_REGISTER_RBR, character))
 		{
+			printf("debug5\n");
 			return 1;
 		}
 		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
@@ -466,12 +470,14 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 		}
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
+			printf("debug6\n");
 			free(character);
 			return 1;
 		}
 		if (!queue_push(serial_receive_queue[port_number], character))
 		{
 			free(character);
+			printf("debug7\n");
 			return 1;
 		}
 	}

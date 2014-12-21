@@ -119,14 +119,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 int race_serial_receive(race_t *race, char *string)
 {
-	printf("recevingggggggggggg\n");
 	char *token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
-	printf("token: %s\n", token);
-	printf("race->vehicles[1]: 0x%X\n", race->vehicles[1]);
 	if (race->vehicles[1] != NULL && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
 	{
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
-		printf("alo :) token: %s, ul: %lu\n", token, strtoul(token, NULL, RACE_SERIAL_PROTO_BASE));
 		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
@@ -136,9 +132,9 @@ int race_serial_receive(race_t *race, char *string)
 		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-		printf("receiving: posX: %d, posY: %d\n", (int)(1000 * race->vehicles[1]->position.x), (int)(1000 * race->vehicles[1]->position.y));
+		printf("heading: %d\n", (int)(1000 * race->vehicles[1]->heading));
 
 		return 0;
 	}
@@ -185,12 +181,12 @@ static int race_serial_transmit(race_t *race)
 {
 	// VI <x_pos> <y_pos> <speed> <heading>
 	char *string;
-	if (asprintf(&string, "%s %lu %lu %lu %lu",
+	if (asprintf(&string, "%s %lu %lu %lu %l",
 			RACE_SERIAL_PROTO_VEHICLE_INFO,
 			(unsigned long)(race->vehicles[0]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(unsigned long)(race->vehicles[0]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(unsigned long)(race->vehicles[0]->speed * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
-			(unsigned long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
+			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
 			) == -1)
 	{
 		free(string);
