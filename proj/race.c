@@ -196,6 +196,7 @@ static int race_serial_transmit(race_t *race)
 			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
 			) == -1)
 	{
+		printf("transmited %s...\n", string);
 		free(string);
 		return 1;
 	}
