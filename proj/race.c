@@ -121,26 +121,30 @@ int race_serial_receive(race_t *race, char *string)
 {
 	printf("Parsing string %s...\n", string);
 	char *token;
-	if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
+		printf("WHADAHELL????\n");
 		return 1;
 	}
 	printf("ffff\n");
-	if (race->vehicles[1] != NULL && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
+	if (race->serial_port && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
 	{
 		printf("llllll\n");
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			return 1;
 		}
+		printf("11111\n");
 		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
+		printf("22222\n");
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			return 1;
 		}
+		printf("33333\n");
 		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
-
+		printf("44444\n");
 		printf("gggg\n");
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{

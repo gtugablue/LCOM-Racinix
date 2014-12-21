@@ -206,8 +206,10 @@ int racinix_dispatcher()
 						unsigned char *string;
 						while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
 						{
+							printf("adasdasdafsd\n");
 							if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
 							{
+								printf("erro :(\n");
 								return 1;
 							}
 							printf("cccc\n");
