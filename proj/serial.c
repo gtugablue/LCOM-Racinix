@@ -241,7 +241,7 @@ int serial_int_handler(unsigned char port_number)
 			printf("---- Interrupt: Transmitter Empty ----\n");
 			if (serial_clear_transmit_queue(port_number))
 			{
-				printf("---- SERIAL ERROR !!!! ----\n");
+				printf("---- SERIAL ERROR 1!!!! ----\n");
 				return 1;
 			}
 			break;
@@ -253,7 +253,7 @@ int serial_int_handler(unsigned char port_number)
 			printf("---- Interrupt: Character Timeout Indication ----\n");
 			if (serial_clear_UART_receive_queue(port_number))
 			{
-				printf("---- SERIAL ERROR !!!! ----\n");
+				printf("---- SERIAL ERROR 2!!!! ----\n");
 				return 1;
 			}
 			break;
