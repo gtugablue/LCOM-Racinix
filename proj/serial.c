@@ -222,9 +222,9 @@ int serial_int_handler(unsigned char port_number)
 
 	unsigned long iir;
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
+	printf("iir: 0x%X\n", iir);
 	while (!(iir & BIT(UART_REGISTER_IIR_INTERRUPT_STATUS_BIT)))
 	{
-		printf("iir: 0x%X\n", iir);
 		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
 		iir &= 3;
 		switch (iir)
@@ -241,6 +241,7 @@ int serial_int_handler(unsigned char port_number)
 			printf("---- Interrupt: Transmitter Empty ----\n");
 			if (serial_clear_transmit_queue(port_number))
 			{
+				printf("---- SERIAL ERROR !!!! ----\n");
 				return 1;
 			}
 			break;
@@ -252,6 +253,7 @@ int serial_int_handler(unsigned char port_number)
 			printf("---- Interrupt: Character Timeout Indication ----\n");
 			if (serial_clear_UART_receive_queue(port_number))
 			{
+				printf("---- SERIAL ERROR !!!! ----\n");
 				return 1;
 			}
 			break;
@@ -262,9 +264,11 @@ int serial_int_handler(unsigned char port_number)
 			if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
 			break;
 		default:
+			printf("---- Interrupt: Unknown ----\n");
 			break;
 		}
 		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
+		printf("iir: 0x%X\n", iir);
 	}
 
 	return 0;
