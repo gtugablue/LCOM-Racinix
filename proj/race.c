@@ -196,11 +196,10 @@ static int race_serial_transmit(race_t *race)
 			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
 			) == -1)
 	{
-		printf("transmited %s...\n", string);
 		free(string);
 		return 1;
 	}
-	//printf("transmitting: %s\n", string);
+	printf("transmitting: %s\n", string);
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
