@@ -119,21 +119,27 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 int race_serial_receive(race_t *race, char *string)
 {
+	printf("Parsing string %s...\n", string);
 	char *token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+	printf("ffff\n");
 	if (race->vehicles[1] != NULL && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
 	{
+		printf("llllll\n");
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
+		printf("gggg\n");
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
-
+		printf("iiii\n");
+		race->vehicles[1]->speed = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+		printf("jjjj\n");
 		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
-		race->vehicles[1]->heading = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
-
+		printf("kkkkkk 0x%X\n", race->vehicles[1]->heading);
+		race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+		printf("hhhhh\n");
 		printf("heading: %d\n", (int)(1000 * race->vehicles[1]->heading));
 
 		return 0;
@@ -150,6 +156,7 @@ void race_delete(race_t *race)
 	for (i = 0; i < race->num_players; ++i)
 	{
 		vehicle_delete(race->vehicles[i]);
+		race->vehicles[i] = NULL;
 	}
 	free(race->vehicles);
 	race->vehicles = NULL;
@@ -181,11 +188,11 @@ static int race_serial_transmit(race_t *race)
 {
 	// VI <x_pos> <y_pos> <speed> <heading>
 	char *string;
-	if (asprintf(&string, "%s %lu %lu %lu %l",
+	if (asprintf(&string, "%s %lu %lu %l %l",
 			RACE_SERIAL_PROTO_VEHICLE_INFO,
 			(unsigned long)(race->vehicles[0]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(unsigned long)(race->vehicles[0]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
-			(unsigned long)(race->vehicles[0]->speed * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			(long)(race->vehicles[0]->speed * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
 			) == -1)
 	{
