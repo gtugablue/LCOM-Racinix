@@ -399,7 +399,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
 					// NEW_RACE TI RND <seed>
 					char *string;
-					if (asprintf(&string, "%s %s %lu",
+					if (asprintf(&string, "%s %s %s %lu",
 							RACINIX_SERIAL_PROTO_NEW_RACE,
 							RACINIX_SERIAL_PROTO_TRACK_INFO,
 							RACINIX_SERIAL_PROTO_TRACK_RANDOM,
@@ -694,7 +694,6 @@ int racinix_serial_int_handler()
 	{
 		return 1;
 	}
-	printf("aaa\n");
 	unsigned char *string;
 	while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
 	{
@@ -713,7 +712,6 @@ int racinix_serial_int_handler()
 		}
 		free(string);
 	}
-	printf("bbbb\n");
 	return 0;
 }
 

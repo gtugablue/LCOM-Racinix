@@ -214,7 +214,6 @@ int serial_get_num_queued_strings(unsigned char port_number)
 
 int serial_int_handler(unsigned char port_number)
 {
-	printf("Interrupt detected\n");
 	int base_address;
 	if ((base_address = serial_port_number_to_address(port_number)) == -1)
 	{
@@ -223,7 +222,7 @@ int serial_int_handler(unsigned char port_number)
 
 	unsigned long iir;
 	if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
-	printf("iir: 0x%X\n", iir);
+	//printf("iir: 0x%X\n", iir);
 	while (!(iir & BIT(UART_REGISTER_IIR_INTERRUPT_STATUS_BIT)))
 	{
 		iir >>= UART_REGISTER_IIR_INTERRUPT_ORIGIN_BIT;
@@ -269,7 +268,7 @@ int serial_int_handler(unsigned char port_number)
 			break;
 		}
 		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
-		printf("iir: 0x%X\n", iir);
+		//printf("iir: 0x%X\n", iir);
 	}
 
 	return 0;
