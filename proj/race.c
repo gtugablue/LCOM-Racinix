@@ -9,7 +9,7 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
 
-race_t *race_create(track_t *track, unsigned num_players, bool serial_port, unsigned port_number, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	race_t *race;
 	if ((race = malloc(sizeof(race_t))) == NULL)
@@ -24,7 +24,6 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, unsi
 	race->track = track;
 	race->num_players = num_players;
 	race->serial_port = serial_port;
-	race->port_number = port_number;
 	race->vehicle_bitmaps = vehicle_bitmaps;
 	race->vehicle_keys = vehicle_keys;
 	race->vehicle_colors = vehicle_colors;
@@ -33,6 +32,12 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, unsi
 	race->vbe_mode_info = vbe_mode_info;
 	race->font = font;
 	return race;
+}
+
+void race_set_serial_port_info(race_t *race, unsigned port_number, unsigned long seed)
+{
+	race->port_number = port_number;
+	race->seed = seed;
 }
 
 int race_start(race_t *race)

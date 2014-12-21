@@ -385,13 +385,18 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				if (track_random_generate(track, rand()))
+				unsigned long seed = rand();
+				if (track_random_generate(track, seed))
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				if ((race = race_create(track, num_players, serial_port, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+				if ((race = race_create(track, num_players, serial_port, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
+				}
+				if (serial_port)
+				{
+					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
 				}
 				if (race_start(race))
 				{
@@ -584,10 +589,11 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 				{
 					if (track_update_track_points(track) == 0)
 					{
-						if ((race = race_create(track, num_players, serial_port, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+						if ((race = race_create(track, num_players, serial_port, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 						{
 							return RACINIX_STATE_ERROR;
 						}
+						// TODO SERIAL PORT
 						if (race_start(race))
 						{
 							return RACINIX_STATE_ERROR;
@@ -733,10 +739,11 @@ int racinix_serial_receive(char *string)
 				{
 					return 1;
 				}
-				if ((race = race_create(track, 2, true, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+				if ((race = race_create(track, 2, true, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 				{
 					return 1;
 				}
+				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
 				return race_start(race);
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
