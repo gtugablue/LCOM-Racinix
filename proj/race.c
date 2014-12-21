@@ -188,7 +188,7 @@ static int race_serial_transmit(race_t *race)
 {
 	// VI <x_pos> <y_pos> <speed> <heading>
 	char *string;
-	if (asprintf(&string, "%s %lu %lu %l %l",
+	if (asprintf(&string, "%s %lu %lu %ld %ld",
 			RACE_SERIAL_PROTO_VEHICLE_INFO,
 			(unsigned long)(race->vehicles[0]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(unsigned long)(race->vehicles[0]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
@@ -199,7 +199,7 @@ static int race_serial_transmit(race_t *race)
 		free(string);
 		return 1;
 	}
-	printf("transmitting: %s\n", string);
+	//printf("transmitting: %s\n", string);
 	if (serial_interrupt_transmit_string(race->port_number, string))
 	{
 		return 1;
