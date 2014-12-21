@@ -47,6 +47,14 @@
 #define RACINIX_SERIAL_NUM_STOP_BITS							2
 #define RACINIX_SERIAL_PARITY									0
 #define RACINIX_SERIAL_BAUD_RATE								115200
+#define RACINIX_SERIAL_PROTO_BASE								RACE_SERIAL_PROTO_BASE
+#define RACINIX_SERIAL_PROTO_FLOAT_MULTIPLIER					RACE_SERIAL_PROTO_FLOAT_MULTIPLIER
+#define RACINIX_SERIAL_PROTO_TOKEN								RACE_SERIAL_PROTO_TOKEN
+#define RACINIX_SERIAL_PROTO_RACE								"RACE"
+#define RACINIX_SERIAL_PROTO_NEW_RACE							"NEW_RACE" // NEW_RACE TI
+#define RACINIX_SERIAL_PROTO_TRACK_INFO							"TI" // TI RND/MAN
+#define RACINIX_SERIAL_PROTO_TRACK_RANDOM						"RND" // RND <seed>
+#define RACINIX_SERIAL_PROTO_TRACK_MANUAL						"MNL" // MNL ... TODO
 
 // States
 enum
@@ -101,7 +109,7 @@ int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
 int racinix_serial_int_handler();
 
-int racinix_serial_receive(race_t *race, char *string);
+int racinix_serial_receive(char *string);
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
