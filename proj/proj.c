@@ -203,6 +203,21 @@ int racinix_dispatcher()
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
 						serial_int_handler(1);
+
+						unsigned char *string;
+						while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
+						{
+							if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
+							{
+								return 1;
+							}
+							if (race != NULL)
+							{
+								race_serial_receive(race, string);
+							}
+							free(string);
+						}
+
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
