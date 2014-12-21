@@ -119,19 +119,23 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 int race_serial_receive(race_t *race, char *string)
 {
-	char *token;
-	if (race->vehicles[1] != NULL && strcmp(token = strtok(string, RACE_SERIAL_PROTO_TOKEN), RACE_SERIAL_PROTO_VEHICLE_INFO))
+	printf("recevingggggggggggg\n");
+	char *token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+	printf("token: %s\n", token);
+	printf("race->vehicles[1]: 0x%X\n", race->vehicles[1]);
+	if (race->vehicles[1] != NULL && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
 	{
-		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
+		printf("alo :) token: %s, ul: %lu\n", token, strtoul(token, NULL, RACE_SERIAL_PROTO_BASE));
 		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->speed = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-		token = strtok(string, RACE_SERIAL_PROTO_TOKEN);
+		token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN);
 		race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
 		printf("receiving: posX: %d, posY: %d\n", (int)(1000 * race->vehicles[1]->position.x), (int)(1000 * race->vehicles[1]->position.y));
