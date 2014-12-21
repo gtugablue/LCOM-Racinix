@@ -397,6 +397,23 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				if (serial_port)
 				{
 					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
+					// TI RND <seed>
+					char *string;
+					if (asprintf(&string, "%s %s %lu",
+							RACE_SERIAL_PROTO_RACE,
+							RACE_SERIAL_PROTO_VEHICLE_INFO,
+							seed
+					) == -1)
+					{
+						free(string);
+						return 1;
+					}
+					if (serial_interrupt_transmit_string(race->port_number, string))
+					{
+						return 1;
+					}
+
+					free(string);
 				}
 				if (race_start(race))
 				{
