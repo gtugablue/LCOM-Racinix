@@ -109,7 +109,6 @@ int racinix_start()
 
 	vehicle_bitmaps[0] = bitmap_red_car;
 	vehicle_bitmaps[1] = bitmap_blue_car;
-
 	if (racinix_dispatcher())
 	{
 		return 1;
@@ -136,17 +135,14 @@ int racinix_dispatcher()
 	{
 		return 1;
 	}
-
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
-
 	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
-
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
 	if (keyboard_subscribe_int() == -1)
@@ -170,7 +166,6 @@ int racinix_dispatcher()
 	{
 		return 1;
 	}
-
 	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
@@ -201,27 +196,10 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
-						serial_int_handler(1);
-						printf("aaa\n");
-						unsigned char *string;
-						while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
+						if (racinix_serial_int_handler())
 						{
-							printf("adasdasdafsd\n");
-							if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
-							{
-								printf("erro :(\n");
-								return 1;
-							}
-							printf("cccc\n");
-							if (race != NULL)
-							{
-								printf("dddd\n");
-								race_serial_receive(race, string); // Ignore errors
-								printf("eeee\n");
-							}
-							free(string);
+							return 1;
 						}
-						printf("bbbb\n");
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
@@ -254,24 +232,9 @@ int racinix_dispatcher()
 				}
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
-					// TODO
-					if (serial_int_handler(RACINIX_SERIAL_PORT_NUMBER))
+					if (racinix_serial_int_handler())
 					{
-						return 1;
-					}
-
-					unsigned char *string;
-					while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
-					{
-						if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
-						{
-							return 1;
-						}
-						if (race != NULL)
-						{
-							race_serial_receive(race, string);
-						}
-						free(string);
+						break;
 					}
 				}
 			}
@@ -504,6 +467,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 			if (va_arg(*var_args, int))
 			{
 				race_delete(race);
+				race = NULL;
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
@@ -697,6 +661,58 @@ int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet)
 	{
 		return 1;
 	}
+}
+
+int racinix_serial_int_handler()
+{
+	if (serial_int_handler(1))
+	{
+		return 1;
+	}
+	printf("aaa\n");
+	unsigned char *string;
+	while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
+	{
+		printf("adasdasdafsd\n");
+		if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
+		{
+			printf("erro :(\n");
+			return 1;
+		}
+		printf("cccc\n");
+		if (race != NULL)
+		{
+			printf("dddd\n");
+			race_serial_receive(race, string); // Ignore errors
+			printf("eeee\n");
+		}
+		free(string);
+	}
+	printf("bbbb\n");
+	return 0;
+}
+
+int racinix_serial_receive(race_t *race, char *string)
+{
+	/*printf("Parsing string %s...\n", string);
+	char *token;
+	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+	{
+		return 1;
+	}
+	if (race->serial_port && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
+	{
+		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+		{
+			return 1;
+		}
+		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}*/
 }
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet)
