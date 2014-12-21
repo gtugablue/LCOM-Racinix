@@ -397,11 +397,12 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				if (serial_port)
 				{
 					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
-					// TI RND <seed>
+					// NEW_RACE TI RND <seed>
 					char *string;
 					if (asprintf(&string, "%s %s %lu",
-							RACE_SERIAL_PROTO_RACE,
-							RACE_SERIAL_PROTO_VEHICLE_INFO,
+							RACINIX_SERIAL_PROTO_NEW_RACE,
+							RACINIX_SERIAL_PROTO_TRACK_INFO,
+							RACINIX_SERIAL_PROTO_TRACK_RANDOM,
 							seed
 					) == -1)
 					{
