@@ -10,9 +10,6 @@
 #define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
 #define RACE_SERIAL_PROTO_TOKEN					" "
 #define RACE_SERIAL_PROTO_VEHICLE_INFO			"VI" // VI <x_pos> <y_pos> <speed> <heading>
-#define RACE_SERIAL_PROTO_NEW_RACE				"RCE" // RCE RND/MAN
-#define RACE_SERIAL_PROTO_TRACK_RANDOM			"RND" // RND <seed>
-//#define RACE_SERIAL_PROTO_TRACK_MAN				"MAN" // MAN ...
 
 typedef struct
 {
@@ -36,7 +33,7 @@ int race_start(race_t *race);
 
 int race_tick(race_t *race, double delta_time, unsigned fps);
 
-int race_serial_receive(race_t *race, char *string);
+int race_serial_receive(race_t *race);
 
 void race_delete(race_t *race);
 

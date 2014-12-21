@@ -684,7 +684,7 @@ int racinix_serial_int_handler()
 		if (race != NULL)
 		{
 			printf("dddd\n");
-			race_serial_receive(race, string); // Ignore errors
+			racinix_serial_receive(string); // Ignore errors
 			printf("eeee\n");
 		}
 		free(string);
@@ -693,27 +693,68 @@ int racinix_serial_int_handler()
 	return 0;
 }
 
-int racinix_serial_receive(race_t *race, char *string)
+int racinix_serial_receive(char *string)
 {
-	/*printf("Parsing string %s...\n", string);
+	printf("Parsing string %s...\n", string);
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
 		return 1;
 	}
-	if (race->serial_port && strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
+	if (race != NULL && strcmp(token, RACINIX_SERIAL_PROTO_RACE) == 0) // RACE
 	{
-		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+		return race_serial_receive(race);
+	}
+	else if (race == NULL && strcmp(token, RACINIX_SERIAL_PROTO_NEW_RACE) == 0) // NEW_RACE
+	{
+		if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			return 1;
 		}
-		race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
-		return 0;
+		if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_INFO) == 0) // TI
+		{
+			if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+			{
+				return 1;
+			}
+			if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_RANDOM) == 0) // RND
+			{
+				if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+				{
+					return 1;
+				}
+				unsigned long seed = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+				track_t *track;
+				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
+				{
+					return 1;
+				}
+				if (track_random_generate(track, seed))
+				{
+					return 1;
+				}
+				if ((race = race_create(track, 2, true, RACINIX_SERIAL_PORT_NUMBER, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+				{
+					return 1;
+				}
+				return race_start(race);
+			}
+			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
+			{
+				// TODO
+				return 1;
+			}
+		}
+		else
+		{
+			return 1;
+		}
 	}
 	else
 	{
 		return 1;
-	}*/
+	}
+	return 0;
 }
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet)

@@ -117,16 +117,15 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	return 0;
 }
 
-int race_serial_receive(race_t *race, char *string)
+int race_serial_receive(race_t *race)
 {
 	printf("race->serial_port: 0x%X\n", race->serial_port);
 	printf("race->vehicles: 0x%X\n", race->vehicles);
 	printf("race->vehicles[1]: 0x%X\n", race->vehicles[1]);
 	if (race->serial_port && race->vehicles != NULL && race->vehicles[1] != NULL)
 	{
-		printf("Parsing string %s...\n", string);
 		char *token;
-		if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			printf("WHADAHELL????\n");
 			return 1;
