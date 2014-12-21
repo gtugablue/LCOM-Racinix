@@ -42,6 +42,11 @@
 #define RACINIX_RACE_NUM_LAPS									6
 #define RACINIX_COLOR_ORANGE									rgb(255, 174, 0)
 #define RACINIX_SERIAL_PORT_NUMBER								1
+#define RACINIX_SERIAL_TRIGGER_LEVEL							2
+#define RACINIX_SERIAL_NUM_BITS									8
+#define RACINIX_SERIAL_NUM_STOP_BITS							2
+#define RACINIX_SERIAL_PARITY									0
+#define RACINIX_SERIAL_BAUD_RATE								115200
 
 // States
 enum

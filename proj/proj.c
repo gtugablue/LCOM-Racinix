@@ -157,15 +157,16 @@ int racinix_dispatcher()
 	}
 
 	unsigned serial_hook_id = SERIAL_HOOK_BIT;
-	if (serial_subscribe_int(&serial_hook_id, 1, 2) == -1)
+	if (serial_subscribe_int(&serial_hook_id, RACINIX_SERIAL_PORT_NUMBER, RACINIX_SERIAL_TRIGGER_LEVEL) == -1)
 	{
 		return 1;
 	}
 
-	if (serial_set(1, 8, 2, 0, 115200))
+	if (serial_set(RACINIX_SERIAL_PORT_NUMBER, RACINIX_SERIAL_NUM_BITS, RACINIX_SERIAL_NUM_STOP_BITS, RACINIX_SERIAL_PARITY, RACINIX_SERIAL_BAUD_RATE))
 	{
 		return 1;
 	}
+
 	mouse_data_packet_t old_mouse_data_packet, new_mouse_data_packet;
 	old_mouse_data_packet.left_button = old_mouse_data_packet.middle_button = old_mouse_data_packet.right_button = false;
 	int r, ipc_status;
