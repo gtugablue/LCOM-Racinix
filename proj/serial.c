@@ -156,6 +156,7 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 		}
 		++string;
 	}
+	printf("aaaaa\n");
 	if ((character = malloc(sizeof(unsigned char))) == NULL)
 	{
 		return 1;
