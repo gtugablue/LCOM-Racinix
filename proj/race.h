@@ -6,6 +6,9 @@
 #include "video_gr.h"
 #include "font.h"
 
+#define RACE_START_COUNTER_HEIGHT				120
+#define RACE_START_COUNTER_FADE_OUT_TIME		0.7
+
 #define RACE_SERIAL_PROTO_BASE					10
 #define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
 #define RACE_SERIAL_PROTO_TOKEN					" "

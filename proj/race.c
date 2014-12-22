@@ -78,40 +78,50 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		}
 	}
 
-	// Update vehicles
-	if (race->serial_port)
+	if (race->time >= 0)
 	{
-		race_update_vehicle(race, race->vehicles[0], delta_time);
-		vehicle_draw(race->vehicles[1]);
-		if (race_serial_transmit(race))
+		// Update vehicles
+		if (race->serial_port)
 		{
-			return 1;
+			race_update_vehicle(race, race->vehicles[0], delta_time);
+			vehicle_draw(race->vehicles[1]);
+			if (race_serial_transmit(race))
+			{
+				return 1;
+			}
+			// TODO
 		}
-		// TODO
+		else
+		{
+			for (i = 0; i < race->num_players; ++i)
+			{
+				race_update_vehicle(race, race->vehicles[i], delta_time);
+			}
+		}
+
+		// Vehicle-vehicle collision
+		unsigned wheel_ID;
+		size_t j;
+		for (i = 0; i < race->num_players; ++i)
+		{
+			for (j = 0; j < race->num_players; ++j)
+			{
+				if (i != j)
+				{
+					wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
+					if (wheel_ID != -1)
+					{
+						vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
+					}
+				}
+			}
+		}
 	}
 	else
 	{
 		for (i = 0; i < race->num_players; ++i)
 		{
-			race_update_vehicle(race, race->vehicles[i], delta_time);
-		}
-	}
-
-	// Vehicle-vehicle collision
-	unsigned wheel_ID;
-	size_t j;
-	for (i = 0; i < race->num_players; ++i)
-	{
-		for (j = 0; j < race->num_players; ++j)
-		{
-			if (i != j)
-			{
-				wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
-				if (wheel_ID != -1)
-				{
-					vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
-				}
-			}
+			vehicle_draw(race->vehicles[i]);
 		}
 	}
 
@@ -210,6 +220,17 @@ static void race_show_info(race_t *race, unsigned fps)
 	font_show_string(race->font, string, 10, race->vbe_mode_info->XResolution - 11, 11, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
 	sprintf(string, "FPS: %d", fps);
 	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
+	if (race->time < 0)
+	{
+		sprintf(string, "%d", (int)abs((int)floor(race->time)));
+		font_show_string(race->font, string, RACE_START_COUNTER_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - RACE_START_COUNTER_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+	}
+	else if (race->time < RACE_START_COUNTER_FADE_OUT_TIME)
+	{
+		sprintf(string, "%d", (int)abs((int)floor(race->time)));
+		double height = RACE_START_COUNTER_HEIGHT - RACE_START_COUNTER_HEIGHT * race->time * (1 / RACE_START_COUNTER_FADE_OUT_TIME);
+		font_show_string(race->font, string, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+	}
 }
 
 static int race_serial_transmit(race_t *race)
