@@ -831,8 +831,9 @@ int racinix_race_serial_receive(char *string)
 	}
 	else if (strcmp(token, RACINIX_SERIAL_PROTO_END_RACE) == 0) // END_RACE
 	{
+
 		race_delete(race);
-		free(race);
+		race = NULL;
 		return RACINIX_STATE_MAIN_MENU;
 	}
 	return RACINIX_STATE_RACE;
