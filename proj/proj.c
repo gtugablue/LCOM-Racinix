@@ -502,10 +502,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
-				race_delete(race);
-				race = NULL;
-				printf("race nullified\n");
-
 				if (race->serial_port)
 				{
 					// END_RACE
@@ -523,8 +519,10 @@ int racinix_race_event_handler(int event, va_list *var_args)
 						return RACINIX_STATE_ERROR;
 					}
 					free(string);
-					return RACINIX_STATE_MAIN_MENU;
 				}
+				race_delete(race);
+				race = NULL;
+				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
 		break;
