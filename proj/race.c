@@ -144,16 +144,25 @@ int race_serial_receive(race_t *race)
 				return 1;
 			}
 			race->vehicles[1]->position.y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return 1;
 			}
 			race->vehicles[1]->speed = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+
+			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+			{
+				return 1;
+			}
+			race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return 1;
 			}
 			race->vehicles[1]->current_lap = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return 1;
