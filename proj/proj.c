@@ -514,14 +514,12 @@ int racinix_race_event_handler(int event, va_list *var_args)
 					free(string);
 					return 1;
 				}
-				//printf("transmitting: %s\n", string);
-				if (serial_interrupt_transmit_string(race->port_number, string))
+				printf("transmitting: %s\n", string);
+				if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
 				{
 					return 1;
 				}
-
 				free(string);
-
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
