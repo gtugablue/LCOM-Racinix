@@ -504,6 +504,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 			{
 				race_delete(race);
 				race = NULL;
+				printf("race nullified\n");
 
 				// END_RACE
 				char *string;
@@ -512,12 +513,12 @@ int racinix_race_event_handler(int event, va_list *var_args)
 				) == -1)
 				{
 					free(string);
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				printf("transmitting: %s\n", string);
 				if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				free(string);
 				return RACINIX_STATE_MAIN_MENU;
@@ -745,29 +746,34 @@ int racinix_serial_int_handler()
 
 int racinix_main_menu_serial_recieve(char *string)
 {
+	printf("main menu parser...\n");
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
 		return RACINIX_STATE_ERROR;
 	}
+	printf("token: %s, race: 0x%X\n", token, race);
 	if (race == NULL && strcmp(token, RACINIX_SERIAL_PROTO_NEW_RACE) == 0) // NEW_RACE
 	{
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			return RACINIX_STATE_ERROR;
 		}
+		printf("token: %s, race: 0x%X\n", token, race);
 		if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_INFO) == 0) // TI
 		{
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return RACINIX_STATE_ERROR;
 			}
+			printf("token: %s\n", token);
 			if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_RANDOM) == 0) // RND
 			{
 				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
+				printf("token: %s\n", token);
 				unsigned long seed = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
@@ -783,6 +789,7 @@ int racinix_main_menu_serial_recieve(char *string)
 					return RACINIX_STATE_ERROR;
 				}
 				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
+				printf("supostamente derp\n");
 				if (race_start(race))
 				{
 					return RACINIX_STATE_ERROR;
@@ -809,6 +816,7 @@ int racinix_main_menu_serial_recieve(char *string)
 
 int racinix_race_serial_receive(char *string)
 {
+	printf("race parser...\n");
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
@@ -816,13 +824,15 @@ int racinix_race_serial_receive(char *string)
 	}
 	if (strcmp(token, RACINIX_SERIAL_PROTO_RACE) == 0) // RACE
 	{
-		if (race_serial_receive(race))
+		if (race->serial_port && race_serial_receive(race))
 		{
 			return RACINIX_STATE_ERROR;
 		}
 	}
 	else if (strcmp(token, RACINIX_SERIAL_PROTO_END_RACE) == 0) // END_RACE
 	{
+		race_delete(race);
+		free(race);
 		return RACINIX_STATE_MAIN_MENU;
 	}
 	return RACINIX_STATE_RACE;
