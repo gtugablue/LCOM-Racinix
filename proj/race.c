@@ -153,7 +153,12 @@ int race_serial_receive(race_t *race)
 			{
 				return 1;
 			}
-			race->vehicles[1]->heading = (double)strtol(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
+			race->vehicles[1]->current_lap = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+			{
+				return 1;
+			}
+			race->vehicles[1]->current_checkpoint = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 		}
 		else
 		{
@@ -200,15 +205,17 @@ static void race_show_info(race_t *race, unsigned fps)
 
 static int race_serial_transmit(race_t *race)
 {
-	// VI <x_pos> <y_pos> <speed> <heading>
+	// VI <x_pos> <y_pos> <speed> <heading> <current_lap> <current_checkpoint>
 	char *string;
-	if (asprintf(&string, "%s %s %lu %lu %ld %ld",
+	if (asprintf(&string, "%s %s %lu %lu %ld %ld %u %u",
 			RACE_SERIAL_PROTO_RACE,
 			RACE_SERIAL_PROTO_VEHICLE_INFO,
 			(unsigned long)(race->vehicles[0]->position.x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(unsigned long)(race->vehicles[0]->position.y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
 			(long)(race->vehicles[0]->speed * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
-			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER)
+			(long)(race->vehicles[0]->heading * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER),
+			race->vehicles[0]->current_lap,
+			race->vehicles[0]->current_checkpoint
 			) == -1)
 	{
 		free(string);

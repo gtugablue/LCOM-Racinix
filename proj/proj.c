@@ -285,23 +285,28 @@ int racinix_event_handler(int event, ...)
 
 int racinix_main_menu_event_handler(int event, va_list *var_args)
 {
-	static context_menu_t *context_menu;
+	static context_menu_t *context_menu = NULL;
 	static int state = RACINIX_STATE_MAIN_MENU_BASE;
 	static size_t button_ID = RACINIX_MAIN_MENU_NUM_BTN;
-	char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
+	static char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
 	buttons[0] = "1 PLAYER", '\0';
 	buttons[1] = "2 PLAYERS IN THE SAME PC", '\0';
 	buttons[2] = "2 PLAYERS VIA SERIAL PORT", '\0';
 	buttons[3] = "SETTINGS", '\0';
 	buttons[4] = "CREDITS", '\0';
 	buttons[5] = "EXIT", '\0';
-	char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
+	static char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
 
 	if (event == RACINIX_EVENT_SERIAL_RECEIVE)
 	{
 		int result = racinix_main_menu_serial_recieve(va_arg(*var_args, char *));
 		if (result != RACINIX_STATE_MAIN_MENU)
 		{
+			if (context_menu != NULL)
+			{
+				context_menu_delete(context_menu);
+				context_menu = NULL;
+			}
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 		}
 		return result;
@@ -391,6 +396,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
+				context_menu = NULL;
 				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
 				{
@@ -439,13 +445,14 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
-
+				context_menu = NULL;
 				return RACINIX_STATE_DESIGN_TRACK;
 			}
 			case CONTEXT_MENU_CLICK_BACKGROUND:
 			{
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
+				context_menu = NULL;
 				return RACINIX_STATE_MAIN_MENU;
 				break;
 			}
@@ -459,6 +466,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		{
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 			context_menu_delete(context_menu);
+			context_menu = NULL;
 			return RACINIX_STATE_MAIN_MENU;
 		}
 		else if (event == RACINIX_EVENT_MOUSE_MOVEMENT)
