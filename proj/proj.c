@@ -502,6 +502,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
+				printf("88888\n");
 				if (race->serial_port)
 				{
 					// END_RACE
@@ -529,12 +530,15 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	}
 	case RACINIX_EVENT_SERIAL_RECEIVE:
 	{
+		printf("99999\n");
 		if (race->serial_port)
 		{
 			return racinix_race_serial_receive(va_arg(*var_args, char *));
 		}
+		printf("10000\n");
 	}
 	}
+	printf("110000\n");
 	return RACINIX_STATE_RACE;
 }
 
