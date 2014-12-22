@@ -506,29 +506,35 @@ int racinix_race_event_handler(int event, va_list *var_args)
 				race = NULL;
 				printf("race nullified\n");
 
-				// END_RACE
-				char *string;
-				if (asprintf(&string, "%s",
-						RACINIX_SERIAL_PROTO_END_RACE
-				) == -1)
+				if (race->serial_port)
 				{
+					// END_RACE
+					char *string;
+					if (asprintf(&string, "%s",
+							RACINIX_SERIAL_PROTO_END_RACE
+					) == -1)
+					{
+						free(string);
+						return RACINIX_STATE_ERROR;
+					}
+					printf("transmitting: %s\n", string);
+					if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
+					{
+						return RACINIX_STATE_ERROR;
+					}
 					free(string);
-					return RACINIX_STATE_ERROR;
+					return RACINIX_STATE_MAIN_MENU;
 				}
-				printf("transmitting: %s\n", string);
-				if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
-				{
-					return RACINIX_STATE_ERROR;
-				}
-				free(string);
-				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
 		break;
 	}
 	case RACINIX_EVENT_SERIAL_RECEIVE:
 	{
-		return racinix_race_serial_receive(va_arg(*var_args, char *));
+		if (race->serial_port)
+		{
+			return racinix_race_serial_receive(va_arg(*var_args, char *));
+		}
 	}
 	}
 	return RACINIX_STATE_RACE;
@@ -831,7 +837,6 @@ int racinix_race_serial_receive(char *string)
 	}
 	else if (strcmp(token, RACINIX_SERIAL_PROTO_END_RACE) == 0) // END_RACE
 	{
-
 		race_delete(race);
 		race = NULL;
 		return RACINIX_STATE_MAIN_MENU;
