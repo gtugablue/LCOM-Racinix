@@ -124,29 +124,21 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 int race_serial_receive(race_t *race)
 {
-	printf("race->serial_port: 0x%X\n", race->serial_port);
-	printf("race->vehicles: 0x%X\n", race->vehicles);
-	printf("race->vehicles[1]: 0x%X\n", race->vehicles[1]);
 	if (race->serial_port && race->vehicles != NULL && race->vehicles[1] != NULL)
 	{
 		char *token;
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
-			printf("WHADAHELL????\n");
 			return 1;
 		}
-		printf("ffff\n");
 		if (strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
 		{
-			printf("llllll\n");
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return 1;
 			}
-			printf("11111\n");
 			race->vehicles[1]->position.x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACE_SERIAL_PROTO_FLOAT_MULTIPLIER;
 
-			printf("22222\n");
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return 1;
@@ -168,6 +160,7 @@ int race_serial_receive(race_t *race)
 			return 1;
 		}
 	}
+	printf("derp\n");
 	return 0;
 }
 

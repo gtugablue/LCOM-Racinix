@@ -41,6 +41,7 @@
 #define RACINIX_RACE_FREEZE_TIME								5
 #define RACINIX_RACE_NUM_LAPS									6
 #define RACINIX_COLOR_ORANGE									rgb(255, 174, 0)
+
 #define RACINIX_SERIAL_PORT_NUMBER								1
 #define RACINIX_SERIAL_TRIGGER_LEVEL							2
 #define RACINIX_SERIAL_NUM_BITS									8
@@ -50,11 +51,12 @@
 #define RACINIX_SERIAL_PROTO_BASE								RACE_SERIAL_PROTO_BASE
 #define RACINIX_SERIAL_PROTO_FLOAT_MULTIPLIER					RACE_SERIAL_PROTO_FLOAT_MULTIPLIER
 #define RACINIX_SERIAL_PROTO_TOKEN								RACE_SERIAL_PROTO_TOKEN
-#define RACINIX_SERIAL_PROTO_RACE								"RACE"
+#define RACINIX_SERIAL_PROTO_RACE								RACE_SERIAL_PROTO_RACE
 #define RACINIX_SERIAL_PROTO_NEW_RACE							"NEW_RACE" // NEW_RACE TI
 #define RACINIX_SERIAL_PROTO_TRACK_INFO							"TI" // TI RND/MAN
 #define RACINIX_SERIAL_PROTO_TRACK_RANDOM						"RND" // RND <seed>
 #define RACINIX_SERIAL_PROTO_TRACK_MANUAL						"MNL" // MNL ... TODO
+#define RACINIX_SERIAL_PROTO_END_RACE							"END_RACE" // END_RACE
 
 // States
 enum
@@ -109,7 +111,7 @@ int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
 int racinix_serial_int_handler();
 
-int racinix_serial_receive(char *string);
+int racinix_main_menu_serial_receive(char *string);
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
@@ -125,6 +127,7 @@ enum
 	RACINIX_EVENT_MOUSE_LEFT_BTN, // bool pressed
 	RACINIX_EVENT_MOUSE_RIGHT_BTN, // bool pressed
 	RACINIX_EVENT_NEW_FRAME, // unsigned fps
+	RACINIX_EVENT_SERIAL_RECEIVE // char *string
 };
 
 // Main menu buttons

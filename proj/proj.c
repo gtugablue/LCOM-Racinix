@@ -296,6 +296,17 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	buttons[4] = "CREDITS", '\0';
 	buttons[5] = "EXIT", '\0';
 	char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
+
+	if (event == RACINIX_EVENT_SERIAL_RECEIVE)
+	{
+		int result = racinix_main_menu_serial_recieve(va_arg(*var_args, char *));
+		if (result != RACINIX_STATE_MAIN_MENU)
+		{
+			state = RACINIX_STATE_MAIN_MENU_BASE;
+		}
+		return result;
+	}
+
 	switch (state)
 	{
 	case RACINIX_STATE_MAIN_MENU_BASE:
@@ -483,6 +494,7 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	case RACINIX_EVENT_NEW_FRAME:
 	{
 		race_tick(race, RACINIX_DELTA_TIME, va_arg(*var_args, unsigned));
+		break;
 	}
 	case RACINIX_EVENT_KEYSTROKE: // int key, bool pressed
 	{
@@ -492,9 +504,32 @@ int racinix_race_event_handler(int event, va_list *var_args)
 			{
 				race_delete(race);
 				race = NULL;
+
+				// END_RACE
+				char *string;
+				if (asprintf(&string, "%s",
+						RACINIX_SERIAL_PROTO_END_RACE
+				) == -1)
+				{
+					free(string);
+					return 1;
+				}
+				//printf("transmitting: %s\n", string);
+				if (serial_interrupt_transmit_string(race->port_number, string))
+				{
+					return 1;
+				}
+
+				free(string);
+
 				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
+		break;
+	}
+	case RACINIX_EVENT_SERIAL_RECEIVE:
+	{
+		return racinix_race_serial_receive(va_arg(*var_args, char *));
 	}
 	}
 	return RACINIX_STATE_RACE;
@@ -697,87 +732,102 @@ int racinix_serial_int_handler()
 	unsigned char *string;
 	while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
 	{
-		printf("adasdasdafsd\n");
 		if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
 		{
-			printf("erro :(\n");
 			return 1;
 		}
-		printf("cccc\n");
-		if (race != NULL)
+		if (racinix_event_handler(RACINIX_EVENT_SERIAL_RECEIVE, string))
 		{
-			printf("dddd\n");
-			racinix_serial_receive(string); // Ignore errors
-			printf("eeee\n");
+			return 1;
 		}
 		free(string);
 	}
 	return 0;
 }
 
-int racinix_serial_receive(char *string)
+int racinix_main_menu_serial_recieve(char *string)
 {
-	printf("Parsing string %s...\n", string);
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
-		return 1;
+		return RACINIX_STATE_ERROR;
 	}
-	if (race != NULL && strcmp(token, RACINIX_SERIAL_PROTO_RACE) == 0) // RACE
+	if (race == NULL && strcmp(token, RACINIX_SERIAL_PROTO_NEW_RACE) == 0) // NEW_RACE
 	{
-		return race_serial_receive(race);
-	}
-	else if (race == NULL && strcmp(token, RACINIX_SERIAL_PROTO_NEW_RACE) == 0) // NEW_RACE
-	{
-		if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
-			return 1;
+			return RACINIX_STATE_ERROR;
 		}
 		if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_INFO) == 0) // TI
 		{
-			if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
-				return 1;
+				return RACINIX_STATE_ERROR;
 			}
 			if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_RANDOM) == 0) // RND
 			{
-				if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				unsigned long seed = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				if (track_random_generate(track, seed))
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				if ((race = race_create(track, 2, true, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
 				{
-					return 1;
+					return RACINIX_STATE_ERROR;
 				}
 				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
-				return race_start(race);
+				if (race_start(race))
+				{
+					return RACINIX_STATE_ERROR;
+				}
+				return RACINIX_STATE_RACE;
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
 			{
 				// TODO
-				return 1;
+				return RACINIX_STATE_MAIN_MENU;
 			}
 		}
 		else
 		{
-			return 1;
+			return RACINIX_STATE_MAIN_MENU;
 		}
 	}
 	else
 	{
-		return 1;
+		return RACINIX_STATE_MAIN_MENU;
 	}
-	return 0;
+	return RACINIX_STATE_MAIN_MENU;
+}
+
+int racinix_race_serial_receive(char *string)
+{
+	char *token;
+	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
+	{
+		return RACINIX_STATE_ERROR;
+	}
+	if (strcmp(token, RACINIX_SERIAL_PROTO_RACE) == 0) // RACE
+	{
+		if (race_serial_receive(race))
+		{
+			return RACINIX_STATE_ERROR;
+		}
+	}
+	else if (strcmp(token, RACINIX_SERIAL_PROTO_END_RACE) == 0) // END_RACE
+	{
+		return RACINIX_STATE_MAIN_MENU;
+	}
+	return RACINIX_STATE_RACE;
 }
 
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet)
