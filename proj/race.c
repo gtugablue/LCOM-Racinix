@@ -23,6 +23,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	}
 	race->track = track;
 	race->num_players = num_players;
+	race->first = 0;
 	race->serial_port = serial_port;
 	race->vehicle_bitmaps = vehicle_bitmaps;
 	race->vehicle_keys = vehicle_keys;
@@ -216,20 +217,46 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 static void race_show_info(race_t *race, unsigned fps)
 {
 	char string[100];
-	sprintf(string, "%d", (int)floor(race->time));
-	font_show_string(race->font, string, 10, race->vbe_mode_info->XResolution - 11, 11, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
 	sprintf(string, "FPS: %d", fps);
 	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
-	if (race->time < 0)
+	//if (race->time < 0)
+	//{
+	//	sprintf(string, "%d", (int)abs((int)floor(race->time)));
+	//	font_show_string(race->font, string, RACE_START_COUNTER_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - RACE_START_COUNTER_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+	//}
+	if (race->time < RACE_START_TEXT_FADE_TIME)
 	{
-		sprintf(string, "%d", (int)abs((int)floor(race->time)));
-		font_show_string(race->font, string, RACE_START_COUNTER_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - RACE_START_COUNTER_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		if (race->time < 0)
+		{
+			sprintf(string, "%d", (int)abs((int)floor(race->time)));
+			double height = RACE_START_COUNTER_HEIGHT * fmod(fabs(race->time), 1);
+			font_show_string(race->font, string, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		}
+		else
+		{
+			double height = RACE_START_COUNTER_HEIGHT * fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME;
+			//double height = RACE_START_COUNTER_HEIGHT * (1 - fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME);
+			font_show_string(race->font, RACE_START_TEXT, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		}
 	}
-	else if (race->time < RACE_START_COUNTER_FADE_OUT_TIME)
+
+	// Show scoreboard
+	font_show_string(race->font, "CP", 15, race->vbe_mode_info->XResolution - 80, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
+	font_show_string(race->font, "LAP", 15, race->vbe_mode_info->XResolution - 30, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
+
+	size_t i;
+	for (i = 0; i < race->num_players; ++i)
 	{
-		sprintf(string, "%d", (int)abs((int)floor(race->time)));
-		double height = RACE_START_COUNTER_HEIGHT - RACE_START_COUNTER_HEIGHT * race->time * (1 / RACE_START_COUNTER_FADE_OUT_TIME);
-		font_show_string(race->font, string, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		unsigned y = 25 * i + 35;
+
+		sprintf(string, "PLAYER %d:", i + 1);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 120, y, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 0);
+
+		sprintf(string, "%d/%d", race->vehicles[i]->current_checkpoint, race->track->num_control_points);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 80, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
+
+		sprintf(string, "%d/%d", race->vehicles[i]->current_lap, race->num_laps);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 30, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
 	}
 }
 

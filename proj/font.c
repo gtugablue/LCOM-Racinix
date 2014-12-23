@@ -141,11 +141,72 @@ font_t *font_load(const char* folder)
 		free(s);
 	}
 
+	// Space
 	if (asprintf(&s, "%s/space.bmp", folder) == -1)
 	{
 		return NULL;
 	}
 	if ((font->space = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Dot
+	if (asprintf(&s, "%s/dot.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->dot = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Exclamation mark
+	if (asprintf(&s, "%s/exclamation.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->exclamation_mark = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Question mark
+	if (asprintf(&s, "%s/interrogation.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->question_mark = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Comma
+	if (asprintf(&s, "%s/comma.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->comma = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Colon
+	if (asprintf(&s, "%s/colon.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->colon = bitmap_load(s)) == NULL)
 	{
 		free(s);
 		return NULL;
@@ -294,6 +355,7 @@ void font_delete(font_t *font)
 		}
 	}
 	free(font);
+	font = NULL;
 }
 
 static bitmap_t *font_character_to_bitmap(font_t *font, char character)
@@ -313,6 +375,11 @@ static bitmap_t *font_character_to_bitmap(font_t *font, char character)
 	switch (character)
 	{
 	case ' ': return font->space;
+	case '.': return font->dot;
+	case '!': return font->exclamation_mark;
+	case '?': return font->question_mark;
+	case ',': return font->comma;
+	case ':': return font->colon;
 	}
 	return NULL;
 }

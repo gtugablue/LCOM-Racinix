@@ -7,7 +7,8 @@
 #include "font.h"
 
 #define RACE_START_COUNTER_HEIGHT				120
-#define RACE_START_COUNTER_FADE_OUT_TIME		0.7
+#define RACE_START_TEXT							"GO!"
+#define RACE_START_TEXT_FADE_TIME				0.6
 
 #define RACE_SERIAL_PROTO_BASE					10
 #define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
@@ -19,6 +20,7 @@ typedef struct
 {
 	track_t *track;
 	unsigned num_players;
+	unsigned char first; // Player in the lead
 
 	// Serial port
 	bool serial_port;
