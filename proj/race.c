@@ -2,12 +2,14 @@
 #include <string.h>
 #include "sys/times.h"
 #include "serial.h"
+#include <stdbool.h>
 
 #define PI 					3.14159265358979323846
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time);
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
+static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[]);
 
 race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
@@ -90,13 +92,21 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			{
 				return 1;
 			}
-			// TODO
 		}
 		else
 		{
-			for (i = 0; i < race->num_players; ++i)
+			if (race->vehicles[race->first]->current_lap >= race->num_laps)
 			{
-				race_update_vehicle(race, race->vehicles[i], delta_time);
+				char string[50];
+				sprintf(string, "PLAYER %d WINS!", race->first + 1);
+				font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+			}
+			else
+			{
+				for (i = 0; i < race->num_players; ++i)
+				{
+					race_update_vehicle(race, race->vehicles[i], delta_time);
+				}
 			}
 		}
 
@@ -212,6 +222,10 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 		drag += track_get_point_drag(race->track, (int)vehicle->wheels[i].x, (int)vehicle->wheels[i].y, race->vbe_mode_info->XResolution, race->vbe_mode_info->YResolution);
 	}
 	vehicle_tick(vehicle, race->track, race->vbe_mode_info, delta_time, drag);
+	if (vehicle->current_lap * race->track->num_control_points + vehicle->current_checkpoint > race->vehicles[race->first]->current_lap * race->track->num_control_points + race->vehicles[race->first]->current_checkpoint)
+	{
+		race->first = (race->first + 1) % race->num_players;
+	}
 }
 
 static void race_show_info(race_t *race, unsigned fps)
@@ -244,18 +258,21 @@ static void race_show_info(race_t *race, unsigned fps)
 	font_show_string(race->font, "CP", 15, race->vbe_mode_info->XResolution - 80, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
 	font_show_string(race->font, "LAP", 15, race->vbe_mode_info->XResolution - 30, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
 
+	unsigned char vehicle_IDs[race->num_players];
+	race_sort_vehicles(race, vehicle_IDs);
+
 	size_t i;
 	for (i = 0; i < race->num_players; ++i)
 	{
 		unsigned y = 25 * i + 35;
 
-		sprintf(string, "PLAYER %d:", i + 1);
-		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 120, y, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 0);
+		sprintf(string, "PLAYER %d:", vehicle_IDs[i] + 1);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 100, y, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 0);
 
-		sprintf(string, "%d/%d", race->vehicles[i]->current_checkpoint, race->track->num_control_points);
+		sprintf(string, "%d/%d", race->vehicles[vehicle_IDs[i]]->current_checkpoint, race->track->num_control_points);
 		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 80, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
 
-		sprintf(string, "%d/%d", race->vehicles[i]->current_lap, race->num_laps);
+		sprintf(string, "%d/%d", race->vehicles[vehicle_IDs[i]]->current_lap + 1, race->num_laps);
 		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 30, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
 	}
 }
@@ -286,4 +303,20 @@ static int race_serial_transmit(race_t *race)
 
 	free(string);
 	return 0;
+}
+
+static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[])
+{
+	vehicle_IDs[0] = race->first;
+	if (race->num_players == 2)
+	{
+		if (race->first == 0)
+		{
+			vehicle_IDs[1] = 1;
+		}
+		else
+		{
+			vehicle_IDs[1] = 0;
+		}
+	}
 }
