@@ -197,10 +197,10 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
-						if (racinix_serial_int_handler())
-						{
-							return 1;
-						}
+						//if (racinix_serial_int_handler())
+						//{
+						//	return 1;
+						//}
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
