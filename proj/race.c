@@ -10,6 +10,7 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
 static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[]);
+static void race_update_first(race_t *race);
 
 race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
@@ -83,23 +84,44 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 	if (race->time >= 0)
 	{
-		// Update vehicles
-		if (race->serial_port)
+		if (race->vehicles[race->first]->current_lap >= race->num_laps)
 		{
-			race_update_vehicle(race, race->vehicles[0], delta_time);
-			vehicle_draw(race->vehicles[1]);
-			if (race_serial_transmit(race))
+			// Race ended
+
+			for (i = 0; i < race->num_players; ++i)
 			{
-				return 1;
+				vehicle_draw(race->vehicles[i]);
 			}
+
+			char string[50];
+			if (race->serial_port)
+			{
+				if (race->first == 0)
+				{
+					sprintf(string, "YOU WIN!");
+				}
+				else
+				{
+					sprintf(string, "YOU LOOSE!");
+				}
+			}
+			else
+			{
+				sprintf(string, "PLAYER %d WINS!", race->first + 1);
+			}
+			font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
 		}
 		else
 		{
-			if (race->vehicles[race->first]->current_lap >= race->num_laps)
+			// Update vehicles
+			if (race->serial_port)
 			{
-				char string[50];
-				sprintf(string, "PLAYER %d WINS!", race->first + 1);
-				font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+				race_update_vehicle(race, race->vehicles[0], delta_time);
+				vehicle_draw(race->vehicles[1]);
+				if (race_serial_transmit(race))
+				{
+					return 1;
+				}
 			}
 			else
 			{
@@ -108,24 +130,26 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 					race_update_vehicle(race, race->vehicles[i], delta_time);
 				}
 			}
-		}
 
-		// Vehicle-vehicle collision
-		unsigned wheel_ID;
-		size_t j;
-		for (i = 0; i < race->num_players; ++i)
-		{
-			for (j = 0; j < race->num_players; ++j)
+			// Vehicle-vehicle collision
+			unsigned wheel_ID;
+			size_t j;
+			for (i = 0; i < race->num_players; ++i)
 			{
-				if (i != j)
+				for (j = 0; j < race->num_players; ++j)
 				{
-					wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
-					if (wheel_ID != -1)
+					if (i != j)
 					{
-						vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
+						wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
+						if (wheel_ID != -1)
+						{
+							vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
+						}
 					}
 				}
 			}
+
+			race_update_first(race);
 		}
 	}
 	else
@@ -222,10 +246,6 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 		drag += track_get_point_drag(race->track, (int)vehicle->wheels[i].x, (int)vehicle->wheels[i].y, race->vbe_mode_info->XResolution, race->vbe_mode_info->YResolution);
 	}
 	vehicle_tick(vehicle, race->track, race->vbe_mode_info, delta_time, drag);
-	if (vehicle->current_lap * race->track->num_control_points + vehicle->current_checkpoint > race->vehicles[race->first]->current_lap * race->track->num_control_points + race->vehicles[race->first]->current_checkpoint)
-	{
-		race->first = (race->first + 1) % race->num_players;
-	}
 }
 
 static void race_show_info(race_t *race, unsigned fps)
@@ -317,6 +337,18 @@ static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[])
 		else
 		{
 			vehicle_IDs[1] = 0;
+		}
+	}
+}
+
+static void race_update_first(race_t *race)
+{
+	size_t i;
+	for (i = 0; i < race->num_players; ++i)
+	{
+		if (race->vehicles[i]->current_lap * race->track->num_control_points + race->vehicles[i]->current_checkpoint > race->vehicles[race->first]->current_lap * race->track->num_control_points + race->vehicles[race->first]->current_checkpoint)
+		{
+			race->first = (race->first + 1) % race->num_players;
 		}
 	}
 }
