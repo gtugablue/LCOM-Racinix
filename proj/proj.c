@@ -146,7 +146,6 @@ int racinix_dispatcher()
 	{
 		return 1;
 	}
-	printf("kkk\n");
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
 	if (keyboard_subscribe_int() == -1)
