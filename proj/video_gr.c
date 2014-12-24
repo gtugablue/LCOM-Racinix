@@ -175,18 +175,19 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 
 int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, uint16_t color)
 {
-	size_t i, j;
+	/*size_t i, j;
 	for (i = x; i < x + width; ++i)
 	{
 		for (j = y; j < y + height; ++j)
 		{
 			vg_set_pixel(i, j, color);
 		}
-	}
-	/*for (i = y; i < y + height; ++i)
-	{
-		memset16(double_buffer + x + y * vbe_mode_info.height, color, width);
 	}*/
+	size_t i;
+	for (i = y; i < y + height; ++i)
+	{
+		memset16(double_buffer + x + i * vbe_mode_info.XResolution, color, width);
+	}
 	return 0;
 }
 
