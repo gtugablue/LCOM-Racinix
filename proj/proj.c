@@ -130,12 +130,14 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
+	sleep(1);
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	printf("hhh\n");
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
 		return 1;
 	}
+	sleep(1);
 	printf("iii\n");
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
