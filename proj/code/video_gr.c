@@ -100,9 +100,6 @@ inline vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 		return 0;
 	}
 	return 1;
-
-	// Assembly is slower
-	//return vg_set_pixel_asm(x, y, color);
 }
 
 inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color)

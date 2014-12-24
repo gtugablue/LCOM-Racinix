@@ -293,13 +293,12 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 
 	// Momentum = r * sin(angle between heading and r)
 	vector2D_t r = vectorSubtract(vehicle2->position, vehicle->wheels[wheel_ID]);
-	double momentum = vectorNorm(vectorMultiply(r, sin(abs(atan2(r.y, r.x) - vehicle->heading))));
-
+	double momentum = vectorNorm(vectorMultiply(r, sin(atan2(r.y, r.x) - vehicle->heading)));
 
 	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
 	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
 
-	vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
+	//vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
 }
 
 void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned whefel_ID, vehicle_t *vehicle2)
