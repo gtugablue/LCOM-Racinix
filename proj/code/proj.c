@@ -49,13 +49,13 @@ int racinix_start()
 	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
-
+	printf("aaa\n");
 	background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
 	if (background == NULL)
 	{
 		return 1;
 	}
-
+	printf("bbb\n");
 	mouse_cursor = bitmap_load(RACINIX_FOLDER_IMAGES "cursor.bmp");
 	if (mouse_cursor == NULL)
 	{
@@ -73,25 +73,25 @@ int racinix_start()
 	{
 		return 1;
 	}
-
+	printf("cbbb\n");
 	bitmap_blue_car = bitmap_load(RACINIX_FOLDER_IMAGES "blue_car.bmp");
 	if (bitmap_blue_car == NULL)
 	{
 		return 1;
 	}
-
+	printf("cdbbb\n");
 	bitmap_credits = bitmap_load(RACINIX_FOLDER_IMAGES "credits.bmp");
 	if (bitmap_credits == NULL)
 	{
 		return 1;
 	}
-
+	printf("ebbb\n");
 	font_impact = font_load(RACINIX_FOLDER_FONTS "impact");
 	if (font_impact == NULL)
 	{
 		return 1;
 	}
-
+	printf("fbbb\n");
 	vehicle_keys[0].accelerate = KEY_W;
 	vehicle_keys[0].brake = KEY_S;
 	vehicle_keys[0].turn_left = KEY_A;
