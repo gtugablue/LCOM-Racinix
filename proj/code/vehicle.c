@@ -291,56 +291,33 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 {
 	// TODO
 
-	// Momentum = r * sin(angle between heading and r)
-	vector2D_t r = vectorSubtract(vehicle2->position, vehicle->wheels[wheel_ID]);
-	double momentum = vectorNorm(vectorMultiply(r, sin(atan2(r.y, r.x) - vehicle->heading)));
+	// Torque = r x F
+	vector2D_t r = vectorSubtract(vehicle->wheels[wheel_ID], vehicle2->position);
+	vector2D_t F = vectorRotate(vectorMultiply(vectorCreate(1, 0), vehicle->speed), vehicle->heading);
+	double torque = F.y * r.x - F.x * r.y;
+	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
+	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 
-	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
-	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (momentum / vectorNorm(r)) * vehicle->speed;
-
-	//vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
+	vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
 }
 
 void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned whefel_ID, vehicle_t *vehicle2)
 {
 	// TODO improve performance
-	int wheel_ID;
-	while (1) // Make vehicles collide
-	{
-		wheel_ID = vehicle_check_vehicle_collision(vehicle, vehicle2);
-		if (wheel_ID == -1)
-		{
-			wheel_ID = vehicle_check_vehicle_collision(vehicle2, vehicle);
-			if (wheel_ID == -1)
-			{
-				vector2D_t r = vectorSubtract(vehicle2->position, vehicle->position);
-				vehicle->position = vectorAdd(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
-				vehicle2->position = vectorSubtract(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
-				continue;
-			}
-		}
-		break;
-	}
+	int wheel_ID1, wheel_ID2;
+	unsigned i = 50;
 
-	while (1) // Separate vehicles
+	while (i > 0) // Separate vehicles
 	{
+		--i;
 		printf("colliding...\n");
-		wheel_ID = vehicle_check_vehicle_collision(vehicle, vehicle2);
-		if (wheel_ID != -1)
+		wheel_ID1 = vehicle_check_vehicle_collision(vehicle, vehicle2);
+		wheel_ID2 = vehicle_check_vehicle_collision(vehicle2, vehicle);
+		if (wheel_ID1 != -1 || wheel_ID2 != -1)
 		{
 			vector2D_t r = vectorSubtract(vehicle2->position, vehicle->position);
-			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
-			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
-			vehicle_calculate_wheel_position(vehicle);
-			vehicle_calculate_wheel_position(vehicle2);
-			continue;
-		}
-		wheel_ID = vehicle_check_vehicle_collision(vehicle2, vehicle);
-		if (wheel_ID != -1)
-		{
-			vector2D_t r = vectorSubtract(vehicle->position, vehicle2->position);
-			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.1));
-			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.1));
+			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.01));
+			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.01));
 			vehicle_calculate_wheel_position(vehicle);
 			vehicle_calculate_wheel_position(vehicle2);
 			continue;
