@@ -21,7 +21,7 @@
 #include "race.h"
 #include "serial.h"
 
-#define RACINIX_FOLDER_ROOT										"/home/lcom/proj/"
+#define RACINIX_FOLDER_ROOT										"/home/lcom/proj/code/"
 #define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
 #define RACINIX_FOLDER_FONTS									RACINIX_FOLDER_ROOT "fonts/"
 #define RACINIX_FPS												60
