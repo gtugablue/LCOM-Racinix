@@ -61,6 +61,7 @@ void context_menu_draw(context_menu_t *context_menu, vector2D_t mouse_position, 
 {
 	uint16_t *double_buffer = vg_get_double_buffer();
 	memcpy(double_buffer, context_menu->background, vbe_mode_info->XResolution * vbe_mode_info->YResolution * vbe_mode_info->BitsPerPixel / 8);
+	printf("calling with: %d\n", (vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2);
 	vg_draw_rectangle((vbe_mode_info->XResolution - CONTEXT_MENU_WIDTH) / 2, 0, CONTEXT_MENU_WIDTH, vbe_mode_info->YResolution, CONTEXT_MENU_COLOR);
 
 	size_t i, j;

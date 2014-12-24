@@ -16,11 +16,11 @@
 
 static uint16_t *video_mem;		/* Process address to which VRAM is mapped */
 
-static unsigned h_res;		/* Horizontal screen resolution in pixels */
-static unsigned v_res;		/* Vertical screen resolution in pixels */
+unsigned h_res;		/* Horizontal screen resolution in pixels, not static because _video_gr.S needs it */
+unsigned v_res;		/* Vertical screen resolution in pixels, not static because _video_gr.S needs it */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
-static uint16_t *double_buffer;
+uint16_t *double_buffer; // Not static because _video_gr.S needs it
 static uint16_t *mouse_buffer;
 
 static vbe_mode_info_t vbe_mode_info;
@@ -83,15 +83,16 @@ void *vg_init(unsigned short mode)
 
 int vg_fill(uint16_t color)
 {
-	uint16_t *pixel;
+	/*uint16_t *pixel;
 	for (pixel = double_buffer; pixel < double_buffer + h_res * v_res; ++pixel)
 	{
-		*pixel = color;
-	}
+	 *pixel = color;
+	}*/
+	memset16(double_buffer, color, h_res * v_res);
 	return 0;
 }
 
-inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
+inline vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 {
 	if (x < h_res && y < v_res) // Since the function arguments are of the "unsigned long" type, this check is enough and therefore performance is increased
 	{
@@ -99,6 +100,9 @@ inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color)
 		return 0;
 	}
 	return 1;
+
+	// Assembly is slower
+	//return vg_set_pixel_asm(x, y, color);
 }
 
 inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color)
@@ -169,7 +173,7 @@ int vg_draw_line(long xi, long yi, long xf, long yf, long color)
 	return 0;
 }
 
-int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, unsigned long color)
+int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, uint16_t color)
 {
 	size_t i, j;
 	for (i = x; i < x + width; ++i)
@@ -179,6 +183,10 @@ int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, uns
 			vg_set_pixel(i, j, color);
 		}
 	}
+	/*for (i = y; i < y + height; ++i)
+	{
+		memset16(double_buffer + x + y * vbe_mode_info.height, color, width);
+	}*/
 	return 0;
 }
 
@@ -305,8 +313,8 @@ uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 }
 
 int vg_exit() {
-	//free(double_buffer);
-	//free(mouse_buffer);
+	free(double_buffer);
+	free(mouse_buffer);
 	struct reg86u reg86;
 
 	reg86.u.b.intno = 0x10; /* BIOS video services */
