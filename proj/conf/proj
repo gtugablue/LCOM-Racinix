@@ -7,7 +7,6 @@ service proj
 		READBIOS
 		DEVIO
 		IRQCTL
-		IOPENABLE
 		;
 	ipc
 		SYSTEM		# to retrieve system information
