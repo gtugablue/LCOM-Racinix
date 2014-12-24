@@ -87,7 +87,7 @@ inline long vg_get_pixel(unsigned long x, unsigned long y);
  */
 int vg_draw_line(long xi, long yi, long xf, long yf, long color);
 
-int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, unsigned long color);
+int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, uint16_t color);
 
 /**
  * @brief Draw circle with specified center, radius and color
