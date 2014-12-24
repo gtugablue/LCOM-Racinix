@@ -131,18 +131,22 @@ int racinix_exit()
 int racinix_dispatcher()
 {
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
+	printf("hhh\n");
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
 		return 1;
 	}
+	printf("iii\n");
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
+	printf("jjj\n");
 	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
+	printf("kkk\n");
 	mouse_discard_interrupts(MOUSE_NUM_TRIES, MOUSE_HOOK_BIT);
 
 	if (keyboard_subscribe_int() == -1)

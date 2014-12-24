@@ -54,6 +54,7 @@ int kbc_wait_for_out_buf(unsigned num_tries)
 		{
 			return 1; // Try again
 		}
+		printf("status: 0x%X\n", status);
 		if (status & BIT(I8042_STATUS_OBF_BIT))
 		{
 			return 0;
