@@ -285,14 +285,17 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	static context_menu_t *context_menu = NULL;
 	static int state = RACINIX_STATE_MAIN_MENU_BASE;
 	static size_t button_ID = RACINIX_MAIN_MENU_NUM_BTN;
-	static char *buttons[RACINIX_MAIN_MENU_NUM_BTN];
-	buttons[0] = "1 PLAYER", '\0';
-	buttons[1] = "2 PLAYERS IN THE SAME PC", '\0';
-	buttons[2] = "2 PLAYERS VIA SERIAL PORT", '\0';
-	buttons[3] = "SETTINGS", '\0';
-	buttons[4] = "CREDITS", '\0';
-	buttons[5] = "EXIT", '\0';
-	static char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
+	static const unsigned char *buttons[] =
+	{
+			"1 PLAYER",
+			"2 PLAYERS IN THE SAME PC",
+			"2 PLAYERS VIA SERIAL PORT",
+			"SETTINGS",
+			"CREDITS",
+			"EXIT",
+			"TESTE"
+	};
+	static const unsigned char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
 
 	if (event == RACINIX_EVENT_SERIAL_RECEIVE)
 	{
@@ -876,7 +879,7 @@ void racinix_draw_mouse()
 	vg_swap_mouse_buffer();
 }
 
-void racinix_draw_menu(size_t button_ID, char *buttons[])
+void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[])
 {
 	bitmap_draw(background, 0, 0);
 	// Show logo

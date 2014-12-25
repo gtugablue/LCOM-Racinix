@@ -117,7 +117,7 @@ void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
 void racinix_draw_mouse();
 
-void racinix_draw_menu(size_t button_ID, char *buttons[]);
+void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 
 // Events
 enum

@@ -305,19 +305,17 @@ void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned
 {
 	// TODO improve performance
 	int wheel_ID1, wheel_ID2;
-	unsigned i = 50;
-
-	while (i > 0) // Separate vehicles
+	size_t i;
+	double step = 0.01;
+	for (i = 0; i < 50; ++i)
 	{
-		--i;
-		printf("colliding...\n");
 		wheel_ID1 = vehicle_check_vehicle_collision(vehicle, vehicle2);
 		wheel_ID2 = vehicle_check_vehicle_collision(vehicle2, vehicle);
 		if (wheel_ID1 != -1 || wheel_ID2 != -1)
 		{
 			vector2D_t r = vectorSubtract(vehicle2->position, vehicle->position);
-			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / 0.01));
-			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / 0.01));
+			vehicle->position = vectorSubtract(vehicle->position, vectorDivide(r, vectorNorm(r) / step));
+			vehicle2->position = vectorAdd(vehicle2->position, vectorDivide(r, vectorNorm(r) / step));
 			vehicle_calculate_wheel_position(vehicle);
 			vehicle_calculate_wheel_position(vehicle2);
 			continue;

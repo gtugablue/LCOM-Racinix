@@ -19,13 +19,13 @@ enum
 
 typedef struct
 {
-	char **items;
+	const unsigned char **items;
 	unsigned num_items;
 	uint16_t *background; // For efficiency purposes
 	font_t *font;
 } context_menu_t;
 
-context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info, font_t *font);
+context_menu_t *context_menu_create(const unsigned char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 int context_menu_click(context_menu_t *context_menu, unsigned x, unsigned y, vbe_mode_info_t *vbe_mode_info);
 
