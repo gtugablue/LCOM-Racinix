@@ -14,12 +14,14 @@ static void pushApart(vector2D_t hull[], unsigned hull_size);
 static unsigned long track_generate_random(unsigned long *seed);
 static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[]);
 static bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
+static bool intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf);
 static void swapPoints(vector2D_t *a, int i, int j);
 static int partition(vector2D_t *a, int left, int right, int pivot);
 static void quickSort(vector2D_t *a, int left, int right);
 static unsigned modulo(int a, int b);
 static int track_generate_perturb(track_t *track, unsigned long *seed);
 static void track_generate_fix_angles(track_t *track);
+static bool track_generate_check_intersection(track_t *track);
 static void track_free_try_again(track_t *track);
 static void track_initialize_arguments(track_t *track);
 
@@ -47,6 +49,13 @@ int track_random_generate(track_t *track, unsigned long seed)
 			track_free_try_again(track);
 			continue; // Try again
 		}
+		track_generate_set_start_line(track);
+#ifndef TRACK_GENERATION_ALLOW_INTERSECTIONS
+		if (track_generate_check_intersection(track)) // Track intersects itself
+		{
+			continue; // Try again
+		}
+#endif
 		result = track_generate_spline(track);
 		if (result == -1)
 		{
@@ -100,6 +109,35 @@ int track_generate_control_points(track_t *track, unsigned long *seed)
 		track_generate_fix_angles(track);
 	}
 	return 0;
+}
+
+void track_generate_set_start_line(track_t *track)
+{
+	size_t i;
+
+	// Find largest angle between control points
+	unsigned best = 0;
+	double best_angle = vectorAngle(vectorSubtract(track->control_points[track->num_control_points - 1], track->control_points[0]), vectorSubtract(track->control_points[1], track->control_points[0]));
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		double current_angle = vectorAngle(vectorSubtract(track->control_points[i - 1], track->control_points[i]), vectorSubtract(track->control_points[(i + 1) % track->num_control_points], track->control_points[i]));
+		if (current_angle > best_angle)
+		{
+			best_angle = current_angle;
+			best = i;
+		}
+	}
+
+	// Rotate array
+	vector2D_t aux[track->num_control_points];
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		aux[i] = track->control_points[i];
+	}
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		track->control_points[i] = aux[(i + best) % track->num_control_points];
+	}
 }
 
 void track_draw(track_t *track)
@@ -308,6 +346,11 @@ static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[])
 static bool isLeft( vector2D_t p1, vector2D_t p2, vector2D_t p3 )
 {
 	return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0;
+}
+
+static bool intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf)
+{
+	return isLeft(Pi, Pf, Qi) != isLeft(Pi, Pf, Qf) && isLeft(Pi, Qi, Qf) != isLeft(Pf, Qi, Qf);
 }
 
 static void swapPoints(vector2D_t *a, int i, int j)
@@ -622,6 +665,24 @@ static void track_generate_fix_angles(track_t *track)
 		track->control_points[next].x = track->control_points[i].x + newX;
 		track->control_points[next].y = track->control_points[i].y + newY;
 	}
+}
+
+static bool track_generate_check_intersection(track_t *track)
+{
+	size_t i, j;
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		for (j = 0; j < track->num_control_points; ++j)
+		{
+			if (MIN(modulo(i - j, track->num_control_points), modulo(j - i, track->num_control_points)) > 2 && intersect(track->control_points[i], track->control_points[(i + 1) % track->num_control_points], track->control_points[j], track->control_points[(j + 1) % track->num_control_points]))
+			{
+				printf("num_control_points: %d, i: %d, j: %d\n", track->num_control_points, i, j);
+				return true;
+			}
+		}
+	}
+	printf("no intersection\n");
+	return false;
 }
 
 unsigned track_get_closest_control_point(track_t *track, vector2D_t point)
