@@ -22,6 +22,7 @@
 #define TRACK_GENERATION_MIN_POINT_DISTANCE			100
 #define TRACK_GENERATION_MAX_ANGLE					100
 #define TRACK_GENERATION_NUM_TRIES					30
+//#define TRACK_GENERATION_ALLOW_INTERSECTIONS		Uncomment to allow the track to intersect itself
 
 typedef struct
 {
@@ -55,6 +56,8 @@ void track_draw_finish_line(track_t *track);
 double track_get_point_drag(track_t *track, int x, int y, unsigned width, unsigned height);
 
 int track_generate_control_points(track_t *track, unsigned long *seed);
+
+void track_generate_set_start_line(track_t *track);
 
 unsigned track_get_closest_control_point(track_t *track, vector2D_t point);
 
