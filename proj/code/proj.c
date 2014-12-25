@@ -295,7 +295,11 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			"EXIT",
 			"TESTE"
 	};
-	static const unsigned char *context_menu_track_choice_items[] = { "RANDOM TRACK", "DESIGN TRACK" };
+	static const unsigned char *context_menu_track_choice_items[] =
+	{
+			"RANDOM TRACK",
+			"DESIGN TRACK"
+	};
 
 	if (event == RACINIX_EVENT_SERIAL_RECEIVE)
 	{
