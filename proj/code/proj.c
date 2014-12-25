@@ -654,7 +654,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 					state = RACINIX_STATE_TRACK_DESIGN_NEW;
 					return RACINIX_STATE_MAIN_MENU;
 				}
-				else if (key == KEY_ENTER)
+				else if (key == KEY_ENTER && track->num_control_points >= 3) // If the ENTER key is pressed and control points generate a polygon
 				{
 					if (track_update_track_points(track) == 0)
 					{
