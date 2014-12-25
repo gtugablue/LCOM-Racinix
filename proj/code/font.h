@@ -36,9 +36,9 @@ typedef struct
 
 font_t *font_load(const char* folder);
 
-void font_show_string(font_t *font, char *string, unsigned height, unsigned x, unsigned y, font_alignment_t font_alignment, uint16_t color, unsigned shade);
+void font_show_string(font_t *font, const unsigned char *string, unsigned height, unsigned x, unsigned y, font_alignment_t font_alignment, uint16_t color, unsigned shade);
 
-unsigned font_calculate_string_width(font_t *font, char *string, unsigned height);
+unsigned font_calculate_string_width(font_t *font, const unsigned char *string, unsigned height);
 
 void font_delete(font_t *font);
 

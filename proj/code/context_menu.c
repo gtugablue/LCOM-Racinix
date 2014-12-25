@@ -3,7 +3,7 @@
 
 static int context_menu_background_lose_focus(context_menu_t *context_menu, vbe_mode_info_t *vbe_mode_info);
 
-context_menu_t *context_menu_create(char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info, font_t *font)
+context_menu_t *context_menu_create(const unsigned char **items, unsigned num_items, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	context_menu_t *context_menu;
 	if ((context_menu = malloc(sizeof(context_menu_t))) == NULL)
