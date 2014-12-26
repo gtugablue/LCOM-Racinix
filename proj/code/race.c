@@ -8,12 +8,14 @@
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time);
 static void race_show_countdown(race_t *race);
+static void race_show_speedometers(race_t *race);
+static void race_show_speedometer(race_t *race, vector2D_t location, double speed, uint16_t color);
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
 static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[]);
 static void race_update_first(race_t *race);
 
-race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, bitmap_t *bitmap_speedometer, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font)
 {
 	race_t *race;
 	if ((race = malloc(sizeof(race_t))) == NULL)
@@ -31,6 +33,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	race->first = 0;
 	race->serial_port = serial_port;
 	race->vehicle_bitmaps = vehicle_bitmaps;
+	race->bitmap_speedometer = bitmap_speedometer;
 	race->vehicle_keys = vehicle_keys;
 	race->vehicle_colors = vehicle_colors;
 	race->time = -freeze_time;
@@ -368,6 +371,24 @@ static void race_show_countdown(race_t *race)
 			font_show_string(race->font, RACE_START_TEXT, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
 		}
 	}
+}
+
+static void race_show_speedometers(race_t *race)
+{
+	if (race->serial_port)
+	{
+		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN) * 2, race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
+		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[1]->speed, race->vehicle_colors[1]);
+	}
+	else
+	{
+		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
+	}
+}
+
+static void race_show_speedometer(race_t *race, vector2D_t location, double speed, uint16_t color)
+{
+	bitmap_draw_alpha(race->bitmap_speedometer, location.x, location.y, color);
 }
 
 static int race_serial_transmit(race_t *race)

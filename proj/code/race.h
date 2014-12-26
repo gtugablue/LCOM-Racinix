@@ -10,6 +10,7 @@
 #define RACE_START_TEXT							"GO!"
 #define RACE_WAITING_TEXT						"WAITING..."
 #define RACE_START_TEXT_FADE_TIME				0.6
+#define RACE_SPEEDOMETER_MARGIN					30
 
 #define RACE_SERIAL_PROTO_BASE					10
 #define RACE_SERIAL_PROTO_FLOAT_MULTIPLIER		1000
@@ -32,6 +33,7 @@ typedef struct
 	bool host; // true if the player created the match, false otherwise
 
 	bitmap_t **vehicle_bitmaps;
+	bitmap_t *bitmap_speedometer;
 	vehicle_keys_t *vehicle_keys;
 	uint16_t *vehicle_colors;
 	vehicle_t **vehicles;
@@ -50,7 +52,7 @@ enum
 	RACE_STATE_END
 };
 
-race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
+race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, bitmap_t* bitmap_speedometer, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool host);
 
