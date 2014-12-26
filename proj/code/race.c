@@ -40,11 +40,12 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	return race;
 }
 
-void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool wait)
+void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool host)
 {
 	race->port_number = port_number;
 	race->seed = seed;
-	if (wait)
+	race->host = host;
+	if (host)
 	{
 		race->state = RACE_STATE_WAITING;
 	}
@@ -62,11 +63,12 @@ int race_start(race_t *race)
 	double heading = atan2(race->track->spline[0].y - race->track->spline[race->track->spline_size - 1].y, race->track->spline[0].x - race->track->spline[race->track->spline_size - 1].x);
 	temp_vector = vectorRotate(starting_position_increment, PI / 2);
 	normalize(&temp_vector);
-	size_t i;
-	for (i = 0; i < race->num_players; ++i)
+	size_t i, j;
+	j = race->host ? 0 : 1;
+	for (i = 0; i < race->num_players; ++i, j = (j + 1) % race->num_players)
 	{
 		starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
-		starting_position = vectorAdd(vectorAdd(race->track->inside_spline[0], vectorMultiply(starting_position_increment, i + 1)), starting_position_offset);
+		starting_position = vectorAdd(vectorAdd(race->track->inside_spline[0], vectorMultiply(starting_position_increment, j + 1)), starting_position_offset);
 		race->vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, race->vehicle_bitmaps[i], race->vehicle_keys[i], race->vehicle_colors[i]);
 	}
 	return 0;
@@ -101,6 +103,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		{
 			race->state = RACE_STATE_RACING;
 		}
+		for (i = 0; i < race->num_players; ++i)
+		{
+			vehicle_draw(race->vehicles[i]);
+		}
 		font_show_string(race->font, RACE_WAITING_TEXT, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
 		break;
 	}
@@ -109,6 +115,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		if (race->time >= 0)
 		{
 			race->state = RACE_STATE_RACING;
+		}
+		for (i = 0; i < race->num_players; ++i)
+		{
+			vehicle_draw(race->vehicles[i]);
 		}
 		race->time += delta_time;
 		break;
@@ -166,6 +176,10 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	}
 	case RACE_STATE_END:
 	{
+		for (i = 0; i < race->num_players; ++i)
+		{
+			vehicle_draw(race->vehicles[i]);
+		}
 		if (race->serial_port)
 		{
 			if (race->first == 0)
@@ -184,11 +198,6 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
 		break;
 	}
-	}
-
-	for (i = 0; i < race->num_players; ++i)
-	{
-		vehicle_draw(race->vehicles[i]);
 	}
 
 	if (race->state != RACE_STATE_WAITING)
