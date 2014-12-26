@@ -287,7 +287,7 @@ static void race_show_info(race_t *race, unsigned fps)
 		unsigned y = 25 * i + 35;
 
 		sprintf(string, "PLAYER %d:", vehicle_IDs[i] + 1);
-		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 100, y, FONT_ALIGNMENT_RIGHT, race->vehicle_colors[vehicle_IDs[i]], 2);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 110, y, FONT_ALIGNMENT_RIGHT, race->vehicle_colors[vehicle_IDs[i]], 2);
 
 		sprintf(string, "%d/%d", race->vehicles[vehicle_IDs[i]]->current_checkpoint, race->track->num_control_points);
 		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 80, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
