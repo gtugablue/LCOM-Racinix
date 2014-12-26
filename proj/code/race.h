@@ -29,6 +29,7 @@ typedef struct
 	bool serial_port;
 	unsigned port_number;
 	long seed; // -1 if track was manually generated
+	bool host; // true if the player created the match, false otherwise
 
 	bitmap_t **vehicle_bitmaps;
 	vehicle_keys_t *vehicle_keys;
@@ -51,7 +52,7 @@ enum
 
 race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
-void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool wait);
+void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool host);
 
 int race_start(race_t *race);
 
