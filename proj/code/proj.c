@@ -822,6 +822,7 @@ int racinix_main_menu_serial_recieve(char *string)
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
 			{
+				printf("inside MNL\n");
 				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
 				{
 					return RACINIX_STATE_ERROR;
@@ -966,7 +967,7 @@ int racinix_serial_transmit_track_control_points(track_t *track)
 {
 	// NEW_RACE TI MNL <num_points> <x1> <y1> <x2> <y2> ... <xn> <yn>
 	unsigned char string[50 + 4 * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER * track->num_control_points];
-	sprintf(string, "%s %s %d", RACINIX_SERIAL_PROTO_TRACK_INFO, RACINIX_SERIAL_PROTO_TRACK_MANUAL, track->num_control_points);
+	sprintf(string, "%s %s %s %d", RACINIX_SERIAL_PROTO_NEW_RACE, RACINIX_SERIAL_PROTO_TRACK_INFO, RACINIX_SERIAL_PROTO_TRACK_MANUAL, track->num_control_points);
 	size_t i;
 	unsigned char number[4 * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER];
 	for (i = 0; i < track->num_control_points; ++i)
