@@ -814,6 +814,7 @@ int racinix_main_menu_serial_recieve(char *string)
 				{
 					return RACINIX_STATE_ERROR;
 				}
+				race_serial_transmit_ready_state(race);
 				return RACINIX_STATE_RACE;
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
@@ -861,6 +862,7 @@ int racinix_main_menu_serial_recieve(char *string)
 				{
 					return RACINIX_STATE_ERROR;
 				}
+				race_serial_transmit_ready_state(race);
 				return RACINIX_STATE_RACE;
 			}
 		}
@@ -868,7 +870,6 @@ int racinix_main_menu_serial_recieve(char *string)
 		{
 			return RACINIX_STATE_MAIN_MENU;
 		}
-		race_serial_transmit_ready_state(race);
 	}
 	else
 	{
