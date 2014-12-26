@@ -194,10 +194,10 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
-						//if (racinix_serial_int_handler())
-						//{
-						//	return 1;
-						//}
+						if (racinix_serial_int_handler()) // Sometimes VMWare stops sending interrupts for no reason...
+						{
+							return 1;
+						}
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
@@ -822,25 +822,21 @@ int racinix_main_menu_serial_recieve(char *string)
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
 			{
-				printf("inside MNL\n");
 				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
 				{
 					return RACINIX_STATE_ERROR;
 				}
-
 				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-
 				track->num_control_points = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 
 				if ((track->control_points = realloc(track->control_points, track->num_control_points * sizeof(vector2D_t))) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-
 				size_t i;
 				vector2D_t point;
 				for (i = 0; i < track->num_control_points; ++i)
@@ -849,12 +845,12 @@ int racinix_main_menu_serial_recieve(char *string)
 					{
 						return RACINIX_STATE_ERROR;
 					}
-					track->control_points[i].x = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+					track->control_points[i].x = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACINIX_SERIAL_PROTO_FLOAT_MULTIPLIER;
 					if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
 					{
 						return RACINIX_STATE_ERROR;
 					}
-					track->control_points[i].y = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+					track->control_points[i].y = (double)strtoul(token, NULL, RACE_SERIAL_PROTO_BASE) / RACINIX_SERIAL_PROTO_FLOAT_MULTIPLIER;
 				}
 
 				track_generate_spline(track);
