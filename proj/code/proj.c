@@ -290,10 +290,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			"1 PLAYER",
 			"2 PLAYERS IN THE SAME PC",
 			"2 PLAYERS VIA SERIAL PORT",
-			"SETTINGS",
 			"CREDITS",
 			"EXIT",
-			"TESTE"
 	};
 	static const unsigned char *context_menu_track_choice_items[] =
 	{
@@ -348,8 +346,6 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					num_players = 2;
 					serial_port = true;
 					return RACINIX_STATE_MAIN_MENU;
-				case RACINIX_MAIN_MENU_BUTTON_SETTINGS: // TODO Settings
-					break;
 				case RACINIX_MAIN_MENU_BUTTON_CREDITS: // Credits
 					bitmap_draw(bitmap_credits, 0, 0);
 					vg_swap_buffer();

@@ -380,7 +380,7 @@ bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track)
 
 void vehicle_checkpoint_collision_handler(vehicle_t *vehicle, track_t *track)
 {
-	vehicle->current_checkpoint = (vehicle->current_checkpoint + 1) % track->num_control_points;
+	vehicle->current_checkpoint = (vehicle->current_checkpoint + 1) % (track->num_control_points);
 	if (vehicle->current_checkpoint == 1)
 	{
 		++vehicle->current_lap;

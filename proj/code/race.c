@@ -287,7 +287,7 @@ static void race_show_info(race_t *race, unsigned fps)
 		unsigned y = 25 * i + 35;
 
 		sprintf(string, "PLAYER %d:", vehicle_IDs[i] + 1);
-		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 100, y, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 0);
+		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 100, y, FONT_ALIGNMENT_RIGHT, race->vehicle_colors[vehicle_IDs[i]], 2);
 
 		sprintf(string, "%d/%d", race->vehicles[vehicle_IDs[i]]->current_checkpoint, race->track->num_control_points);
 		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 80, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
@@ -346,7 +346,7 @@ static void race_update_first(race_t *race)
 	size_t i;
 	for (i = 0; i < race->num_players; ++i)
 	{
-		if (race->vehicles[i]->current_lap * race->track->num_control_points + race->vehicles[i]->current_checkpoint > race->vehicles[race->first]->current_lap * race->track->num_control_points + race->vehicles[race->first]->current_checkpoint)
+		if (race->vehicles[i]->current_lap * race->track->num_control_points + (race->vehicles[i]->current_checkpoint - 1) % race->track->num_control_points > race->vehicles[race->first]->current_lap * race->track->num_control_points + (race->vehicles[race->first]->current_checkpoint - 1) % race->track->num_control_points)
 		{
 			race->first = (race->first + 1) % race->num_players;
 		}
