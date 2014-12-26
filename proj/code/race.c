@@ -7,6 +7,7 @@
 #define PI 					3.14159265358979323846
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time);
+static void race_show_countdown(race_t *race);
 static void race_show_info(race_t *race, unsigned fps);
 static int race_serial_transmit(race_t *race);
 static void race_sort_vehicles(race_t *race, unsigned char vehicle_IDs[]);
@@ -24,6 +25,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 		race_delete(race);
 		return NULL;
 	}
+	race->state = RACE_STATE_FREEZETIME;
 	race->track = track;
 	race->num_players = num_players;
 	race->first = 0;
@@ -38,10 +40,18 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	return race;
 }
 
-void race_set_serial_port_info(race_t *race, unsigned port_number, long seed)
+void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool wait)
 {
 	race->port_number = port_number;
 	race->seed = seed;
+	if (wait)
+	{
+		race->state = RACE_STATE_WAITING;
+	}
+	else
+	{
+		race->state = RACE_STATE_FREEZETIME;
+	}
 }
 
 int race_start(race_t *race)
@@ -68,6 +78,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	vg_fill(RACINIX_COLOR_GRASS);
 	track_draw(race->track);
 	size_t i;
+	unsigned char string[50];
 
 	// Draw checkpoints
 	if (race->num_players == 2 && race->vehicles[0]->current_checkpoint == race->vehicles[1]->current_checkpoint) // Same checkpoint
@@ -82,37 +93,36 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		}
 	}
 
-	if (race->time >= 0)
+	switch (race->state)
+	{
+	case RACE_STATE_WAITING:
+	{
+		if (race->time >= 0)
+		{
+			race->state = RACE_STATE_RACING;
+		}
+		font_show_string(race->font, RACE_WAITING_TEXT, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		break;
+	}
+	case RACE_STATE_FREEZETIME:
+	{
+		if (race->time >= 0)
+		{
+			race->state = RACE_STATE_RACING;
+		}
+		race->time += delta_time;
+		break;
+	}
+	case RACE_STATE_RACING:
 	{
 		if (race->vehicles[race->first]->current_lap >= race->num_laps)
 		{
 			// Race ended
-
-			for (i = 0; i < race->num_players; ++i)
-			{
-				vehicle_draw(race->vehicles[i]);
-			}
-
-			char string[50];
-			if (race->serial_port)
-			{
-				if (race->first == 0)
-				{
-					sprintf(string, "YOU WIN!");
-				}
-				else
-				{
-					sprintf(string, "YOU LOOSE!");
-				}
-			}
-			else
-			{
-				sprintf(string, "PLAYER %d WINS!", race->first + 1);
-			}
-			font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+			race->state = RACE_STATE_END;
 		}
 		else
 		{
+			race_show_countdown(race);
 			// Update vehicles
 			if (race->serial_port)
 			{
@@ -151,18 +161,43 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 			race_update_first(race);
 		}
+		race->time += delta_time;
+		break;
 	}
-	else
+	case RACE_STATE_END:
 	{
-		for (i = 0; i < race->num_players; ++i)
+		if (race->serial_port)
 		{
-			vehicle_draw(race->vehicles[i]);
+			if (race->first == 0)
+			{
+				sprintf(string, "YOU WIN!");
+			}
+			else
+			{
+				sprintf(string, "YOU LOSE!");
+			}
 		}
+		else
+		{
+			sprintf(string, "PLAYER %d WINS!", race->first + 1);
+		}
+		font_show_string(race->font, string, FONT_BITMAP_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - FONT_BITMAP_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		break;
+	}
+	}
+
+	for (i = 0; i < race->num_players; ++i)
+	{
+		vehicle_draw(race->vehicles[i]);
+	}
+
+	if (race->state != RACE_STATE_WAITING)
+	{
+		race_show_countdown(race);
 	}
 
 	race_show_info(race, fps);
 	vg_swap_buffer();
-	race->time += delta_time;
 
 	return 0;
 }
@@ -176,7 +211,7 @@ int race_serial_receive(race_t *race)
 		{
 			return 1;
 		}
-		if (strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0)
+		if (strcmp(token, RACE_SERIAL_PROTO_VEHICLE_INFO) == 0) // VI
 		{
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
@@ -214,13 +249,39 @@ int race_serial_receive(race_t *race)
 			}
 			race->vehicles[1]->current_checkpoint = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 		}
+		else if (strcmp(token, RACE_SERIAL_PROTO_READY) == 0) // READY
+		{
+			if (race->state = RACE_STATE_WAITING)
+			{
+				race->state = RACE_STATE_FREEZETIME;
+			}
+		}
 		else
 		{
 			return 1;
 		}
 	}
-	printf("derp\n");
 	return 0;
+}
+
+int race_serial_transmit_ready_state(race_t *race)
+{
+	// RACE READY
+	char *string;
+	if (asprintf(&string, "%s %s",
+			RACE_SERIAL_PROTO_RACE,
+			RACE_SERIAL_PROTO_READY
+	) == -1)
+	{
+		free(string);
+		return 1;
+	}
+	if (serial_interrupt_transmit_string(race->port_number, string))
+	{
+		return 1;
+	}
+
+	free(string);
 }
 
 void race_delete(race_t *race)
@@ -253,26 +314,7 @@ static void race_show_info(race_t *race, unsigned fps)
 	char string[100];
 	sprintf(string, "FPS: %d", fps);
 	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
-	//if (race->time < 0)
-	//{
-	//	sprintf(string, "%d", (int)abs((int)floor(race->time)));
-	//	font_show_string(race->font, string, RACE_START_COUNTER_HEIGHT, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - RACE_START_COUNTER_HEIGHT) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
-	//}
-	if (race->time < RACE_START_TEXT_FADE_TIME)
-	{
-		if (race->time < 0)
-		{
-			sprintf(string, "%d", (int)abs((int)floor(race->time)));
-			double height = RACE_START_COUNTER_HEIGHT * fmod(fabs(race->time), 1);
-			font_show_string(race->font, string, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
-		}
-		else
-		{
-			double height = RACE_START_COUNTER_HEIGHT * fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME;
-			//double height = RACE_START_COUNTER_HEIGHT * (1 - fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME);
-			font_show_string(race->font, RACE_START_TEXT, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
-		}
-	}
+
 
 	// Show scoreboard
 	font_show_string(race->font, "CP", 15, race->vbe_mode_info->XResolution - 80, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
@@ -294,6 +336,26 @@ static void race_show_info(race_t *race, unsigned fps)
 
 		sprintf(string, "%d/%d", race->vehicles[vehicle_IDs[i]]->current_lap + 1, race->num_laps);
 		font_show_string(race->font, string, 15, race->vbe_mode_info->XResolution - 30, y, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);
+	}
+}
+
+static void race_show_countdown(race_t *race)
+{
+	if (race->time < RACE_START_TEXT_FADE_TIME)
+	{
+		if (race->time < 0)
+		{
+			unsigned char string[50];
+			sprintf(string, "%d", (int)abs((int)floor(race->time)));
+			double height = RACE_START_COUNTER_HEIGHT * fmod(fabs(race->time), 1);
+			font_show_string(race->font, string, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		}
+		else
+		{
+			double height = RACE_START_COUNTER_HEIGHT * fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME;
+			//double height = RACE_START_COUNTER_HEIGHT * (1 - fmod(race->time, 1) / RACE_START_TEXT_FADE_TIME);
+			font_show_string(race->font, RACE_START_TEXT, height, race->vbe_mode_info->XResolution / 2, (race->vbe_mode_info->YResolution - height) / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 4);
+		}
 	}
 }
 
