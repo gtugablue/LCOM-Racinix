@@ -59,7 +59,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps);
 
 int race_serial_receive(race_t *race);
 
-int race_serial_transmit_ready_state();
+int race_serial_transmit_ready_state(race_t *race);
 
 void race_delete(race_t *race);
 

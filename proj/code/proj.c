@@ -868,6 +868,7 @@ int racinix_main_menu_serial_recieve(char *string)
 		{
 			return RACINIX_STATE_MAIN_MENU;
 		}
+		race_serial_transmit_ready_state(race);
 	}
 	else
 	{
