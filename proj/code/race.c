@@ -251,9 +251,9 @@ int race_serial_receive(race_t *race)
 		}
 		else if (strcmp(token, RACE_SERIAL_PROTO_READY) == 0) // READY
 		{
-			if (race->state = RACE_STATE_WAITING)
+			if (race->state == RACE_STATE_WAITING)
 			{
-				race->state = RACE_STATE_FREEZETIME;
+				race->state == RACE_STATE_FREEZETIME;
 			}
 		}
 		else
