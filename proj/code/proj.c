@@ -413,7 +413,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				}
 				if (serial_port)
 				{
-					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
+					race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed, true);
 					// NEW_RACE TI RND <seed>
 					char *string;
 					if (asprintf(&string, "%s %s %s %lu",
@@ -665,8 +665,8 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 							{
 								return RACINIX_STATE_ERROR;
 							}
+							race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, -1, true);
 						}
-
 						if (race_start(race))
 						{
 							return RACINIX_STATE_ERROR;
@@ -809,7 +809,7 @@ int racinix_main_menu_serial_recieve(char *string)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
+				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed, false);
 				if (race_start(race))
 				{
 					return RACINIX_STATE_ERROR;
@@ -856,7 +856,7 @@ int racinix_main_menu_serial_recieve(char *string)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, -1);
+				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, -1, false);
 				if (race_start(race))
 				{
 					return RACINIX_STATE_ERROR;
