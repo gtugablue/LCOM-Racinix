@@ -27,6 +27,7 @@ font_t *font_load(const char* folder)
 	font->hyphen = NULL;
 	font->colon = NULL;
 	font->space = NULL;
+	font->right_slash = NULL;
 
 	if ((font->lower_case = malloc(FONT_NUM_LETTERS * sizeof(bitmap_t *))) == NULL)
 	{
@@ -93,6 +94,11 @@ font_t *font_load(const char* folder)
 		return NULL;
 	}
 	if ((font->space = malloc(sizeof(bitmap_t *))) == NULL)
+	{
+		font_delete(font);
+		return NULL;
+	}
+	if ((font->right_slash = malloc(sizeof(bitmap_t *))) == NULL)
 	{
 		font_delete(font);
 		return NULL;
@@ -207,6 +213,18 @@ font_t *font_load(const char* folder)
 		return NULL;
 	}
 	if ((font->colon = bitmap_load(s)) == NULL)
+	{
+		free(s);
+		return NULL;
+	}
+	free(s);
+
+	// Right slash
+	if (asprintf(&s, "%s/right_slash.bmp", folder) == -1)
+	{
+		return NULL;
+	}
+	if ((font->right_slash = bitmap_load(s)) == NULL)
 	{
 		free(s);
 		return NULL;
@@ -380,6 +398,7 @@ static bitmap_t *font_character_to_bitmap(font_t *font, char character)
 	case '?': return font->question_mark;
 	case ',': return font->comma;
 	case ':': return font->colon;
+	case '/': return font->right_slash;
 	}
 	return NULL;
 }
