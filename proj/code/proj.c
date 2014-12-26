@@ -662,7 +662,15 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 						{
 							return RACINIX_STATE_ERROR;
 						}
-						// TODO SERIAL PORT
+
+						if (serial_port)
+						{
+							if (racinix_serial_transmit_track_control_points(track) == RACINIX_STATE_ERROR)
+							{
+								return RACINIX_STATE_ERROR;
+							}
+						}
+
 						if (race_start(race))
 						{
 							return RACINIX_STATE_ERROR;
@@ -806,7 +814,6 @@ int racinix_main_menu_serial_recieve(char *string)
 					return RACINIX_STATE_ERROR;
 				}
 				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, seed);
-				printf("supostamente derp\n");
 				if (race_start(race))
 				{
 					return RACINIX_STATE_ERROR;
@@ -815,8 +822,53 @@ int racinix_main_menu_serial_recieve(char *string)
 			}
 			else if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_MANUAL) == 0) // MNL
 			{
-				// TODO
-				return RACINIX_STATE_MAIN_MENU;
+				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
+				{
+					return RACINIX_STATE_ERROR;
+				}
+
+				track_t *track;
+				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
+				{
+					return RACINIX_STATE_ERROR;
+				}
+
+				track->num_control_points = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
+				if ((track->control_points = realloc(track->control_points, track->num_control_points * sizeof(vector2D_t))) == NULL)
+				{
+					return RACINIX_STATE_ERROR;
+				}
+
+				size_t i;
+				vector2D_t point;
+				for (i = 0; i < track->num_control_points; ++i)
+				{
+					if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
+					{
+						return RACINIX_STATE_ERROR;
+					}
+					track->control_points[i].x = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+					if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL) // <num_points>
+					{
+						return RACINIX_STATE_ERROR;
+					}
+					track->control_points[i].y = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+				}
+
+				track_generate_spline(track);
+				track_update_track_points(track);
+
+				if ((race = race_create(track, 2, true, vehicle_bitmaps, vehicle_keys, vehicle_colors, RACINIX_RACE_FREEZE_TIME, RACINIX_RACE_NUM_LAPS, &vmi, font_impact)) == NULL)
+				{
+					return RACINIX_STATE_ERROR;
+				}
+				race_set_serial_port_info(race, RACINIX_SERIAL_PORT_NUMBER, -1);
+				if (race_start(race))
+				{
+					return RACINIX_STATE_ERROR;
+				}
+				return RACINIX_STATE_RACE;
 			}
 		}
 		else
@@ -908,4 +960,25 @@ void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[])
 			font_show_string(font_impact, buttons[i], RACINIX_MAIN_MENU_CHAR_HEIGHT, vmi.XResolution / 2, i * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, RACINIX_MAIN_MENU_BTN_TEXT_SHADE);
 		}
 	}
+}
+
+int racinix_serial_transmit_track_control_points(track_t *track)
+{
+	// NEW_RACE TI MNL <num_points> <x1> <y1> <x2> <y2> ... <xn> <yn>
+	unsigned char string[50 + 4 * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER * track->num_control_points];
+	sprintf(string, "%s %s %d", RACINIX_SERIAL_PROTO_TRACK_INFO, RACINIX_SERIAL_PROTO_TRACK_MANUAL, track->num_control_points);
+	size_t i;
+	unsigned char number[4 * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER];
+	for (i = 0; i < track->num_control_points; ++i)
+	{
+		sprintf(number, " %lu %lu", (unsigned long)(track->control_points[i].x * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER), (unsigned long)(track->control_points[i].y * RACE_SERIAL_PROTO_FLOAT_MULTIPLIER));
+		strcat(string, number);
+	}
+
+	printf("transmitting: %s\n", string);
+	if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
+	{
+		return RACINIX_STATE_ERROR;
+	}
+	return RACINIX_STATE_RACE;
 }

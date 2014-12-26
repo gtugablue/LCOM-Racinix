@@ -55,7 +55,7 @@
 #define RACINIX_SERIAL_PROTO_NEW_RACE							"NEW_RACE" // NEW_RACE TI
 #define RACINIX_SERIAL_PROTO_TRACK_INFO							"TI" // TI RND/MAN
 #define RACINIX_SERIAL_PROTO_TRACK_RANDOM						"RND" // RND <seed>
-#define RACINIX_SERIAL_PROTO_TRACK_MANUAL						"MNL" // MNL ... TODO
+#define RACINIX_SERIAL_PROTO_TRACK_MANUAL						"MNL" // MNL <num_points> <x1> <y1> <x2> <y2> ... <xn> <yn>
 #define RACINIX_SERIAL_PROTO_END_RACE							"END_RACE" // END_RACE
 
 // States
@@ -118,6 +118,8 @@ void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 void racinix_draw_mouse();
 
 void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
+
+int racinix_serial_transmit_track_control_points(track_t *track);
 
 // Events
 enum

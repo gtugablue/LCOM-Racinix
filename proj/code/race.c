@@ -38,7 +38,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	return race;
 }
 
-void race_set_serial_port_info(race_t *race, unsigned port_number, unsigned long seed)
+void race_set_serial_port_info(race_t *race, unsigned port_number, long seed)
 {
 	race->port_number = port_number;
 	race->seed = seed;
