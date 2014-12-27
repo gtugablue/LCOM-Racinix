@@ -83,8 +83,10 @@ void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y, unsigned long alpha_color
 	uint16_t *double_buffer = vg_get_double_buffer();
 	uint16_t color;
 	size_t i, j;
-	unsigned x_limit = MIN(x + bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
-	unsigned y_limit = MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	int x_limit = MIN(x + bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+	int y_limit = MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	x_limit = x + bitmap->bitmap_information_header.width;
+	y_limit = y + bitmap->bitmap_information_header.height;
 	for (i = MAX(x, 0); i < x_limit; ++i)
 	{
 		for (j = MAX(y, 0); j < y_limit; ++j)
