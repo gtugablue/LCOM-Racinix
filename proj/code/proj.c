@@ -123,6 +123,7 @@ int racinix_exit()
 	bitmap_delete(logo);
 	bitmap_delete(bitmap_red_car);
 	bitmap_delete(bitmap_blue_car);
+	bitmap_delete(bitmap_speedometer);
 	bitmap_delete(bitmap_credits);
 	font_delete(font_impact);
 	return vg_exit();
