@@ -388,19 +388,29 @@ static void race_show_countdown(race_t *race)
 
 static void race_show_speedometers(race_t *race)
 {
-	if (race->num_players == 2 && !race->serial_port)
+	double y;
+	if (race->time > 1)
 	{
-		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - 3 * race->bitmap_speedometer->bitmap_information_header.width / 2 - 2 * RACE_SPEEDOMETER_MARGIN, race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
-		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - race->bitmap_speedometer->bitmap_information_header.width / 2 - RACE_SPEEDOMETER_MARGIN, race->vbe_mode_info->YResolution - 1), race->vehicles[1]->speed, race->vehicle_colors[1]);
+		y = race->vbe_mode_info->YResolution - 1 + 15;
 	}
 	else
 	{
-		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
+		y = race->vbe_mode_info->YResolution - 1 + race->bitmap_speedometer->bitmap_information_header.height * (1 - race->time);
+	}
+	if (race->num_players == 2 && !race->serial_port)
+	{
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - 3 * race->bitmap_speedometer->bitmap_information_header.width / 2 - 2 * RACE_SPEEDOMETER_MARGIN, y), race->vehicles[0]->speed, race->vehicle_colors[0]);
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - race->bitmap_speedometer->bitmap_information_header.width / 2 - RACE_SPEEDOMETER_MARGIN, y), race->vehicles[1]->speed, race->vehicle_colors[1]);
+	}
+	else
+	{
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), y), race->vehicles[0]->speed, race->vehicle_colors[0]);
 	}
 }
 
 static void race_show_speedometer(race_t *race, vector2D_t location, double speed, uint16_t color)
 {
+	vg_draw_circle(location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, 3, 0xFFFF);
 	bitmap_draw_alpha(race->bitmap_speedometer, location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, VIDEO_GR_64K_TRANSPARENT);
 	vector2D_t polygon[3];
 	double angle = (fabs(speed) / 120 > PI) ? (PI) : (fabs(speed) / 120);

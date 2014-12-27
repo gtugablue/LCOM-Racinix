@@ -25,7 +25,7 @@
 #define VEHICLE_LENGTH								38
 #define VEHICLE_STEERING_VS_SPEED_FACTOR			1.8
 
-#define VEHICLE_DRAW_VELOCITY // Uncomment to show velocity vector
+//#define VEHICLE_DRAW_VELOCITY // Uncomment to show velocity vector
 
 typedef struct
 {
