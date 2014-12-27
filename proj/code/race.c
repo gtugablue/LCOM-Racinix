@@ -67,19 +67,30 @@ int race_start(race_t *race)
 	temp_vector = vectorRotate(starting_position_increment, PI / 2);
 	normalize(&temp_vector);
 	size_t i, j;
-	j = race->host ? 0 : 1;
+	printf("j: %d\n", j);
+	if (race->host)
+	{
+		printf("inner j1: %d\n", j);
+		j = 0;
+		printf("inner j2: %d\n", j);
+	}
+	else
+	{
+		j = 1;
+	}
+	printf("j: %d\n", j);
 	for (i = 0; i < race->num_players; ++i, j = (j + 1) % race->num_players)
 	{
 		starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
 		starting_position = vectorAdd(vectorAdd(race->track->inside_spline[0], vectorMultiply(starting_position_increment, j + 1)), starting_position_offset);
 		race->vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, race->vehicle_bitmaps[i], race->vehicle_keys[i], race->vehicle_colors[i]);
+		printf("i: %d, j: %d\n", i, j);
 	}
 	return 0;
 }
 
 int race_tick(race_t *race, double delta_time, unsigned fps)
 {
-	vg_swap_mouse_buffer();
 	vg_fill(RACINIX_COLOR_GRASS);
 	track_draw(race->track);
 	size_t i;
@@ -172,6 +183,8 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 				}
 			}
 
+			race_show_speedometers(race);
+
 			race_update_first(race);
 		}
 		race->time += delta_time;
@@ -210,7 +223,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 
 	race_show_info(race, fps);
 	vg_swap_buffer();
-
+	vg_swap_mouse_buffer();
 	return 0;
 }
 
@@ -375,20 +388,27 @@ static void race_show_countdown(race_t *race)
 
 static void race_show_speedometers(race_t *race)
 {
-	if (race->serial_port)
+	if (race->num_players == 2 && !race->serial_port)
 	{
-		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN) * 2, race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
-		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[1]->speed, race->vehicle_colors[1]);
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - 3 * race->bitmap_speedometer->bitmap_information_header.width / 2 - 2 * RACE_SPEEDOMETER_MARGIN, race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - race->bitmap_speedometer->bitmap_information_header.width / 2 - RACE_SPEEDOMETER_MARGIN, race->vbe_mode_info->YResolution - 1), race->vehicles[1]->speed, race->vehicle_colors[1]);
 	}
 	else
 	{
-		//race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
+		race_show_speedometer(race, vectorCreate(race->vbe_mode_info->XResolution - (race->bitmap_speedometer->bitmap_information_header.width + RACE_SPEEDOMETER_MARGIN), race->vbe_mode_info->YResolution - 1), race->vehicles[0]->speed, race->vehicle_colors[0]);
 	}
 }
 
 static void race_show_speedometer(race_t *race, vector2D_t location, double speed, uint16_t color)
 {
-	bitmap_draw_alpha(race->bitmap_speedometer, location.x, location.y, color);
+	bitmap_draw_alpha(race->bitmap_speedometer, location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, VIDEO_GR_64K_TRANSPARENT);
+	vector2D_t polygon[3];
+	double angle = (fabs(speed) / 120 > PI) ? (PI) : (fabs(speed) / 120);
+	vector2D_t center_radius = vectorRotate(vectorCreate(race->bitmap_speedometer->bitmap_information_header.height * 0.04, 0), PI / 2 + angle);
+	polygon[0] = vectorAdd(location, vectorRotate(vectorMultiply(vectorCreate(-1, 0), race->bitmap_speedometer->bitmap_information_header.height * 0.8), angle));
+	polygon[1] = vectorSubtract(location, center_radius);
+	polygon[2] = vectorAdd(location, center_radius);
+	vg_draw_polygon(polygon, 3, color);
 }
 
 static int race_serial_transmit(race_t *race)
