@@ -239,9 +239,16 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 	double ratio = (double)character->bitmap_information_header.width / character->bitmap_information_header.height;
 	bitmap_t *scaled_bitmap;
 	unsigned width = ratio * height;
-	if ((scaled_bitmap = bitmap_scale(character, ratio * height, height * ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT))) == NULL)
+	if (height == FONT_BITMAP_HEIGHT)
 	{
-		return -1;
+		scaled_bitmap = character;
+	}
+	else
+	{
+		if ((scaled_bitmap = bitmap_scale(character, ratio * height, height * ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT))) == NULL)
+		{
+			return -1;
+		}
 	}
 	bitmap_draw_alpha(scaled_bitmap, x, y + (1 - ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT)) * height, FONT_TRANSPARENT_COLOR);
 
@@ -295,7 +302,10 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 	x -= shade;
 	y -= shade;
 
-	bitmap_delete(scaled_bitmap);
+	if (height != FONT_BITMAP_HEIGHT)
+	{
+		bitmap_delete(scaled_bitmap);
+	}
 	return width;
 }
 
