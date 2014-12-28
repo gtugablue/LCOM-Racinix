@@ -1,6 +1,8 @@
 #include "lab6.h"
 #include "rtc.h"
 
+static unsigned char bcd_to_bin(unsigned char bin_coded_dec);
+
 void rtc_disable_interrupts()
 {
 	asm("cli");
@@ -11,10 +13,10 @@ void rtc_enable_interrupts()
 	asm("sti");
 }
 
-/*unsigned char bcdtobin(unsigned char bin_coded_dec)
+static unsigned char bcd_to_bin(unsigned char bin_coded_dec)
 {
 	return ((bin_coded_dec >> 4) * 10) + (bin_coded_dec & 0x0F);
-}*/
+}
 
 int get_config(unsigned long regs[])
 {
@@ -55,41 +57,42 @@ int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 
 	if(sys_outb(RTC_ADDR_REG, 2))return 1;
 	if(sys_inb(RTC_DATA_REG, min))return 1;
-/*
-	sys_outb(RTC_ADDR_REG, 10);
-	REG_A = sys_inb(RTC_DATA_REG);
 
-	while((REG_A&0x80) != 0)
+	sys_outb(RTC_ADDR_REG, 10);
+	sys_inb(RTC_DATA_REG, &res);
+
+	while(res & 0x80)
 	{
 		sys_outb(RTC_ADDR_REG, 10);
-		REG_A = sys_inb(RTC_DATA_REG);
-	}*/
+		sys_inb(RTC_DATA_REG, &res);
+	}
+
 	if(sys_outb(RTC_ADDR_REG, 0)) return 1;
 	if(sys_inb(RTC_DATA_REG, sec)) return 1;
 
 
 
-/*
+
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if(sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	if((res & 0x04) == 0)
+	if(res & 0x04)
 	{
-		*sec = bcdtobin(*sec);
-		*min = bcdtobin(*min);
-		*hour = bcdtobin(*hour);
+		*sec = bcd_to_bin(*sec);
+		*min = bcd_to_bin(*min);
+		*hour = bcd_to_bin(*hour);
 	}
 
-	if((res & 0x02) == 0)
+	if(res & 0x02)
 		*hour += 12;
-*/
+
 	rtc_enable_interrupts();
 	return 0;
 }
 
 int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 {
-	unsigned char REG_B;
+	unsigned long res;
 
 	rtc_disable_interrupts();
 
@@ -103,17 +106,17 @@ int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 	if(sys_inb(RTC_DATA_REG, ano)) return 1;
 
 
-	/*
+
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if(sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	if((REG_B & 0x04) == 0)
+	if((res & 0x04) == 0)
 	{
-		*dia = bcd2bin(*dia);
-		*mes = bcd2bin(*mes);
-		*ano = bcd2bin(*ano);
+		*dia = bcd_to_bin(*dia);
+		*mes = bcd_to_bin(*mes);
+		*ano = bcd_to_bin(*ano);
 	}
-	*/
+
 	rtc_enable_interrupts();
 	return 0;
 }
@@ -134,23 +137,22 @@ int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	if(sys_inb(RTC_DATA_REG, hour)) return 1;
 
 
-	/*
-	sys_outb(RTC_ADDR_REG, 11)) return 1;
-	REG_B = sys_inb(RTC_DATA_REG)) return 1;
 
-	if((REG_B & 0x04) == 0)
+	if (sys_outb(RTC_ADDR_REG, 11)) return 1;
+	if (sys_inb(RTC_DATA_REG, &res)) return 1;
+
+	if(res & 0x04)
 	{
-		*sec = bcd2bin(*sec);
-		*min = bcd2bin(*min);
-		*hour = bcd2bin(*hour);
+		*sec = bcd_to_bin(*sec);
+		*min = bcd_to_bin(*min);
+		*hour = bcd_to_bin(*hour);
 	}
-	*/
+
 
 	rtc_enable_interrupts();
 	return 0;
 }
 
-/*
 unsigned char bin2bcd(unsigned char bin)
 {
 	unsigned char unidades, dezenas;
@@ -159,7 +161,6 @@ unsigned char bin2bcd(unsigned char bin)
 	dezenas = dezenas << 4;
 	return dezenas + unidades;
 }
-*/
 
 int set_delta_alarm(unsigned int n)
 {

@@ -9,5 +9,10 @@
 #define RTC_ADDR_REG 0x70
 #define RTC_DATA_REG 0x71
 
-#define irq_line 8 //irq_line
+#define RTC_IRQ_LINE 8 //irq_line
+
+int rtc_subscribe_int(unsigned *hook_id);
+
+int rtc_unsubscribe_int(unsigned hook_id);
+
 #endif
