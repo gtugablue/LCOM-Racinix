@@ -58,14 +58,11 @@ int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	if(sys_outb(RTC_ADDR_REG, 2))return 1;
 	if(sys_inb(RTC_DATA_REG, min))return 1;
 
-	sys_outb(RTC_ADDR_REG, 10);
-	sys_inb(RTC_DATA_REG, &res);
-
-	while(res & 0x80)
+	do
 	{
 		sys_outb(RTC_ADDR_REG, 10);
 		sys_inb(RTC_DATA_REG, &res);
-	}
+	} while(res & 0x80);
 
 	if(sys_outb(RTC_ADDR_REG, 0)) return 1;
 	if(sys_inb(RTC_DATA_REG, sec)) return 1;
@@ -76,15 +73,15 @@ int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if(sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	if(res & 0x04)
+	if(!(res & 0x04))
 	{
 		*sec = bcd_to_bin(*sec);
 		*min = bcd_to_bin(*min);
 		*hour = bcd_to_bin(*hour);
 	}
 
-	if(res & 0x02)
-		*hour += 12;
+	//if(res & 0x02)
+	//	*hour += 12;
 
 	rtc_enable_interrupts();
 	return 0;
@@ -110,7 +107,7 @@ int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if(sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	if((res & 0x04) == 0)
+	if(!(res & 0x04))
 	{
 		*dia = bcd_to_bin(*dia);
 		*mes = bcd_to_bin(*mes);
@@ -141,7 +138,7 @@ int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	if (sys_outb(RTC_ADDR_REG, 11)) return 1;
 	if (sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	if(res & 0x04)
+	if(!(res & 0x04))
 	{
 		*sec = bcd_to_bin(*sec);
 		*min = bcd_to_bin(*min);
