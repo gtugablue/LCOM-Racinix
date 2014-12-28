@@ -14,6 +14,7 @@ static uint16_t vehicle_colors[2];
 static bitmap_t *vehicle_bitmaps[2];
 static unsigned num_players;
 static bool serial_port;
+static ad_t *ad;
 
 // Bitmaps
 static bitmap_t *background;
@@ -50,6 +51,7 @@ int racinix_start()
 	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
+
 	background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
 	if (background == NULL)
 	{
@@ -92,6 +94,13 @@ int racinix_start()
 	{
 		return 1;
 	}
+
+	if ((ad = ad_create(RACINIX_FILE_ADS, 10, font_impact, RACINIX_COLOR_ORANGE)) == NULL)
+	{
+		return 1;
+	}
+	ad_generate_new(ad);
+
 	vehicle_keys[0].accelerate = KEY_W;
 	vehicle_keys[0].brake = KEY_S;
 	vehicle_keys[0].turn_left = KEY_A;
@@ -132,17 +141,14 @@ int racinix_exit()
 int racinix_dispatcher()
 {
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
-	printf("hhh\n");
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
 		return 1;
 	}
-	printf("iii\n");
 	if (mouse_set_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
 	}
-	printf("jjj\n");
 	if (mouse_enable_stream_mode(MOUSE_NUM_TRIES))
 	{
 		return 1;
@@ -507,7 +513,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 		{
 			if (va_arg(*var_args, int))
 			{
-				printf("88888\n");
 				if (race->serial_port)
 				{
 					// END_RACE
@@ -519,7 +524,6 @@ int racinix_race_event_handler(int event, va_list *var_args)
 						free(string);
 						return RACINIX_STATE_ERROR;
 					}
-					printf("transmitting: %s\n", string);
 					if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
 					{
 						return RACINIX_STATE_ERROR;
@@ -764,34 +768,29 @@ int racinix_serial_int_handler()
 
 int racinix_main_menu_serial_recieve(char *string)
 {
-	printf("main menu parser...\n");
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
 		return RACINIX_STATE_ERROR;
 	}
-	printf("token: %s, race: 0x%X\n", token, race);
 	if (race == NULL && strcmp(token, RACINIX_SERIAL_PROTO_NEW_RACE) == 0) // NEW_RACE
 	{
 		if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 		{
 			return RACINIX_STATE_ERROR;
 		}
-		printf("token: %s, race: 0x%X\n", token, race);
 		if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_INFO) == 0) // TI
 		{
 			if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 			{
 				return RACINIX_STATE_ERROR;
 			}
-			printf("token: %s\n", token);
 			if (strcmp(token, RACINIX_SERIAL_PROTO_TRACK_RANDOM) == 0) // RND
 			{
 				if ((token = strtok(NULL, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 				{
 					return RACINIX_STATE_ERROR;
 				}
-				printf("token: %s\n", token);
 				unsigned long seed = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
 				track_t *track;
 				if ((track = track_create(vmi.XResolution, vmi.YResolution)) == NULL)
@@ -877,7 +876,6 @@ int racinix_main_menu_serial_recieve(char *string)
 
 int racinix_race_serial_receive(char *string)
 {
-	printf("race parser...\n");
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
@@ -967,7 +965,6 @@ int racinix_serial_transmit_track_control_points(track_t *track)
 		strcat(string, number);
 	}
 
-	printf("transmitting: %s\n", string);
 	if (serial_interrupt_transmit_string(RACINIX_SERIAL_PORT_NUMBER, string))
 	{
 		return RACINIX_STATE_ERROR;
