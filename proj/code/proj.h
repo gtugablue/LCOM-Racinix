@@ -121,6 +121,8 @@ void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 
 int racinix_serial_transmit_track_control_points(track_t *track);
 
+unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[]);
+
 // Events
 enum
 {
