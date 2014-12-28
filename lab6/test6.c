@@ -4,34 +4,6 @@
 unsigned long data[14];
 static int RTC_HOOK = 1;
 
-int rtc_subscribe_int()
-{
-	if (sys_irqsetpolicy(irq_line, IRQ_REENABLE | IRQ_EXCLUSIVE, &RTC_HOOK) != OK)
-	{
-		return -1;
-	}
-	if (sys_irqenable(&RTC_HOOK) != OK)
-	{
-		return -1;
-	}
-	return 0;
-
-
-}
-
-int rtc_unsubscribe_int()
-{
-	if (sys_irqrmpolicy(&RTC_HOOK) != OK)
-	{
-		return -1;
-	}
-	if (sys_irqdisable(&RTC_HOOK) != OK)
-	{
-		return -1;
-	}
-	return 0;
-}
-
 int test_conf()
 {
 	int i;
@@ -57,7 +29,8 @@ int test_date()
 	int ipc_status;
 	message msg;
 	unsigned int i=0;
-	int irq_sub = rtc_subscribe_int();
+	unsigned rtc_hook_id;
+	rtc_subscribe_int(&rtc_hook_id);
 
 	while(1)
 	{
@@ -68,7 +41,7 @@ int test_date()
 				switch (_ENDPOINT_P(msg.m_source))
 				{
 				case HARDWARE: /* hardware interrupt notification */
-					if (msg.NOTIFY_ARG & irq_sub)
+					if (msg.NOTIFY_ARG & (1 << RTC_HOOK))
 					{ /* subscribed interrupt */
 						i++;
 					}
@@ -80,7 +53,7 @@ int test_date()
 		}
 	}
 
-	rtc_unsubscribe_int();
+	rtc_unsubscribe_int(rtc_hook_id);
 	sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B); ///
 }
 

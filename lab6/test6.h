@@ -22,5 +22,3 @@
 int test_conf();
 int test_date();
 int test_int(/*something*/);
-int rtc_subscribe_int();
-int rtc_unsubscribe_int();
