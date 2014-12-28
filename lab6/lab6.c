@@ -1,7 +1,7 @@
 #include "lab6.h"
 #include "rtc.h"
 
-static unsigned char bcd_to_bin(unsigned char bin_coded_dec);
+static unsigned char rtc_bcd_to_bin(unsigned char bin_coded_dec);
 
 void rtc_disable_interrupts()
 {
@@ -13,12 +13,12 @@ void rtc_enable_interrupts()
 	asm("sti");
 }
 
-static unsigned char bcd_to_bin(unsigned char bin_coded_dec)
+static unsigned char rtc_bcd_to_bin(unsigned char bin_coded_dec)
 {
 	return ((bin_coded_dec >> 4) * 10) + (bin_coded_dec & 0x0F);
 }
 
-int get_config(unsigned long regs[])
+int rtc_get_config(unsigned long regs[])
 {
 	rtc_disable_interrupts(); // sem interrupcoes
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_A))return 1;
@@ -33,7 +33,7 @@ int get_config(unsigned long regs[])
 	rtc_enable_interrupts();
 }
 
-int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
+int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 {
 	rtc_disable_interrupts();
 
@@ -75,9 +75,9 @@ int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 
 	if(!(res & 0x04))
 	{
-		*sec = bcd_to_bin(*sec);
-		*min = bcd_to_bin(*min);
-		*hour = bcd_to_bin(*hour);
+		*sec = rtc_bcd_to_bin(*sec);
+		*min = rtc_bcd_to_bin(*min);
+		*hour = rtc_bcd_to_bin(*hour);
 	}
 
 	//if(res & 0x02)
@@ -87,7 +87,7 @@ int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	return 0;
 }
 
-int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
+int rtc_get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 {
 	unsigned long res;
 
@@ -109,16 +109,16 @@ int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 
 	if(!(res & 0x04))
 	{
-		*dia = bcd_to_bin(*dia);
-		*mes = bcd_to_bin(*mes);
-		*ano = bcd_to_bin(*ano);
+		*dia = rtc_bcd_to_bin(*dia);
+		*mes = rtc_bcd_to_bin(*mes);
+		*ano = rtc_bcd_to_bin(*ano);
 	}
 
 	rtc_enable_interrupts();
 	return 0;
 }
 
-int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
+int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 {
 	unsigned long res;
 
@@ -140,9 +140,9 @@ int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 
 	if(!(res & 0x04))
 	{
-		*sec = bcd_to_bin(*sec);
-		*min = bcd_to_bin(*min);
-		*hour = bcd_to_bin(*hour);
+		*sec = rtc_bcd_to_bin(*sec);
+		*min = rtc_bcd_to_bin(*min);
+		*hour = rtc_bcd_to_bin(*hour);
 	}
 
 
@@ -150,7 +150,7 @@ int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	return 0;
 }
 
-unsigned char bin2bcd(unsigned char bin)
+unsigned char rtc_bin2bcd(unsigned char bin)
 {
 	unsigned char unidades, dezenas;
 	unidades = bin % 10;
@@ -159,12 +159,12 @@ unsigned char bin2bcd(unsigned char bin)
 	return dezenas + unidades;
 }
 
-int set_delta_alarm(unsigned int n)
+int rtc_set_delta_alarm(unsigned int n)
 {
 	unsigned long sec, min, hour;
 	unsigned long res;
 
-	get_time(&hour, &min, &sec);
+	rtc_get_time(&hour, &min, &sec);
 
 	unsigned time = hour * 60 * 60 + min * 60 + sec;
 	time +=n;
@@ -180,9 +180,9 @@ int set_delta_alarm(unsigned int n)
 
 	if(!(res & 0x04))
 	{
-		sec = bin2bcd(sec);
-		min = bin2bcd(min);
-		hour = bin2bcd(hour);
+		sec = rtc_bin2bcd(sec);
+		min = rtc_bin2bcd(min);
+		hour = rtc_bin2bcd(hour);
 	}
 
 	if(sys_outb(RTC_ADDR_REG, 1)) return 1;
@@ -198,7 +198,7 @@ int set_delta_alarm(unsigned int n)
 	return 0;
 }
 
-void print2bin(int i)
+void rtc_print2bin(int i)
 {
 	int j;
 	for (j=0; j<8;j++)
@@ -208,30 +208,30 @@ void print2bin(int i)
 	}
 }
 
-void test_confi()
+void rtc_test_conf()
 {
 	unsigned long registers[4];
 	unsigned long sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
 
-	printf("Executing test_conf()\n");
+	printf("Executing rtc_test_conf()\n");
 
-	get_config(registers);
-	get_time(&hour, &min, &sec);
-	get_date(&dia, &mes,  &ano);
-	get_alarm (&a_hour, &a_min, &a_sec);
+	rtc_get_config(registers);
+	rtc_get_time(&hour, &min, &sec);
+	rtc_get_date(&dia, &mes,  &ano);
+	rtc_get_alarm (&a_hour, &a_min, &a_sec);
 	printf("RTC:\n");
 
 	printf("REG_A: ");
-	print2bin(registers[0]);
+	rtc_print2bin(registers[0]);
 	printf("\n");
 	printf("REG_B: ");
-	print2bin(registers[1]);
+	rtc_print2bin(registers[1]);
 	printf("\n");
 	printf("REG_C: ");
-	print2bin(registers[2]);
+	rtc_print2bin(registers[2]);
 	printf("\n");
 	printf("REG_D: ");
-	print2bin(registers[3]);
+	rtc_print2bin(registers[3]);
 	printf("\n\n");
 
 	/*printf("Reg_A = 0x%x\n", registers[0]);
@@ -244,33 +244,33 @@ void test_confi()
 	printf("Alarm: %d:%d:%d\n\n", a_hour, a_min, a_sec);
 }
 
-void test_ints(unsigned int n) {
+void rtc_test_ints(unsigned int n) {
 	printf("Executing test_ints(%u)\n", n);
 
 	unsigned long registers[4];
 	unsigned long sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
 
-	printf("Executing test_conf()\n");
+	printf("Executing rtc_test_conf()\n");
 
-	set_delta_alarm(n);
+	rtc_set_delta_alarm(n);
 
-	get_config (registers);
-	get_time(&hour, &min, &sec);
-	get_date(&dia, &mes,  &ano);
-	get_alarm (&a_hour, &a_min, &a_sec);
+	rtc_get_config (registers);
+	rtc_get_time(&hour, &min, &sec);
+	rtc_get_date(&dia, &mes,  &ano);
+	rtc_get_alarm (&a_hour, &a_min, &a_sec);
 	printf("RTC:\n");
 
 	printf("REG_A: ");
-	print2bin(registers[0]);
+	rtc_print2bin(registers[0]);
 	printf("\n");
 	printf("REG_B: ");
-	print2bin(registers[1]);
+	rtc_print2bin(registers[1]);
 	printf("\n");
 	printf("REG_C: ");
-	print2bin(registers[2]);
+	rtc_print2bin(registers[2]);
 	printf("\n");
 	printf("REG_D: ");
-	print2bin(registers[3]);
+	rtc_print2bin(registers[3]);
 	printf("\n\n");
 
 	/*printf("Reg_A = 0x%x\n", registers[0]);
@@ -283,7 +283,7 @@ void test_ints(unsigned int n) {
 	printf("Alarm: %d:%d:%d\n\n", a_hour, a_min, a_sec);
 }
 
-void test_state()
+void rtc_test_state()
 {
 	printf("Executing test_state()\n");
 }
@@ -294,9 +294,9 @@ int main (int argc, char *argv[])
 	/* Enable IO-sensitive operations for ourselves */
 	sys_enable_iop(SELF);
 
-	test_confi();
-	set_delta_alarm(300);
-	test_confi();
+	rtc_test_conf();
+	rtc_set_delta_alarm(300);
+	rtc_test_conf();
 
 	return 0;
 }
