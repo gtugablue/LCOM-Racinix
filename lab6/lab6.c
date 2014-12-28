@@ -178,14 +178,12 @@ int set_delta_alarm(unsigned int n)
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if(sys_inb(RTC_DATA_REG, &res)) return 1;
 
-	/*
-	if((REG_B & 0x04) == 0)
+	if(!(res & 0x04))
 	{
 		sec = bin2bcd(sec);
 		min = bin2bcd(min);
 		hour = bin2bcd(hour);
 	}
-	*/
 
 	if(sys_outb(RTC_ADDR_REG, 1)) return 1;
 	if(sys_outb(RTC_DATA_REG, (unsigned long *)sec)) return 1;
@@ -209,7 +207,6 @@ void print2bin(int i)
 		i=i>>1;
 	}
 }
-
 
 void test_confi()
 {
@@ -296,6 +293,10 @@ int main (int argc, char *argv[])
 	sef_startup();
 	/* Enable IO-sensitive operations for ourselves */
 	sys_enable_iop(SELF);
+
 	test_confi();
+	set_delta_alarm(300);
+	test_confi();
+
 	return 0;
 }
