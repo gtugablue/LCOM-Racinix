@@ -4,7 +4,7 @@
 unsigned long data[14];
 static int RTC_HOOK = 1;
 
-int test_conf()
+int test_confi()
 {
 	int i;
 	for(i = 0; i < 14; i++)
