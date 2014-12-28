@@ -20,10 +20,12 @@
 #include "font.h"
 #include "race.h"
 #include "serial.h"
+#include "ad.h"
 
 #define RACINIX_FOLDER_ROOT										"/home/lcom/proj/code/"
 #define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
 #define RACINIX_FOLDER_FONTS									RACINIX_FOLDER_ROOT "fonts/"
+#define RACINIX_FILE_ADS										RACINIX_FOLDER_ROOT "ads.txt"
 #define RACINIX_FPS												60
 #define RACINIX_DELTA_TIME										1.0 / TIMER_DEFAULT_FREQ
 #define INTERP_PERIOD											0.07f
@@ -122,6 +124,8 @@ void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 int racinix_serial_transmit_track_control_points(track_t *track);
 
 unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[]);
+
+unsigned racinix_read_ads(const char *file, char *ads[]);
 
 // Events
 enum
