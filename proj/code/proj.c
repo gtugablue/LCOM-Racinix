@@ -358,6 +358,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					vg_swap_buffer();
 					vg_swap_mouse_buffer();
 					state = RACINIX_STATE_MAIN_MENU_CREDITS;
+					button_ID = RACINIX_MAIN_MENU_NUM_BTN;
 					return RACINIX_STATE_MAIN_MENU;
 				case RACINIX_MAIN_MENU_BUTTON_EXIT: // Exit
 					return RACINIX_STATE_END;
@@ -370,21 +371,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
 			racinix_draw_mouse();
-
-			vector2D_t top_left_corner;
-			for (button_ID = 0; button_ID < RACINIX_MAIN_MENU_NUM_BTN; ++button_ID)
-			{
-				top_left_corner = vectorCreate((vmi.XResolution - font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
-						button_ID * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
-				if (isPointInAxisAlignedRectangle(
-						top_left_corner,
-						font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT),
-						RACINIX_MAIN_MENU_CHAR_HEIGHT,
-						mouse_position))
-				{
-					break;
-				}
-			}
+			button_ID = racinix_main_menu_get_hovered_button(buttons);
 
 			return RACINIX_STATE_MAIN_MENU;
 		}
@@ -457,6 +444,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 			}
 			case CONTEXT_MENU_CLICK_BACKGROUND:
 			{
+				button_ID = racinix_main_menu_get_hovered_button(buttons);
 				state = RACINIX_STATE_MAIN_MENU_BASE;
 				context_menu_delete(context_menu);
 				context_menu = NULL;
@@ -471,6 +459,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		}
 		else if (event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC && va_arg(*var_args, int)) // Esc pressed
 		{
+			button_ID = racinix_main_menu_get_hovered_button(buttons);
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 			context_menu_delete(context_menu);
 			context_menu = NULL;
@@ -490,6 +479,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 	{
 		if ((event == RACINIX_EVENT_KEYSTROKE && va_arg(*var_args, int) == KEY_ESC || event == RACINIX_EVENT_MOUSE_LEFT_BTN) && va_arg(*var_args, int)) // Esc or LMB pressed
 		{
+			button_ID = racinix_main_menu_get_hovered_button(buttons);
 			state = RACINIX_STATE_MAIN_MENU_BASE;
 			racinix_draw_menu(-1, buttons);
 			racinix_draw_mouse();
@@ -983,4 +973,24 @@ int racinix_serial_transmit_track_control_points(track_t *track)
 		return RACINIX_STATE_ERROR;
 	}
 	return RACINIX_STATE_RACE;
+}
+
+unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[])
+{
+	vector2D_t top_left_corner;
+	unsigned button_ID;
+	for (button_ID = 0; button_ID < RACINIX_MAIN_MENU_NUM_BTN; ++button_ID)
+	{
+		top_left_corner = vectorCreate((vmi.XResolution - font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT)) / 2,
+				button_ID * (vmi.YResolution / 2) / RACINIX_MAIN_MENU_NUM_BTN + vmi.YResolution / 2);
+		if (isPointInAxisAlignedRectangle(
+				top_left_corner,
+				font_calculate_string_width(font_impact, buttons[button_ID], RACINIX_MAIN_MENU_CHAR_HEIGHT),
+				RACINIX_MAIN_MENU_CHAR_HEIGHT,
+				mouse_position))
+		{
+			break;
+		}
+	}
+	return button_ID;
 }

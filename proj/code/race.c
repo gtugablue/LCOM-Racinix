@@ -152,9 +152,12 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 			{
 				race_update_vehicle(race, race->vehicles[0], delta_time);
 				vehicle_draw(race->vehicles[1]);
-				if (race_serial_transmit(race))
+				if (race->host)
 				{
-					return 1;
+					if (race_serial_transmit(race))
+					{
+						return 1;
+					}
 				}
 			}
 			else
@@ -273,13 +276,19 @@ int race_serial_receive(race_t *race)
 				return 1;
 			}
 			race->vehicles[1]->current_checkpoint = strtoul(token, NULL, RACE_SERIAL_PROTO_BASE);
+
+			if (!race->host)
+			{
+				if (race_serial_transmit(race))
+				{
+					return 1;
+				}
+			}
 		}
 		else if (strcmp(token, RACE_SERIAL_PROTO_READY) == 0) // READY
 		{
-			printf("reaaddddyyy\n");
 			if (race->state == RACE_STATE_WAITING)
 			{
-				printf("changed state\n");
 				race->state = RACE_STATE_FREEZETIME;
 			}
 		}
@@ -412,7 +421,7 @@ static void race_show_speedometer(race_t *race, vector2D_t location, double spee
 {
 	bitmap_draw_alpha(race->bitmap_speedometer, location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, VIDEO_GR_64K_TRANSPARENT);
 	vector2D_t polygon[3];
-	double angle = (fabs(speed) / 120 > PI) ? (PI) : (fabs(speed) / 120);
+	double angle = (fabs(speed) / 100 > PI) ? (PI) : (fabs(speed) / 100);
 	vector2D_t center_radius = vectorRotate(vectorCreate(race->bitmap_speedometer->bitmap_information_header.height * 0.04, 0), PI / 2 + angle);
 	polygon[0] = vectorAdd(location, vectorRotate(vectorMultiply(vectorCreate(-1, 0), race->bitmap_speedometer->bitmap_information_header.height * 0.8), angle));
 	polygon[1] = vectorSubtract(location, center_radius);
