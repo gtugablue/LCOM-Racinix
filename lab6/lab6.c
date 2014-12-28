@@ -46,7 +46,7 @@ int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	} while(res & 0x80);
 
 
-	if (sys_outb(RTC_ADDR_REG, 4)) return 1;
+	if (sys_outb(RTC_ADDR_REG, RTC_ADDRESS_HOURS)) return 1;
 	if (sys_inb(RTC_DATA_REG, hour)) return 1;
 
 	do
@@ -55,19 +55,17 @@ int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 		if (sys_inb(RTC_DATA_REG, &res)) return 1;
 	} while(res & 0x80);
 
-	if(sys_outb(RTC_ADDR_REG, 2))return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_MINUTES))return 1;
 	if(sys_inb(RTC_DATA_REG, min))return 1;
 
 	do
 	{
-		sys_outb(RTC_ADDR_REG, 10);
+		sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_A);
 		sys_inb(RTC_DATA_REG, &res);
 	} while(res & 0x80);
 
-	if(sys_outb(RTC_ADDR_REG, 0)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_SECONDS)) return 1;
 	if(sys_inb(RTC_DATA_REG, sec)) return 1;
-
-
 
 
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
@@ -93,13 +91,13 @@ int rtc_get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 
 	rtc_disable_interrupts();
 
-	if(sys_outb(RTC_ADDR_REG, 7)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_DAY_MONTH)) return 1;
 	if(sys_inb(RTC_DATA_REG, dia)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 8)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_MONTH)) return 1;
 	if(sys_inb(RTC_DATA_REG, mes)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 9)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_YEAR)) return 1;
 	if(sys_inb(RTC_DATA_REG, ano)) return 1;
 
 
@@ -124,18 +122,18 @@ int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 
 	rtc_disable_interrupts();
 
-	if(sys_outb(RTC_ADDR_REG, 1)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_SECONDS_ALARM)) return 1;
 	if(sys_inb(RTC_DATA_REG, sec)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 3)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_MINUTES_ALARM)) return 1;
 	if(sys_inb(RTC_DATA_REG, min)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 5)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_HOURS_ALARM)) return 1;
 	if(sys_inb(RTC_DATA_REG, hour)) return 1;
 
 
 
-	if (sys_outb(RTC_ADDR_REG, 11)) return 1;
+	if (sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
 	if (sys_inb(RTC_DATA_REG, &res)) return 1;
 
 	if(!(res & 0x04))
@@ -185,13 +183,13 @@ int rtc_set_delta_alarm(unsigned int n)
 		hour = rtc_bin2bcd(hour);
 	}
 
-	if(sys_outb(RTC_ADDR_REG, 1)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_SECONDS_ALARM)) return 1;
 	if(sys_outb(RTC_DATA_REG, (unsigned long *)sec)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 3)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_MINUTES_ALARM)) return 1;
 	if(sys_outb(RTC_DATA_REG, (unsigned long *)min)) return 1;
 
-	if(sys_outb(RTC_ADDR_REG, 5)) return 1;
+	if(sys_outb(RTC_ADDR_REG, RTC_ADDRESS_HOURS_ALARM)) return 1;
 	if(sys_outb(RTC_DATA_REG, (unsigned long *)hour)) return 1;
 
 	rtc_enable_interrupts();
