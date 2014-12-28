@@ -83,20 +83,20 @@ void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y, unsigned long alpha_color
 	uint16_t *double_buffer = vg_get_double_buffer();
 	uint16_t color;
 	size_t i, j;
-	int x_limit = MIN(x + bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
-	int y_limit = MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
-	x_limit = x + bitmap->bitmap_information_header.width;
-	y_limit = y + bitmap->bitmap_information_header.height;
-	for (i = MAX(x, 0); i < x_limit; ++i)
+	int x_min = MAX(x, 0);
+	int y_min = MAX(y, 0);
+	int x_max = MIN(x + bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+	int y_max = MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	for (j = y_min; j < y_max; ++j)
 	{
-		for (j = MAX(y, 0); j < y_limit; ++j)
+		uint16_t *line = bitmap->pixel_array + (y + bitmap->bitmap_information_header.height - 1 - j) * bitmap->bitmap_information_header.width * 2;
+		for (i = x_min; i < x_max; ++i)
 		{
-			color = *((uint16_t *)bitmap->pixel_array + (i - x) + (j - y) * bitmap->bitmap_information_header.width);
-			if (color != alpha_color)
+			if (*line != alpha_color)
 			{
-				*(double_buffer + i + (2 * y + bitmap->bitmap_information_header.height - j) * vbe_mode_info->XResolution) = color;
-				//vg_set_pixel(i, 2 * y + bitmap->bitmap_information_header.height - j, color);
+				vg_set_pixel(i, j, *line);
 			}
+			++line;
 		}
 	}
 }

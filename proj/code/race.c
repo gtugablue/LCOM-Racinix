@@ -389,13 +389,13 @@ static void race_show_countdown(race_t *race)
 static void race_show_speedometers(race_t *race)
 {
 	double y;
-	if (race->time > 1)
+	if (race->time > 0.7)
 	{
-		y = race->vbe_mode_info->YResolution - 1 + 15;
+		y = race->vbe_mode_info->YResolution - 1;
 	}
 	else
 	{
-		y = race->vbe_mode_info->YResolution - 1 + race->bitmap_speedometer->bitmap_information_header.height * (1 - race->time);
+		y = race->vbe_mode_info->YResolution - 1 + race->bitmap_speedometer->bitmap_information_header.height * (1 - race->time / 0.7);
 	}
 	if (race->num_players == 2 && !race->serial_port)
 	{
@@ -410,7 +410,6 @@ static void race_show_speedometers(race_t *race)
 
 static void race_show_speedometer(race_t *race, vector2D_t location, double speed, uint16_t color)
 {
-	vg_draw_circle(location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, 3, 0xFFFF);
 	bitmap_draw_alpha(race->bitmap_speedometer, location.x - race->bitmap_speedometer->bitmap_information_header.width / 2, location.y - race->bitmap_speedometer->bitmap_information_header.height, VIDEO_GR_64K_TRANSPARENT);
 	vector2D_t polygon[3];
 	double angle = (fabs(speed) / 120 > PI) ? (PI) : (fabs(speed) / 120);

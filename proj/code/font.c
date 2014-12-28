@@ -255,14 +255,20 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 		x += shade;
 		y += shade;
 		// Shade
-		for (i = MAX(x, 0); i < MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution); ++i)
+		int x_min = MAX(x, 0);
+		int y_min = MAX(y, 0);
+		int x_max = MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+		int y_max = MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+		for (j = y_min; j < y_max; ++j)
 		{
-			for (j = MAX(y, 0); j < MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution); ++j)
+			uint16_t *line = scaled_bitmap->pixel_array + (y + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width * 2;
+			for (i = x_min; i < x_max; ++i)
 			{
-				if (*((uint16_t *)scaled_bitmap->pixel_array + (i - x) + (j - y) * scaled_bitmap->bitmap_information_header.width) != FONT_TRANSPARENT_COLOR)
+				if (*line == VIDEO_GR_BLACK)
 				{
-					*(double_buffer + i + (2 * y + scaled_bitmap->bitmap_information_header.height - j) * vbe_mode_info->XResolution) = VIDEO_GR_BLACK;
+					vg_set_pixel(i, j, VIDEO_GR_BLACK);
 				}
+				++line;
 			}
 		}
 		x -= shade;
@@ -270,16 +276,24 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 	}
 
 	// Character
-	for (i = MAX(x, 0); i < MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution); ++i)
+	int x_min = MAX(x, 0);
+	int y_min = MAX(y, 0);
+	int x_max = MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+	int y_max = MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	for (j = y_min; j < y_max; ++j)
 	{
-		for (j = MAX(y, 0); j < MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution); ++j)
+		uint16_t *line = scaled_bitmap->pixel_array + (y + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width * 2;
+		for (i = x_min; i < x_max; ++i)
 		{
-			if (*((uint16_t *)scaled_bitmap->pixel_array + (i - x) + (j - y) * scaled_bitmap->bitmap_information_header.width) != FONT_TRANSPARENT_COLOR)
+			if (*line == VIDEO_GR_BLACK)
 			{
-				*(double_buffer + i + (2 * y + scaled_bitmap->bitmap_information_header.height - j) * vbe_mode_info->XResolution) = color;
+				vg_set_pixel(i, j, color);
 			}
+			++line;
 		}
 	}
+	x -= shade;
+	y -= shade;
 
 	bitmap_delete(scaled_bitmap);
 	return width;
