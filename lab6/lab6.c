@@ -19,7 +19,6 @@ void rtc_enable_interrupts()
 int get_config(unsigned long regs[])
 {
 	rtc_disable_interrupts(); // sem interrupcoes
-
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_A))return 1;
 	if(sys_inb(RTC_DATA_REG, &regs[0]))return 1;
 	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B))return 1;
@@ -32,7 +31,7 @@ int get_config(unsigned long regs[])
 	rtc_enable_interrupts();
 }
 
-int get_time(int *hour, int *min, int *sec)
+int get_time(unsigned long *hour, unsigned long *min, unsigned long *sec)
 {
 	rtc_disable_interrupts();
 
@@ -46,7 +45,7 @@ int get_time(int *hour, int *min, int *sec)
 
 
 	if (sys_outb(RTC_ADDR_REG, 4)) return 1;
-	if (sys_inb(RTC_DATA_REG, (unsigned long *)hour)) return 1;
+	if (sys_inb(RTC_DATA_REG, hour)) return 1;
 
 	do
 	{
@@ -55,7 +54,7 @@ int get_time(int *hour, int *min, int *sec)
 	} while(res & 0x80);
 
 	if(sys_outb(RTC_ADDR_REG, 2))return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)min))return 1;
+	if(sys_inb(RTC_DATA_REG, min))return 1;
 /*
 	sys_outb(RTC_ADDR_REG, 10);
 	REG_A = sys_inb(RTC_DATA_REG);
@@ -66,7 +65,7 @@ int get_time(int *hour, int *min, int *sec)
 		REG_A = sys_inb(RTC_DATA_REG);
 	}*/
 	if(sys_outb(RTC_ADDR_REG, 0)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)sec)) return 1;
+	if(sys_inb(RTC_DATA_REG, sec)) return 1;
 
 
 
@@ -88,20 +87,20 @@ int get_time(int *hour, int *min, int *sec)
 	return 0;
 }
 
-int get_date(int *dia, int *mes, int *ano)
+int get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano)
 {
 	unsigned char REG_B;
 
 	rtc_disable_interrupts();
 
 	if(sys_outb(RTC_ADDR_REG, 7)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)dia)) return 1;
+	if(sys_inb(RTC_DATA_REG, dia)) return 1;
 
 	if(sys_outb(RTC_ADDR_REG, 8)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)mes)) return 1;
+	if(sys_inb(RTC_DATA_REG, mes)) return 1;
 
 	if(sys_outb(RTC_ADDR_REG, 9)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)ano)) return 1;
+	if(sys_inb(RTC_DATA_REG, ano)) return 1;
 
 
 	/*
@@ -119,20 +118,20 @@ int get_date(int *dia, int *mes, int *ano)
 	return 0;
 }
 
-int get_alarm(int *hour, int *min, int *sec)
+int get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 {
 	unsigned long res;
 
 	rtc_disable_interrupts();
 
 	if(sys_outb(RTC_ADDR_REG, 1)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)sec)) return 1;
+	if(sys_inb(RTC_DATA_REG, sec)) return 1;
 
 	if(sys_outb(RTC_ADDR_REG, 3)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)min)) return 1;
+	if(sys_inb(RTC_DATA_REG, min)) return 1;
 
 	if(sys_outb(RTC_ADDR_REG, 5)) return 1;
-	if(sys_inb(RTC_DATA_REG, (unsigned long *)hour)) return 1;
+	if(sys_inb(RTC_DATA_REG, hour)) return 1;
 
 
 	/*
@@ -164,7 +163,7 @@ unsigned char bin2bcd(unsigned char bin)
 
 int set_delta_alarm(unsigned int n)
 {
-	int sec, min, hour;
+	unsigned long sec, min, hour;
 	unsigned long res;
 
 	get_time(&hour, &min, &sec);
@@ -217,7 +216,7 @@ void print2bin(int i)
 void test_confi()
 {
 	unsigned long registers[4];
-	int sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
+	unsigned long sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
 
 	printf("Executing test_conf()\n");
 
@@ -251,10 +250,10 @@ void test_confi()
 }
 
 void test_ints(unsigned int n) {
-    printf("Executing test_ints(%u)\n", n);
+	printf("Executing test_ints(%u)\n", n);
 
 	unsigned long registers[4];
-	int sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
+	unsigned long sec, min, hour, a_sec, a_min, a_hour, dia, mes, ano;
 
 	printf("Executing test_conf()\n");
 
@@ -291,12 +290,14 @@ void test_ints(unsigned int n) {
 
 void test_state()
 {
-    printf("Executing test_state()\n");
+	printf("Executing test_state()\n");
 }
 
 int main (int argc, char *argv[])
 {
 	sef_startup();
+	/* Enable IO-sensitive operations for ourselves */
+	sys_enable_iop(SELF);
 	test_confi();
 	return 0;
 }
