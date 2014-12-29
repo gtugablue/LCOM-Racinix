@@ -85,11 +85,11 @@ void bitmap_draw_alpha(bitmap_t *bitmap, int x, int y, unsigned long alpha_color
 	size_t i, j;
 	int x_min = MAX(x, 0);
 	int y_min = MAX(y, 0);
-	int x_max = MIN(x + bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
-	int y_max = MIN(y + bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	int x_max = MIN(x + (int)bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+	int y_max = MIN(y + (int)bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
 	for (j = y_min; j < y_max; ++j)
 	{
-		uint16_t *line = bitmap->pixel_array + (y + bitmap->bitmap_information_header.height - 1 - j) * bitmap->bitmap_information_header.width * 2;
+		uint16_t *line = (uint16_t *)bitmap->pixel_array + (x_min - x) + (y_min + bitmap->bitmap_information_header.height - 1 - j) * bitmap->bitmap_information_header.width;
 		for (i = x_min; i < x_max; ++i)
 		{
 			if (*line != alpha_color)

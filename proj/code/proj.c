@@ -1,8 +1,13 @@
 #include "proj.h"
 
-#define MOUSE_NUM_TRIES		10
-#define MOUSE_HOOK_BIT		12
-#define PI 					3.14159265358979323846
+#define MOUSE_NUM_TRIES			10
+#define MOUSE_HOOK_BIT			12
+#define PI 						3.14159265358979323846
+#define NUM_DAYS_PER_MONTH		30
+#define NUM_MONTHS_PER_YEAR		12
+#define NUM_HOURS_PER_DAY		24
+#define NUM_MINUTES_PER_HOUR	60
+#define NUM_SECONDS_PER_MINUTE	60
 
 #define BIT(n) (0x01<<(n))
 
@@ -33,6 +38,9 @@ int main(int argc, char **argv) {
 	/* Initialize service */
 	sef_startup();
 
+	/* Enable IO-sensitive operations for ourselves */
+	sys_enable_iop(SELF);
+
 	if (racinix_start())
 	{
 		printf("Racinix: An error occurred and the program was stopped.\n");
@@ -45,7 +53,14 @@ int main(int argc, char **argv) {
 
 int racinix_start()
 {
-	srand(time(NULL));
+	unsigned rtc_hook_id = RTC_HOOK_BIT;
+	if (rtc_subscribe_int(&rtc_hook_id) < 0)
+	{
+		return 1;
+	}
+	unsigned long seed = racinix_generate_seed();
+	printf("seed: %d\n", seed);
+	srand(seed);
 	//vg_exit(); // Fix darker colors first time the mode is changed.
 	vg_init(RACINIX_VIDEO_MODE);
 	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
@@ -95,7 +110,7 @@ int racinix_start()
 		return 1;
 	}
 
-	if ((ad = ad_create(RACINIX_FILE_ADS, 10, font_impact, RACINIX_COLOR_ORANGE)) == NULL)
+	if ((ad = ad_create(RACINIX_FILE_ADS, 120, font_impact, RACINIX_COLOR_ORANGE)) == NULL)
 	{
 		return 1;
 	}
@@ -339,6 +354,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				{
 				case RACINIX_MAIN_MENU_BUTTON_1_PLAYER: // 1 Player
 				{
+					racinix_draw_menu(-1, buttons);
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
 					num_players = 1;
@@ -347,6 +363,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SAME_PC: // 2 Players in the same PC
 				{
+					racinix_draw_menu(-1, buttons);
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
 					num_players = 2;
@@ -354,6 +371,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 					return RACINIX_STATE_MAIN_MENU;
 				}
 				case RACINIX_MAIN_MENU_BUTTON_2_PLAYERS_SERIAL_PORT: // 2 Players via serial port
+					racinix_draw_menu(-1, buttons);
 					context_menu = context_menu_create(context_menu_track_choice_items, 2, &vmi, font_impact);
 					state = RACINIX_STATE_MAIN_MENU_PICK_TRACK;
 					num_players = 2;
@@ -475,6 +493,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		{
 			racinix_mouse_update(va_arg(*var_args, mouse_data_packet_t *));
 			context_menu_draw(context_menu, mouse_position, &vmi);
+			ad_show(ad);
 			racinix_draw_mouse();
 			return RACINIX_STATE_MAIN_MENU;
 		}
@@ -494,6 +513,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args)
 		return RACINIX_STATE_MAIN_MENU;
 	}
 	}
+	ad_tick(ad, RACINIX_DELTA_TIME);
+	ad_show(ad);
 	racinix_draw_mouse();
 	return RACINIX_STATE_MAIN_MENU;
 }
@@ -505,6 +526,10 @@ int racinix_race_event_handler(int event, va_list *var_args)
 	case RACINIX_EVENT_NEW_FRAME:
 	{
 		race_tick(race, RACINIX_DELTA_TIME, va_arg(*var_args, unsigned));
+		ad_tick(ad, RACINIX_DELTA_TIME);
+		ad_show(ad);
+		vg_swap_buffer();
+		vg_swap_mouse_buffer();
 		break;
 	}
 	case RACINIX_EVENT_KEYSTROKE: // int key, bool pressed
@@ -553,6 +578,10 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 	static int state = RACINIX_STATE_TRACK_DESIGN_NEW;
 	static int point_ID;
 	static track_t *track;
+	if (event == RACINIX_EVENT_NEW_FRAME)
+	{
+		ad_tick(ad, RACINIX_DELTA_TIME);
+	}
 	switch (state)
 	{
 	case RACINIX_STATE_TRACK_DESIGN_NEW:
@@ -694,7 +723,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args)
 
 	font_show_string(font_impact, "TRACK DESIGNER", 30, vmi.XResolution / 2, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 2);
 	font_show_string(font_impact, "PRESS ENTER TO START THE RACE OR ESC TO EXIT", 15, vmi.XResolution - 11, vmi.YResolution - 25, FONT_ALIGNMENT_RIGHT, VIDEO_GR_WHITE, 2);
-
+	ad_show(ad);
 	racinix_draw_mouse();
 	return RACINIX_STATE_DESIGN_TRACK;
 }
@@ -990,4 +1019,25 @@ unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[])
 		}
 	}
 	return button_ID;
+}
+
+unsigned long racinix_generate_seed()
+{
+	unsigned long time[3];
+	unsigned long seed; // No problem in case of overflow
+	if (rtc_get_date(&time[0], &time[1], &time[2]))
+	{
+		return 1;
+	}
+	seed = time[2] * NUM_MONTHS_PER_YEAR * NUM_DAYS_PER_MONTH * NUM_HOURS_PER_DAY * NUM_MINUTES_PER_HOUR * NUM_SECONDS_PER_MINUTE;
+	seed += time[1] * NUM_DAYS_PER_MONTH * NUM_HOURS_PER_DAY * NUM_MINUTES_PER_HOUR * NUM_SECONDS_PER_MINUTE;
+	seed += time[0] * NUM_HOURS_PER_DAY * NUM_MINUTES_PER_HOUR * NUM_SECONDS_PER_MINUTE;
+	if (rtc_get_time(&time[0], &time[1], &time[2]))
+	{
+		return 1;
+	}
+	seed += time[0] * NUM_MINUTES_PER_HOUR * NUM_SECONDS_PER_MINUTE;
+	seed += time[1] * NUM_SECONDS_PER_MINUTE;
+	seed += time[2];
+	return seed;
 }

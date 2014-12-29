@@ -45,15 +45,19 @@ void ad_generate_new(ad_t *ad)
 	ad->time = 0;
 }
 
-void ad_show(ad_t *ad)
+void ad_tick(ad_t *ad, double delta_time)
 {
 	if (ad->time >= 0 && ad->num_ads > 0)
 	{
-		unsigned width = font_calculate_string_width(ad->font, ad->ads[ad->current_ad], AD_FONT_HEIGHT);
-		vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
-		font_show_string(ad->font, ad->ads[ad->current_ad], AD_FONT_HEIGHT, vbe_mode_info->XResolution - 1 - ad->time * ad->display_speed, vbe_mode_info->YResolution - 1 - AD_BOTTOM_MARGIN, FONT_ALIGNMENT_LEFT, ad->color, 0);
-
+		ad->time += delta_time;
 	}
+}
+
+void ad_show(ad_t *ad)
+{
+	unsigned width = font_calculate_string_width(ad->font, ad->ads[ad->current_ad], AD_FONT_HEIGHT);
+	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
+	font_show_string(ad->font, ad->ads[ad->current_ad], AD_FONT_HEIGHT, vbe_mode_info->XResolution - 1 - ad->time * ad->display_speed, vbe_mode_info->YResolution - 1 - AD_BOTTOM_MARGIN - AD_FONT_HEIGHT, FONT_ALIGNMENT_LEFT, ad->color, 0);
 }
 
 void ad_delete(ad_t *ad)
