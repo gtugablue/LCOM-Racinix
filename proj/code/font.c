@@ -3,7 +3,7 @@
 #include "string.h"
 #include <minix/driver.h>
 
-static int font_show_character(font_t *font, bitmap_t *character, unsigned height, unsigned x, unsigned y, uint16_t color, unsigned shade);
+static int font_show_character(font_t *font, bitmap_t *character, unsigned height, int x, int y, uint16_t color, unsigned shade);
 static bitmap_t *font_character_to_bitmap(font_t *font, char character);
 
 font_t *font_load(const char* folder)
@@ -234,7 +234,7 @@ font_t *font_load(const char* folder)
 	return font;
 }
 
-static int font_show_character(font_t *font, bitmap_t *character, unsigned height, unsigned x, unsigned y, uint16_t color, unsigned shade)
+static int font_show_character(font_t *font, bitmap_t *character, unsigned height, int x, int y, uint16_t color, unsigned shade)
 {
 	double ratio = (double)character->bitmap_information_header.width / character->bitmap_information_header.height;
 	bitmap_t *scaled_bitmap;
@@ -250,12 +250,10 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 			return -1;
 		}
 	}
-	bitmap_draw_alpha(scaled_bitmap, x, y + (1 - ((double)character->bitmap_information_header.height / FONT_BITMAP_HEIGHT)) * height, FONT_TRANSPARENT_COLOR);
 
 	vbe_mode_info_t *vbe_mode_info = vg_get_vbe_mode_info();
 	uint16_t *double_buffer = vg_get_double_buffer();
-	size_t i, j;
-
+	int i, j;
 	// Shade
 	if (shade > 0)
 	{
@@ -264,11 +262,11 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 		// Shade
 		int x_min = MAX(x, 0);
 		int y_min = MAX(y, 0);
-		int x_max = MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
-		int y_max = MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+		int x_max = MIN(x + (int)scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+		int y_max = MIN(y + (int)scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
 		for (j = y_min; j < y_max; ++j)
 		{
-			uint16_t *line = scaled_bitmap->pixel_array + (y + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width * 2;
+			uint16_t *line = (uint16_t *)scaled_bitmap->pixel_array + (x_min - x) + (y_min + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width;
 			for (i = x_min; i < x_max; ++i)
 			{
 				if (*line == VIDEO_GR_BLACK)
@@ -281,15 +279,14 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 		x -= shade;
 		y -= shade;
 	}
-
 	// Character
 	int x_min = MAX(x, 0);
 	int y_min = MAX(y, 0);
-	int x_max = MIN(x + scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
-	int y_max = MIN(y + scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
+	int x_max = MIN(x + (int)scaled_bitmap->bitmap_information_header.width, vbe_mode_info->XResolution);
+	int y_max = MIN(y + (int)scaled_bitmap->bitmap_information_header.height, vbe_mode_info->YResolution);
 	for (j = y_min; j < y_max; ++j)
 	{
-		uint16_t *line = scaled_bitmap->pixel_array + (y + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width * 2;
+		uint16_t *line = (uint16_t *)scaled_bitmap->pixel_array + (x_min - x) + (y_min + scaled_bitmap->bitmap_information_header.height - 1 - j) * scaled_bitmap->bitmap_information_header.width;
 		for (i = x_min; i < x_max; ++i)
 		{
 			if (*line == VIDEO_GR_BLACK)
@@ -299,9 +296,6 @@ static int font_show_character(font_t *font, bitmap_t *character, unsigned heigh
 			++line;
 		}
 	}
-	x -= shade;
-	y -= shade;
-
 	if (height != FONT_BITMAP_HEIGHT)
 	{
 		bitmap_delete(scaled_bitmap);
@@ -328,7 +322,7 @@ unsigned font_calculate_string_width(font_t *font, const unsigned char *string, 
 	return string_width;
 }
 
-void font_show_string(font_t *font, const unsigned char *string, unsigned height, unsigned x, unsigned y, font_alignment_t font_alignment, uint16_t color, unsigned shade)
+void font_show_string(font_t *font, const unsigned char *string, unsigned height, int x, int y, font_alignment_t font_alignment, uint16_t color, unsigned shade)
 {
 	unsigned string_width = font_calculate_string_width(font, string, height);
 	switch (font_alignment)

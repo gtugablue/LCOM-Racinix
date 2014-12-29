@@ -4,7 +4,7 @@
 #include "font.h"
 #include "video_gr.h"
 
-#define AD_FONT_HEIGHT				20
+#define AD_FONT_HEIGHT				15
 #define AD_BOTTOM_MARGIN			15
 
 typedef struct
@@ -21,6 +21,8 @@ typedef struct
 ad_t *ad_create(const char *file, double display_speed, font_t *font, uint16_t color);
 
 void ad_generate_new(ad_t *ad);
+
+void ad_tick(ad_t *ad, double delta_time);
 
 void ad_show(ad_t *ad);
 

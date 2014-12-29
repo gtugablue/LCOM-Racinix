@@ -225,8 +225,6 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 	}
 
 	race_show_info(race, fps);
-	vg_swap_buffer();
-	vg_swap_mouse_buffer();
 	return 0;
 }
 

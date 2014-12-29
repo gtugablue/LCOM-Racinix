@@ -21,6 +21,7 @@
 #include "race.h"
 #include "serial.h"
 #include "ad.h"
+#include "rtc.h"
 
 #define RACINIX_FOLDER_ROOT										"/home/lcom/proj/code/"
 #define RACINIX_FOLDER_IMAGES									RACINIX_FOLDER_ROOT "images/"
@@ -126,6 +127,8 @@ int racinix_serial_transmit_track_control_points(track_t *track);
 unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[]);
 
 unsigned racinix_read_ads(const char *file, char *ads[]);
+
+unsigned long racinix_generate_seed();
 
 // Events
 enum
