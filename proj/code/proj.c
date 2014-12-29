@@ -271,7 +271,6 @@ int racinix_dispatcher()
 				// RTC
 				if (msg.NOTIFY_ARG & BIT(RTC_HOOK_BIT))
 				{
-					printf("--- RTC INTERRUPPPPPPPPPPPPPPPPPPT!! \n");
 					if (racinix_rtc_int_handler())
 					{
 						break;
