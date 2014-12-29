@@ -40,6 +40,7 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 	race->num_laps = num_laps;
 	race->vbe_mode_info = vbe_mode_info;
 	race->font = font;
+	race->host = true;
 	return race;
 }
 
@@ -67,24 +68,19 @@ int race_start(race_t *race)
 	temp_vector = vectorRotate(starting_position_increment, PI / 2);
 	normalize(&temp_vector);
 	size_t i, j;
-	printf("j: %d\n", j);
 	if (race->host)
 	{
-		printf("inner j1: %d\n", j);
 		j = 0;
-		printf("inner j2: %d\n", j);
 	}
 	else
 	{
 		j = 1;
 	}
-	printf("j: %d\n", j);
-	for (i = 0; i < race->num_players; ++i, j = (j + 1) % race->num_players)
+	for (i = 0, j = race->host ? 0 : 1; i < race->num_players; ++i, j = (j + 1) % race->num_players)
 	{
 		starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
 		starting_position = vectorAdd(vectorAdd(race->track->inside_spline[0], vectorMultiply(starting_position_increment, j + 1)), starting_position_offset);
 		race->vehicles[i] = vehicle_create(VEHICLE_WIDTH, VEHICLE_LENGTH, &starting_position, heading, race->vehicle_bitmaps[i], race->vehicle_keys[i], race->vehicle_colors[i]);
-		printf("i: %d, j: %d\n", i, j);
 	}
 	return 0;
 }
