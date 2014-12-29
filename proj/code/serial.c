@@ -156,7 +156,6 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 		}
 		++string;
 	}
-	printf("aaaaa\n");
 	if ((character = malloc(sizeof(unsigned char))) == NULL)
 	{
 		return 1;
@@ -199,10 +198,6 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 		free(character);
 	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
 	--num_queued_strings[port_number];
-
-	printf("Read string %s\n", *string);
-	printf("heeeeeerp\n");
-	printf("asdadaaasdadasasdsda asasd asd asd as das \n");
 	return 0;
 }
 
@@ -232,40 +227,44 @@ int serial_int_handler(unsigned char port_number)
 		{
 		// Interrupts ordered by priority
 		case 0: // Modem Status
+		{
 			// Reset method: reading MSR
-			printf("---- Interrupt: Modem Status ----\n");
+			//printf("---- Interrupt: Modem Status ----\n");
 			unsigned long msr;
 			if (sys_inb(base_address + UART_REGISTER_MSR, &msr)) return 1;
 			break;
+		}
 		case 1: // Transmitter Empty
 			// Reset method: reading IIR or writing to THR
 			printf("---- Interrupt: Transmitter Empty ----\n");
 			if (serial_clear_transmit_queue(port_number))
 			{
-				printf("---- SERIAL ERROR 1!!!! ----\n");
+				//printf("---- SERIAL ERROR 1!!!! ----\n");
 				return 1;
 			}
 			break;
 		case 2: // Received Data Available
 			// Reset method: reading RBR
-			printf("---- Interrupt: Received Data Available ----\n");
+			//printf("---- Interrupt: Received Data Available ----\n");
 		case 4: // Character Timeout Indication
 			// Reset method: reading RBR or receiving new start bit
-			printf("---- Interrupt: Character Timeout Indication ----\n");
+			//printf("---- Interrupt: Character Timeout Indication ----\n");
 			if (serial_clear_UART_receive_queue(port_number))
 			{
-				printf("---- SERIAL ERROR 2!!!! ----\n");
+				//printf("---- SERIAL ERROR 2!!!! ----\n");
 				return 1;
 			}
 			break;
 		case 3: // Line Status
+		{
 			// Reset method: reading LSR
-			printf("---- Interrupt: Line Status ----\n");
+			//printf("---- Interrupt: Line Status ----\n");
 			unsigned long lsr;
 			if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
 			break;
+		}
 		default:
-			printf("---- Interrupt: Unknown ----\n");
+			//printf("---- Interrupt: Unknown ----\n");
 			break;
 		}
 		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
@@ -420,7 +419,6 @@ static int serial_clear_transmit_queue(unsigned char port_number)
 	int base_address = serial_port_number_to_address(port_number);
 	unsigned char *character;
 	--port_number;
-	printf("Transmit queue size: %d\n", queue_size(serial_transmit_queue[port_number]));
 	while (!queue_empty(serial_transmit_queue[port_number]))
 	{
 		unsigned long lsr;
@@ -444,7 +442,6 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 	unsigned long lsr;
 	if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 	{
-		printf("debug1\n");
 		return 1;
 	}
 	void *character;
@@ -452,17 +449,14 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 	{
 		if ((character = malloc(sizeof(unsigned long))) == NULL)
 		{
-			printf("debug2\n");
 			return 1;
 		}
 		if (lsr & (BIT(UART_REGISTER_LSR_OVERRUN_ERROR_BIT) | BIT(UART_REGISTER_LSR_PARITY_ERROR_BIT) | BIT(UART_REGISTER_LSR_FRAMING_ERROR_BIT)))
 		{
-			printf("debug3\n");
 			return -1;
 		}
 		if (sys_inb(base_address + UART_REGISTER_RBR, character))
 		{
-			printf("debug5\n");
 			return 1;
 		}
 		if (*(unsigned char *)character == SERIAL_STRING_TERMINATION_CHAR)
@@ -471,14 +465,12 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 		}
 		if (sys_inb(base_address + UART_REGISTER_LSR, &lsr))
 		{
-			printf("debug6\n");
 			free(character);
 			return 1;
 		}
 		if (!queue_push(serial_receive_queue[port_number], character))
 		{
 			free(character);
-			printf("debug7\n");
 			return 1;
 		}
 	}
