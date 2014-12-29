@@ -316,16 +316,19 @@ int race_serial_transmit_ready_state(race_t *race)
 
 void race_delete(race_t *race)
 {
-	size_t i;
-	for (i = 0; i < race->num_players; ++i)
+	if (race != NULL)
 	{
-		vehicle_delete(race->vehicles[i]);
-		race->vehicles[i] = NULL;
+		size_t i;
+		for (i = 0; i < race->num_players; ++i)
+		{
+			vehicle_delete(race->vehicles[i]);
+			race->vehicles[i] = NULL;
+		}
+		free(race->vehicles);
+		race->vehicles = NULL;
+		free(race);
+		race = NULL;
 	}
-	free(race->vehicles);
-	race->vehicles = NULL;
-	free(race);
-	race = NULL;
 }
 
 static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_time)
