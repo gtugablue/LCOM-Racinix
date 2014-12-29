@@ -65,7 +65,15 @@ void ad_show(ad_t *ad)
 
 void ad_delete(ad_t *ad)
 {
-	// TODO
-	free(ad);
-	ad = NULL;
+	if (ad != NULL)
+	{
+		size_t i;
+		for (i = 0; i < ad->num_ads; ++i)
+		{
+			free(ad->ads[i]);
+		}
+		free(ad->ads);
+		free(ad);
+		ad = NULL;
+	}
 }

@@ -59,6 +59,18 @@ int racinix_start()
 
 	mouse_position = vectorCreate(vmi.XResolution / 2, vmi.YResolution / 2);
 
+	// Initialize pointers to NULL so that in case of error the program is terminated properly.
+	race = NULL;
+	background = NULL;
+	mouse_cursor = NULL;
+	logo = NULL;
+	bitmap_red_car = NULL;
+	bitmap_blue_car = NULL;
+	bitmap_credits = NULL;
+	bitmap_speedometer = NULL;
+	font_impact = NULL;
+	ad = NULL;
+
 	background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
 	if (background == NULL)
 	{
@@ -133,6 +145,7 @@ int racinix_start()
 
 int racinix_exit()
 {
+	race_delete(race);
 	bitmap_delete(background);
 	bitmap_delete(mouse_cursor);
 	bitmap_delete(logo);
@@ -141,6 +154,7 @@ int racinix_exit()
 	bitmap_delete(bitmap_speedometer);
 	bitmap_delete(bitmap_credits);
 	font_delete(font_impact);
+	ad_delete(ad);
 	return vg_exit();
 }
 
