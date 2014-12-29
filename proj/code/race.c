@@ -346,9 +346,10 @@ static void race_update_vehicle(race_t *race, vehicle_t *vehicle, double delta_t
 static void race_show_info(race_t *race, unsigned fps)
 {
 	char string[100];
+#ifdef RACE_SHOW_FPS
 	sprintf(string, "FPS: %d", fps);
 	font_show_string(race->font, string, 20, 11, race->vbe_mode_info->YResolution - 31, FONT_ALIGNMENT_LEFT, VIDEO_GR_WHITE, 2);
-
+#endif
 
 	// Show scoreboard
 	font_show_string(race->font, "CP", 15, race->vbe_mode_info->XResolution - 80, 10, FONT_ALIGNMENT_MIDDLE, VIDEO_GR_WHITE, 0);

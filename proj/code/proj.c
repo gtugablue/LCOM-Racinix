@@ -53,14 +53,6 @@ int main(int argc, char **argv) {
 
 int racinix_start()
 {
-	unsigned rtc_hook_id = RTC_HOOK_BIT;
-	if (rtc_subscribe_int(&rtc_hook_id) < 0)
-	{
-		return 1;
-	}
-	unsigned long seed = racinix_generate_seed();
-	printf("seed: %d\n", seed);
-	srand(seed);
 	//vg_exit(); // Fix darker colors first time the mode is changed.
 	vg_init(RACINIX_VIDEO_MODE);
 	vbe_get_mode_info(RACINIX_VIDEO_MODE, &vmi);
@@ -114,7 +106,6 @@ int racinix_start()
 	{
 		return 1;
 	}
-	ad_generate_new(ad);
 
 	vehicle_keys[0].accelerate = KEY_W;
 	vehicle_keys[0].brake = KEY_S;
@@ -155,6 +146,17 @@ int racinix_exit()
 
 int racinix_dispatcher()
 {
+	unsigned rtc_hook_id = RTC_HOOK_BIT;
+	if (rtc_subscribe_int(&rtc_hook_id, false, true, false) < 0)
+	{
+		return 1;
+	}
+	unsigned long seed = racinix_generate_seed();
+	srand(seed);
+	if (racinix_rtc_reprogram_alarm())
+	{
+		return 1;
+	}
 	unsigned mouse_hook_id = MOUSE_HOOK_BIT;
 	if (mouse_subscribe_int(&mouse_hook_id) == -1)
 	{
@@ -208,8 +210,8 @@ int racinix_dispatcher()
 		if (is_ipc_notify(ipc_status)) { // received notification
 			if (_ENDPOINT_P(msg.m_source) == HARDWARE) // hardware interrupt notification
 			{
+				// Keyboard
 				if (msg.NOTIFY_ARG & BIT(KEYBOARD_HOOK_BIT)) {
-
 					if ((key = racinix_keyboard_int_handler()) == -1)
 					{
 						return 1;
@@ -219,6 +221,7 @@ int racinix_dispatcher()
 						break;
 					}
 				}
+				// Timer
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
@@ -232,6 +235,7 @@ int racinix_dispatcher()
 						}
 					}
 				}
+				// Mouse
 				if (msg.NOTIFY_ARG & BIT(MOUSE_HOOK_BIT)) {
 					if (racinix_mouse_int_handler(&new_mouse_data_packet) == 0) // Packet ready
 					{
@@ -256,9 +260,19 @@ int racinix_dispatcher()
 						old_mouse_data_packet = new_mouse_data_packet;
 					}
 				}
+				// Serial port
 				if (msg.NOTIFY_ARG & BIT(SERIAL_HOOK_BIT))
 				{
 					if (racinix_serial_int_handler())
+					{
+						break;
+					}
+				}
+				// RTC
+				if (msg.NOTIFY_ARG & BIT(RTC_HOOK_BIT))
+				{
+					printf("--- RTC INTERRUPPPPPPPPPPPPPPPPPPT!! \n");
+					if (racinix_rtc_int_handler())
 					{
 						break;
 					}
@@ -270,7 +284,7 @@ int racinix_dispatcher()
 	keyboard_unsubscribe_int();
 	mouse_disable_stream_mode(MOUSE_NUM_TRIES);
 	mouse_unsubscribe_int(mouse_hook_id);
-
+	rtc_unsubscribe_int(rtc_hook_id);
 	return 0;
 }
 
@@ -737,22 +751,27 @@ int racinix_timer_int_handler()
 {
 	static double counter = 0;
 	static unsigned long timer = 0;
+#ifdef RACE_SHOW_FPS
 	static unsigned fps_last = 0;
 	static unsigned fps_counter = 0;
+#endif
 	static const double reset_number = (double)TIMER_DEFAULT_FREQ / RACINIX_FPS; // For efficiency purposes (avoid calculating it every frame)
+#ifdef RACE_SHOW_FPS
 	if (time(NULL) > timer)
 	{
 		fps_last = fps_counter;
 		fps_counter = 0;
 		timer = time(NULL);
 	}
+#endif
 	counter += 1.0;
 	if (counter >= reset_number)
 	{
 		counter -= reset_number;
-
+#ifdef RACE_SHOW_FPS
 		++fps_counter;
-		return fps_last;
+#endif
+		return 0;
 	}
 	return -1;
 }
@@ -791,6 +810,33 @@ int racinix_serial_int_handler()
 			return 1;
 		}
 		free(string);
+	}
+	return 0;
+}
+
+int racinix_rtc_int_handler()
+{
+	bool PIE, AIE, UIE;
+	if (rtc_int_handler(&PIE, &AIE, &UIE))
+	{
+		return 1;
+	}
+	if (AIE) // Alarm interrupt
+	{
+		// Generate a new random ad
+		ad_generate_new(ad);
+
+		// Reprogram the alarm
+		return racinix_rtc_reprogram_alarm();
+	}
+	return 0;
+}
+
+int racinix_rtc_reprogram_alarm()
+{
+	if (rtc_set_delta_alarm(rand() % (RACINIX_AD_MAX_DELAY_SECONDS - RACINIX_AD_MIN_DELAY_SECONDS) + RACINIX_AD_MIN_DELAY_SECONDS))
+	{
+		return 1;
 	}
 	return 0;
 }

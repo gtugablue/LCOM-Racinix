@@ -5,6 +5,7 @@
 #include "track.h"
 #include "video_gr.h"
 #include "font.h"
+#include <stdbool.h>
 
 #define RACE_START_COUNTER_HEIGHT				120
 #define RACE_START_TEXT							"GO!"
@@ -18,6 +19,8 @@
 #define RACE_SERIAL_PROTO_RACE					"RACE"
 #define RACE_SERIAL_PROTO_VEHICLE_INFO			"VI" // VI <x_pos> <y_pos> <speed> <heading> <current_lap> <current_checkpoint>
 #define RACE_SERIAL_PROTO_READY					"READY"
+
+//#define RACE_SHOW_FPS							// Uncomment to show FPS
 
 typedef struct
 {
