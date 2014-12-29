@@ -676,12 +676,10 @@ static bool track_generate_check_intersection(track_t *track)
 		{
 			if (MIN(modulo(i - j, track->num_control_points), modulo(j - i, track->num_control_points)) > 2 && intersect(track->control_points[i], track->control_points[(i + 1) % track->num_control_points], track->control_points[j], track->control_points[(j + 1) % track->num_control_points]))
 			{
-				printf("num_control_points: %d, i: %d, j: %d\n", track->num_control_points, i, j);
 				return true;
 			}
 		}
 	}
-	printf("no intersection\n");
 	return false;
 }
 
