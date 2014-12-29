@@ -76,7 +76,7 @@ int race_start(race_t *race)
 	{
 		j = 1;
 	}
-	for (i = 0, j = race->host ? 0 : 1; i < race->num_players; ++i, j = (j + 1) % race->num_players)
+	for (i = 0; i < race->num_players; ++i, j = (j + 1) % race->num_players)
 	{
 		starting_position_offset = vectorMultiply(temp_vector, -VEHICLE_LENGTH / 2);
 		starting_position = vectorAdd(vectorAdd(race->track->inside_spline[0], vectorMultiply(starting_position_increment, j + 1)), starting_position_offset);
