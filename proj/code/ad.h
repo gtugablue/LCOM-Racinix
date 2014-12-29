@@ -13,7 +13,7 @@ typedef struct
 	char **ads;
 	double time; // If it's negative, do not show the ad
 	double display_speed;
-	unsigned current_ad;
+	int current_ad;
 	font_t *font;
 	uint16_t color;
 } ad_t;

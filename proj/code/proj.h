@@ -44,6 +44,8 @@
 #define RACINIX_RACE_FREEZE_TIME								5
 #define RACINIX_RACE_NUM_LAPS									3
 #define RACINIX_COLOR_ORANGE									rgb(255, 174, 0)
+#define RACINIX_AD_MIN_DELAY_SECONDS							6
+#define RACINIX_AD_MAX_DELAY_SECONDS							15
 
 #define RACINIX_SERIAL_PORT_NUMBER								1
 #define RACINIX_SERIAL_TRIGGER_LEVEL							2
@@ -113,6 +115,10 @@ int racinix_timer_int_handler();
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
 int racinix_serial_int_handler();
+
+int racinix_rtc_int_handler();
+
+int racinix_rtc_reprogram_alarm();
 
 int racinix_main_menu_serial_receive(char *string);
 

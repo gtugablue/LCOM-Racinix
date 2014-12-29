@@ -1,12 +1,14 @@
 #include "rtc.h"
 #include "minix/driver.h"
 
+#define BIT(n) (0x01<<(n))
+
 static unsigned char rtc_bcd_to_bin(unsigned char bin_coded_dec);
 static unsigned char rtc_bin_to_bcd(unsigned char bin);
 static inline void rtc_disable_interrupts();
 static inline void rtc_enable_interrupts();
 
-int rtc_subscribe_int(unsigned *hook_id)
+int rtc_subscribe_int(unsigned *hook_id, bool PIE, bool AIE, bool UIE)
 {
 	unsigned char hook_bit = (unsigned char)*hook_id;
 	if (hook_bit >= (1 << 8))
@@ -17,6 +19,19 @@ int rtc_subscribe_int(unsigned *hook_id)
 	{
 		return -1;
 	}
+	unsigned long res;
+
+	if (sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
+	if (sys_inb(RTC_DATA_REG, &res)) return 1;
+	res &= ~BIT(RTC_REGB_PIE_BIT);
+	res &= ~BIT(RTC_REGB_AIE_BIT);
+	res &= ~BIT(RTC_REGB_UIE_BIT);
+	res |= PIE << RTC_REGB_PIE_BIT;
+	res |= AIE << RTC_REGB_AIE_BIT;
+	res |= UIE << RTC_REGB_UIE_BIT;
+	if (sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
+	if (sys_outb(RTC_DATA_REG, res)) return 1;
+
 	return hook_bit;
 }
 
@@ -149,14 +164,14 @@ int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec)
 	return 0;
 }
 
-int rtc_set_delta_alarm(unsigned int n)
+int rtc_set_delta_alarm(unsigned n)
 {
 	unsigned long sec, min, hour;
 	unsigned long res;
 
 	rtc_get_time(&hour, &min, &sec);
 
-	unsigned time = hour * 60 * 60 + min * 60 + sec;
+	unsigned long time = hour * 60 * 60 + min * 60 + sec;
 	time +=n;
 
 	hour = time / (60 * 60);
@@ -188,8 +203,28 @@ int rtc_set_delta_alarm(unsigned int n)
 	return 0;
 }
 
+int rtc_int_handler(bool *PIE, bool *AIE, bool *UIE)
+{
+	unsigned long res;
+	if (sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_C)) return 1;
+	if (sys_inb(RTC_DATA_REG, &res)) return 1;
+	*PIE = res & BIT(RTC_REGB_PIE_BIT);
+	*AIE = res & BIT(RTC_REGB_AIE_BIT);
+	*UIE = res & BIT(RTC_REGB_UIE_BIT);
+	return 0;
+}
+
 int rtc_unsubscribe_int(unsigned hook_id)
 {
+	unsigned long res;
+	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
+	if(sys_inb(RTC_DATA_REG, &res)) return 1;
+	res &= ~BIT(RTC_REGB_PIE_BIT);
+	res &= ~BIT(RTC_REGB_AIE_BIT);
+	res &= ~BIT(RTC_REGB_UIE_BIT);
+	if(sys_outb(RTC_ADDR_REG, RTC_CTRL_REG_B)) return 1;
+	if(sys_outb(RTC_DATA_REG, res)) return 1;
+
 	if (sys_irqrmpolicy(&hook_id))
 	{
 		return 1;
