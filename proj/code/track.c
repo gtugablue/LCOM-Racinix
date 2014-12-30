@@ -7,14 +7,14 @@
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
 static vector2D_t createCatmullRomSpline(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
-static vector2D_t calculateCatmullCoordinate(vector2D_t P[4], double step);
+//static vector2D_t calculateCatmullCoordinate(vector2D_t P[4], double step);
 //static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t);
-static void pushApart(vector2D_t hull[], unsigned hull_size);
+static void track_separate_points(vector2D_t hull[], unsigned hull_size);
 //static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
 static unsigned long track_generate_random(unsigned long *seed);
 static int convexHull(vector2D_t points[], unsigned n, vector2D_t hull[]);
 static bool isLeft( vector2D_t P0, vector2D_t P1, vector2D_t P2);
-static bool intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf);
+static bool track_lines_intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf);
 static void swapPoints(vector2D_t *a, int i, int j);
 static int partition(vector2D_t *a, int left, int right, int pivot);
 static void quickSort(vector2D_t *a, int left, int right);
@@ -100,12 +100,12 @@ int track_generate_control_points(track_t *track, unsigned long *seed)
 	}
 	for (j = 0; j < 10; ++j)
 	{
-		pushApart(track->control_points, track->num_control_points);
+		track_separate_points(track->control_points, track->num_control_points);
 	}
 	track_generate_perturb(track, seed);
 	for (j = 0; j < 30; ++j)
 	{
-		pushApart(track->control_points, track->num_control_points);
+		track_separate_points(track->control_points, track->num_control_points);
 		track_generate_fix_angles(track);
 	}
 	return 0;
@@ -267,29 +267,21 @@ static vector2D_t calculateCatmullCoordinate(vector2D_t P[4], double step)
 	return 0.5 * (3 * (P3 - 3.0 * P2 + 3.0 * P1 - P0) * t * t + 2 * (-P3 + 4 * P2 + P1 + P0 - 3.0) * t + P3 - P0);
 }*/
 
-static void pushApart(vector2D_t hull[], unsigned hull_size)
+static void track_separate_points(vector2D_t hull[], unsigned hull_size)
 {
     double dst = TRACK_GENERATION_MIN_POINT_DISTANCE;
-    double dst2 = dst*dst;
     int i, j;
     for(i = 0; i < hull_size; ++i)
     {
-        for(j = i+1; j < hull_size; ++j)
+        for(j = i + 1; j < hull_size; ++j)
         {
-            if(pow(vectorDistance(hull[i], hull[j]), 2) < dst2)
+        	vector2D_t distance = vectorSubtract(hull[j], hull[i]);
+            if(vectorNorm(distance) < dst)
             {
-                double hx = hull[j].x - hull[i].x;
-                double hy = hull[j].y - hull[i].y;
-                double hl = (double)sqrt(hx*hx + hy*hy);
-                hx /= hl;
-                hy /= hl;
-                double dif = dst - hl;
-                hx *= dif;
-                hy *= dif;
-                hull[j].x += hx;
-                hull[j].y += hy;
-                hull[i].x -= hx;
-                hull[i].y -= hy;
+            	vector2D_t normalized = vectorDivide(distance, vectorNorm(distance));
+            	distance = vectorMultiply(normalized, (dst - vectorNorm(distance)) * TRACK_GENERATION_POINT_SEP_FACTOR);
+            	hull[j] = vectorAdd(hull[j], distance);
+            	hull[i] = vectorSubtract(hull[i], distance);
             }
         }
     }
@@ -356,7 +348,7 @@ static bool isLeft( vector2D_t p1, vector2D_t p2, vector2D_t p3 )
 	return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0;
 }
 
-static bool intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf)
+static bool track_lines_intersect(vector2D_t Pi, vector2D_t Pf, vector2D_t Qi, vector2D_t Qf)
 {
 	return isLeft(Pi, Pf, Qi) != isLeft(Pi, Pf, Qf) && isLeft(Pi, Qi, Qf) != isLeft(Pf, Qi, Qf);
 }
@@ -438,7 +430,7 @@ static int track_generate_perturb(track_t *track, unsigned long *seed)
 
 	for(i = 0; i < 10; ++i)
 	{
-		pushApart(track->control_points, track->num_control_points);
+		track_separate_points(track->control_points, track->num_control_points);
 	}
 	return 0;
 }
@@ -621,13 +613,12 @@ static void track_generate_fix_angles(track_t *track)
 	for(i = 0; i < track->num_control_points; ++i)
 	{
 		// TODO
-		/*vector1 = vectorSubtract(track->control_points[modulo(i - 1, track->num_control_points)], track->control_points[i]);
+		vector1 = vectorSubtract(track->control_points[modulo(i - 1, track->num_control_points)], track->control_points[i]);
 		vector2 = vectorSubtract(track->control_points[(i + 1) % track->num_control_points], track->control_points[i]);
 
 		// To calculate the angle, we need to use the atan instead of simply calculating it, because we need to know wether the rotation was clockwise or counter-clockwise
 		double angle = atan2(vectorPerpendicularDotProduct(vector1, vector2), vectorScalarProduct(vector1, vector2));
-		printf("angle: %d\n", (int)angle);
-		if(abs(angle) <= TRACK_GENERATION_MAX_ANGLE * PI / 180)
+		if(vectorAngle(vector1, vector2) > TRACK_GENERATION_MAX_ANGLE * PI / 180)
 		{
 			// Angle ok
 			continue;
@@ -637,42 +628,6 @@ static void track_generate_fix_angles(track_t *track)
 		float diff = nA - angle;
 
 		track->control_points[(i + 1) % track->num_control_points] = vectorAdd(track->control_points[i], vectorRotate(vector2, diff));
-		 *///I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
-
-
-
-		int previous = modulo(i - 1, track->num_control_points);
-		int next = (i + 1) % track->num_control_points;
-		float px = track->control_points[i].x - track->control_points[previous].x;
-		float py = track->control_points[i].y - track->control_points[previous].y;
-		float pl = sqrt(px * px + py * py);
-		px /= pl;
-		py /= pl;
-
-		float nx = track->control_points[i].x - track->control_points[next].x;
-		float ny = track->control_points[i].y - track->control_points[next].y;
-		nx = -nx;
-		ny = -ny;
-		float nl = sqrt(nx * nx + ny * ny);
-		nx /= nl;
-		ny /= nl;
-
-		float angle = atan2(px * ny - py * nx, px * nx + py * ny);
-		if (abs(angle) <= TRACK_GENERATION_MAX_ANGLE * PI / 180)
-		{
-			continue;
-		}
-
-		float nA = (TRACK_GENERATION_MAX_ANGLE * PI / 180) * ((angle > 0) - (angle < 0));
-		float diff = nA - angle;
-		float new_cos = cos(diff);
-		float new_sin = sin(diff);
-		float newX = nx * new_cos - ny * new_sin;
-		float newY = nx * new_sin + ny * new_cos;
-		newX *= nl;
-		newY *= nl;
-		track->control_points[next].x = track->control_points[i].x + newX;
-		track->control_points[next].y = track->control_points[i].y + newY;
 	}
 }
 
@@ -683,7 +638,7 @@ static bool track_generate_check_intersection(track_t *track)
 	{
 		for (j = 0; j < track->num_control_points; ++j)
 		{
-			if (MIN(modulo(i - j, track->num_control_points), modulo(j - i, track->num_control_points)) > 2 && intersect(track->control_points[i], track->control_points[(i + 1) % track->num_control_points], track->control_points[j], track->control_points[(j + 1) % track->num_control_points]))
+			if (MIN(modulo(i - j, track->num_control_points), modulo(j - i, track->num_control_points)) > 2 && track_lines_intersect(track->control_points[i], track->control_points[(i + 1) % track->num_control_points], track->control_points[j], track->control_points[(j + 1) % track->num_control_points]))
 			{
 				return true;
 			}

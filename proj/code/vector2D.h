@@ -33,7 +33,7 @@ double vectorScalarProduct(vector2D_t vector1, vector2D_t vector2);
 // Dot product between vector1 and a vector perpendicular to vector2
 double vectorPerpendicularDotProduct(vector2D_t vector1, vector2D_t vector2);
 
-void normalize(vector2D_t* vector);
+void vectorNormalize(vector2D_t* vector);
 
 bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point);
 
