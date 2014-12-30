@@ -7,14 +7,14 @@
 #define AD_FONT_HEIGHT				15
 #define AD_BOTTOM_MARGIN			15
 
-/** @defgroup ad ad
+/** @defgroup ad Ad
  * @{
  *
  * Module responsible for displaying ads
  */
 
-/** @name Ad structure */
-
+/** @name Ad structure
+/** @{*/
 typedef struct
 {
 	unsigned num_ads;
@@ -25,6 +25,7 @@ typedef struct
 	font_t *font;
 	uint16_t color;
 } ad_t;
+/** @} end of ad structure */
 
 /**
  * @brief Ad constructor
