@@ -299,7 +299,6 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 
 	vector2D_t vehicle2_unit_velocity = vectorRotate(vectorCreate(1, 0), vehicle2->heading);
-	printf("norma de F: %d, unit_velocity: %d\n", (int)vectorNorm(F), (int)vectorNorm(vehicle2_unit_velocity));
 	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, vectorNorm(F) * cos(vectorAngle(vehicle2_unit_velocity, F)));
 	if (vectorNorm(Fprojected) < 1000)
 		vehicle2->speed += sqrt(vectorNorm(Fprojected));
