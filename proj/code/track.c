@@ -640,6 +640,7 @@ static void track_generate_fix_angles(track_t *track)
 		 *///I got the difference between the current angle and 100degrees, and built a new vector that puts the next point at 100 degrees.
 
 
+
 		int previous = modulo(i - 1, track->num_control_points);
 		int next = (i + 1) % track->num_control_points;
 		float px = track->control_points[i].x - track->control_points[previous].x;

@@ -20,8 +20,8 @@ unsigned h_res;		/* Horizontal screen resolution in pixels, not static because _
 unsigned v_res;		/* Vertical screen resolution in pixels, not static because _video_gr.S needs it */
 static unsigned bits_per_pixel; /* Number of VRAM bits per pixel */
 
-uint16_t *double_buffer; // Not static because _video_gr.S needs it
-static uint16_t *mouse_buffer;
+uint16_t *double_buffer = NULL; // Not static because _video_gr.S needs it
+static uint16_t *mouse_buffer = NULL;
 
 static vbe_mode_info_t vbe_mode_info;
 
@@ -314,7 +314,9 @@ uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 
 int vg_exit() {
 	free(double_buffer);
+	double_buffer = NULL;
 	free(mouse_buffer);
+	mouse_buffer = NULL;
 	struct reg86u reg86;
 
 	reg86.u.b.intno = 0x10; /* BIOS video services */
