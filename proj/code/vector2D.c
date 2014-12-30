@@ -72,7 +72,7 @@ double vectorPerpendicularDotProduct(vector2D_t vector1, vector2D_t vector2)
 	return vector1.x * vector2.y - vector1.y * vector2.x;
 }
 
-void normalize(vector2D_t* vector)
+void vectorNormalize(vector2D_t* vector)
 {
 	double norm = vectorNorm(*vector);
 	vector->x /= norm;

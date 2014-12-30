@@ -66,7 +66,7 @@ int race_start(race_t *race)
 	vector2D_t starting_position;
 	double heading = atan2(race->track->spline[0].y - race->track->spline[race->track->spline_size - 1].y, race->track->spline[0].x - race->track->spline[race->track->spline_size - 1].x);
 	temp_vector = vectorRotate(starting_position_increment, PI / 2);
-	normalize(&temp_vector);
+	vectorNormalize(&temp_vector);
 	size_t i, j;
 	if (race->host)
 	{
