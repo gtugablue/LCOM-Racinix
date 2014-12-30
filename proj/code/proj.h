@@ -29,7 +29,6 @@
 #define RACINIX_FILE_ADS										RACINIX_FOLDER_ROOT "ads.txt"
 #define RACINIX_FPS												60
 #define RACINIX_DELTA_TIME										1.0 / TIMER_DEFAULT_FREQ
-#define INTERP_PERIOD											0.07f
 #define RACINIX_MOUSE_SENSITIVITY								1.7
 #define RACINIX_VIDEO_MODE										VBE_MODE_GRAPHICS_1024_768_64K
 #define RACINIX_MAIN_MENU_NUM_BTN								5
