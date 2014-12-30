@@ -11,7 +11,7 @@
 #include "track.h"
 
 #define VEHICLE_ACCELERATE							100.0
-#define VEHICLE_REVERSE								VEHICLE_ACCELERATE / 4
+#define VEHICLE_REVERSE								VEHICLE_ACCELERATE / 2
 #define VEHICLE_BREAK								VEHICLE_ACCELERATE
 #define VEHICLE_STEER								0.15
 #define VEHICLE_STOP_SPEED							10.0

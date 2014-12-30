@@ -3,14 +3,14 @@
 
 #include <minix/syslib.h>
 
-/** @defgroup bitmap bitmap
+/** @defgroup bitmap Bitmap
  * @{
  *
  * Module responsible for loading, transforming and showing 16 bits-per-pixel bitmaps.
  */
 
 /** @name Packed Bitmap File Header block */
-/**@{
+/** @{
  *
  * Stores general information about the Bitmap Image File.
  */
@@ -26,7 +26,7 @@ typedef struct
 /** @} end of bitmap_file_header_t*/
 
 /** @name Packed Bitmap Information Header block */
-/**@{
+/** @{
  *
  * Stores detailed information about the bitmap image and defines the pixel format
  */
@@ -49,11 +49,13 @@ typedef struct
 /** @} end of bitmap_information_header_t*/
 
 /** @name Bitmap structure */
+/** @{ */
 typedef struct
 {
 	bitmap_information_header_t bitmap_information_header;
 	void *pixel_array;
 } bitmap_t;
+/** @} end of bitmap structure */
 
 /**
  * @brief Bitmap constructor
