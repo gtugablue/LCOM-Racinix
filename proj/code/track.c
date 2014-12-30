@@ -7,7 +7,7 @@
 #define MIN(a, b)	((a) < (b) ? (a) : (b))
 
 static vector2D_t createCatmullRomSpline(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
-//static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t);
+static vector2D_t calculateCatmullCoordinate(vector2D_t P[4], double step);
 //static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t);
 static void pushApart(vector2D_t hull[], unsigned hull_size);
 //static vector2D_t calculateCatmullNormal(vector2D_t P0, vector2D_t P1, vector2D_t P2, vector2D_t P3, double t);
@@ -225,33 +225,41 @@ static vector2D_t createCatmullRomSpline(vector2D_t p0, vector2D_t p1, vector2D_
     	    (-p0.y + p2.y) * t +
     	    (2.0f * p0.y - 5.0f * p1.y + 4 * p2.y - p3.y) * t2 +
     	    (-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3);
-/*
-    result.x = calculateCatmullCoordinate(p0.x, p1.x, p2.x, p3.x, t);
-    result.y = calculateCatmullCoordinate(p0.y, p1.y, p2.y, p3.y, t);
-*/
+
+    /*vector2D_t P[4];
+    P[0] = p0;
+    P[1] = p1;
+    P[2] = p2;
+    P[3] = p3;
+    result = calculateCatmullCoordinate(P, t);*/
+
     return result;
 }
 
-/*static double calculateCatmullCoordinate(double P0, double P1, double P2, double P3, double t)
+static vector2D_t calculateCatmullCoordinate(vector2D_t P[4], double step)
 {
-	double t0 = t + 1;
-	double t1 = t0 + 1;
-	double t2 = t1 + 1;
-	double t3 = t2 + 1;
+	double t[4];
+	vector2D_t A[3], B[2], C;
+	double alpha = 0.0;
 
-	double L01, L12, L23;
-	double L012, L123;
-	double C12;
+	t[0] = 0;
+	size_t i;
+	for (i = 1; i < 4; ++i)
+	{
+		t[i] = pow(sqrt(pow(P[i].x - P[i - 1].x, 2) + pow(P[i].y - P[i - 1].y, 2)), alpha) + t[i - 1];
+	}
 
-	L01 = 	P0 * ((t1 - t)/(t1 - t0)) 	+ 	P1 * ((t - t0)/(t1 - t0));
-	L12 = 	P1 * ((t2 - t)/(t2 - t1)) 	+ 	P2 * ((t - t1)/(t2 - t1));
-	L23 = 	P2 * ((t3 - t)/(t3 - t2)) 	+ 	P3 * ((t - t2)/(t3 - t2));
-	L012 = 	L01 * ((t2 - t)/(t2 - t0)) 	+ 	L12 * ((t - t0)/(t2 - t0));
-	L123 = 	L12 * ((t3 - t)/(t3 - t1)) 	+ 	L23 * ((t - t1)/(t3 - t1));
-	C12 = 	L012 * ((t2 - t)/(t2 - t1)) + 	L123 * ((t - t1)/(t2 - t1));
+	A[0] = vectorAdd(vectorMultiply(P[0], (t[1] - step)/(t[1] - t[0])), vectorMultiply(P[1], (step - t[0])/(t[1] - t[0])));
+	A[1] = vectorAdd(vectorMultiply(P[1], (t[2] - step)/(t[2] - t[1])), vectorMultiply(P[2], (step - t[1])/(t[2] - t[1])));
+	A[2] = vectorAdd(vectorMultiply(P[2], (t[3] - step)/(t[3] - t[2])), vectorMultiply(P[3], (step - t[2])/(t[3] - t[2])));
 
-	return C12;
-}*/
+	B[0] = vectorAdd(vectorMultiply(A[0], (t[2] - step)/(t[2] - t[0])), vectorMultiply(A[1], (step - t[0])/(t[2] - t[0])));
+	B[1] = vectorAdd(vectorMultiply(A[1], (t[3] - step)/(t[3] - t[1])), vectorMultiply(A[2], (step - t[1])/(t[3] - t[1])));
+
+	C = vectorAdd(vectorMultiply(B[0], (t[2] - step)/(t[2] - t[1])), vectorMultiply(B[1], (step - t[1])/(t[2] - t[1])));
+
+	return C;
+}
 
 /*static double calculateCatmullDerivativeCoordinate(double P0, double P1, double P2, double P3, double t)
 {

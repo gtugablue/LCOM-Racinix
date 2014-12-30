@@ -249,7 +249,6 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 	vector2D_t max = polygon[0];
 	for (i = 1; i < n; ++i)
 	{
-		printf("min.x: %d, max.x: %d\n", (int)min.x, (int)max.x);
 		if (polygon[i].x < min.x)
 		{
 			min.x = polygon[i].x;
@@ -266,7 +265,6 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 		{
 			max.y = polygon[i].y;
 		}
-		printf("min.x: %d, max.x: %d\n", (int)min.x, (int)max.x);
 	}
 	vector2D_t point;
 	size_t count = 0;
@@ -282,7 +280,6 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color)
 			}
 		}
 	}
-	printf("COOOUUNT: %d\n", count);
 	return 0;
 }
 
