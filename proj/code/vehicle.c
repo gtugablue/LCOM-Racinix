@@ -87,27 +87,11 @@ void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag)
 		{
 			vehicle->speed -= VEHICLE_REVERSE * delta_time;
 		}
-
-		if (kbd_keys[vehicle->vehicle_keys.nitrous].pressed)
-		{
-			vehicle->speed += VEHICLE_NITROUS * delta_time;    ///////falta corrigir pois qd esta a andar pa tras com nitro ele ganha veloc para frente
-		}
 	}
 	else if (kbd_keys[vehicle->vehicle_keys.accelerate].pressed)
 	{
 		vehicle->speed += VEHICLE_ACCELERATE * delta_time;
-		if (kbd_keys[vehicle->vehicle_keys.nitrous].pressed)
-		{
-			vehicle->speed += VEHICLE_NITROUS * delta_time;
-		}
 	}
-	////////////////////////////////nitrous/////////////////////////////////////////////
-
-	/*else if (vehicle_keys.nitrous)
-	{
-		vehicle->speed += VEHICLE_NITROUS * delta_time;
-	}*/
-	/////////////////////////////////////////////////////////////////////
 	else if (abs(vehicle->speed) < VEHICLE_STOP_SPEED)
 	{
 		vehicle->speed = 0;

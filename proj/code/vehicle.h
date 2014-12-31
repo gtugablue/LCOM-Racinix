@@ -34,7 +34,6 @@ typedef struct
 	int brake;
 	int turn_left;
 	int turn_right;
-	int nitrous;
 } vehicle_keys_t;
 
 typedef struct
