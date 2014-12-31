@@ -114,13 +114,11 @@ int racinix_start()
 	vehicle_keys[0].brake = KEY_S;
 	vehicle_keys[0].turn_left = KEY_A;
 	vehicle_keys[0].turn_right = KEY_D;
-	vehicle_keys[0].nitrous = KEY_L_CTRL;
 
 	vehicle_keys[1].accelerate = KEY_ARR_UP;
 	vehicle_keys[1].brake = KEY_ARR_DOWN;
 	vehicle_keys[1].turn_left = KEY_ARR_LEFT;
 	vehicle_keys[1].turn_right = KEY_ARR_RIGHT;
-	vehicle_keys[1].nitrous = KEY_R_CTRL;
 
 	vehicle_colors[0] = VIDEO_GR_RED;
 	vehicle_colors[1] = VIDEO_GR_BLUE;
