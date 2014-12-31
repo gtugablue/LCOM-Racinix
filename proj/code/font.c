@@ -307,7 +307,7 @@ unsigned font_calculate_string_width(font_t *font, const unsigned char *string, 
 {
 	bitmap_t *character;
 	size_t i;
-	unsigned string_width = 0; // Why did I forget to initialize it to 0?? SILLY MISTAKE!
+	unsigned string_width = 0;
 	double ratio = (double)height / FONT_BITMAP_HEIGHT;
 	unsigned length = -1;
 	for (i = 0; i < strlen(string); ++i)
