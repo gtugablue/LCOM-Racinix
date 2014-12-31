@@ -135,6 +135,8 @@ unsigned racinix_read_ads(const char *file, char *ads[]);
 
 unsigned long racinix_generate_seed();
 
+const unsigned char *racinix_get_root_folder();
+
 // Events
 enum
 {
