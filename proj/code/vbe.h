@@ -180,6 +180,15 @@ typedef struct {
  */
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
 
+/**
+ * @brief
+ *
+ * @param vib_p
+ * @param video_modes
+ * @param num_video_modes
+ *
+ * @return
+ */
 int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned *num_video_modes);
 
  /** @} end of vbe */
