@@ -90,6 +90,8 @@ unsigned char keyboard_get_led_status();
 // Keys
 kbd_key_t kbd_keys[102];
 
+/** @name keyboard info */
+/** @{ */
 enum {
     KEY_NONE,
     KEY_ESC,
@@ -194,6 +196,7 @@ enum {
     KEY_CNTX,
     KEY_END
 };
+/** @} end of keyboard info */
 
 /*enum {
     KEY_NONE = 0x0000,
