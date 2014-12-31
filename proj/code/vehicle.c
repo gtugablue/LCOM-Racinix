@@ -298,8 +298,8 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 
-	vector2D_t vehicle2_unit_velocity = vectorRotate(vectorCreate(1, 0), vehicle2->heading);
-	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, vectorNorm(F) * cos(vectorAngle(vehicle2_unit_velocity, F)));
+	vector2D_t vehicle2_velocity = vectorRotate(vectorCreate(vehicle2->speed, 0), vehicle2->heading);
+	vector2D_t Fprojected = vectorMultiply(vehicle2_velocity, vectorNorm(F) * cos(vectorAngle(vehicle2_velocity, F)));
 	if (vectorNorm(Fprojected) < 1000)
 		vehicle2->speed += sqrt(vectorNorm(Fprojected));
 
@@ -308,7 +308,6 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 
 void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned whefel_ID, vehicle_t *vehicle2)
 {
-	// TODO improve performance
 	int wheel_ID1, wheel_ID2;
 	size_t i;
 	double step = 0.01;
