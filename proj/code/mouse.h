@@ -54,6 +54,11 @@
 #define MOUSE_PACKET_SIZE				3
 #define MOUSE_STATUS_SIZE				3
 
+/** @name Mouse structure */
+/** @{
+ *
+ * Mouse data packet structure
+ */
 typedef struct
 {
 	unsigned char bytes[3];
@@ -65,7 +70,13 @@ typedef struct
 	int x_delta;
 	int y_delta;
 } mouse_data_packet_t;
+/** @} end of mouse_data_packet_t */
 
+/** @name Mouse structure */
+/** @{
+ *
+ * Mouse status packet structure
+ */
 typedef struct
 {
 	unsigned char bytes[3];
@@ -78,6 +89,8 @@ typedef struct
 	unsigned char resolution;
 	unsigned char sample_rate;
 } mouse_status_packet_t;
+/** @} end of mouse_status_packet_t */
+
 
 /** @defgroup mouse mouse
  * @{
@@ -140,20 +153,93 @@ int mouse_write(unsigned num_tries, unsigned char command);
  */
 int mouse_send_argument(unsigned num_tries, unsigned char argument);
 
+/**
+ * @brief Read from the mouse
+ *
+ * Read the output specified in the arguments directly from the mouse.
+ *
+ * @param num_tries number of tries to make whenever something fails
+ * @param output output to read from the mouse
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_read(unsigned num_tries, unsigned char* output);
 
+/**
+ * @brief Read the mouse packet
+ *
+ * Read internally the mouse packet
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_int_handler(unsigned num_tries);
 
+/**
+ * @brief Sets the mouse to stream mode
+ *
+ * Sets the mouse to stream mode on when it writes sucessfully to the mouse
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_set_stream_mode(unsigned num_tries);
 
+/**
+ * @brief Enable the stream mode
+ *
+ * Enable the stream mode
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_enable_stream_mode(unsigned num_tries);
 
+/**
+ * @brief Disable the stream mode
+ *
+ * Disable the stream mode
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_disable_stream_mode(unsigned num_tries);
 
+/**
+ * @brief Reset the default settings from the mouse
+ *
+ * Reset the default settings from the mouse
+ *
+ * @param num_tries number of tries to make whenever something fails
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_reset(unsigned num_tries);
 
+/**
+ * @brief Discards interrupts of mouse
+ *
+ * Discard interrupts caused by command responses
+ *
+ * @param num_tries number of tries to make whenever something fails
+ */
 void mouse_discard_interrupts(unsigned num_tries, unsigned char hook_bit);
 
+/**
+ * @brief Unsubscribe the mouse interrupts
+ *
+ * Unsubscribes the mouse interrupts with a specified hook bit and hook id
+ *
+ * @param hook_id address of memory where the hook bit is located and where to write the hook id
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int mouse_unsubscribe_int(unsigned hook_id);
+
+/** @} end of Mouse */
 
 #endif
