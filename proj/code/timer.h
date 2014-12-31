@@ -141,4 +141,5 @@ int set_repetitive_task(unsigned long freq, void(*func)());
  */
 int stop_repetitive_task();
 
+/** @} end of timer */
 #endif /* __TIMER_H */

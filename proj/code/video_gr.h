@@ -58,6 +58,15 @@ int vg_fill(uint16_t color);
  */
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color);
 
+/**
+ * @brief
+ *
+ * @param x
+ * @param y
+ * @param color
+ *
+ * @return
+ */
 inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color);
 
 /**
@@ -87,6 +96,17 @@ inline long vg_get_pixel(unsigned long x, unsigned long y);
  */
 int vg_draw_line(long xi, long yi, long xf, long yf, long color);
 
+/**
+ * @brief
+ *
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ * @param color
+ *
+ * @return
+ */
 int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, uint16_t color);
 
 /**
@@ -100,22 +120,81 @@ int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, uns
  */
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
 
+/**
+ * @brief
+ *
+ * @param x
+ * @param y
+ * @param pixmap
+ * @param width
+ * @param height
+ *
+ * @return
+ */
 int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned short width, unsigned short height);
 
+/**
+ * @brief
+ *
+ * @param polygon
+ * @param n
+ * @param color
+ *
+ * @return
+ */
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
+/**
+ * @brief
+ *
+ * @param x
+ * @param y
+ * @param bitmap
+ */
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
 
+/**
+ * @brief
+ *
+ *
+ * @return
+ */
 int vg_box_blur();
 
+/**
+ * @brief
+ *
+ * @return
+ */
 vbe_mode_info_t *vg_get_vbe_mode_info();
 
+/**
+ * @brief
+ *
+ */
 void *vg_get_double_buffer();
 
+/**
+ * @brief
+ *
+ */
 void vg_swap_buffer();
 
+/**
+ * @brief
+ *
+ */
 void vg_swap_mouse_buffer();
 
+/**
+ * @brief
+ *
+ * @param r
+ * @param g
+ * @param b
+ *
+ * @return
+ */
 uint16_t rgb(unsigned char r, unsigned char g, unsigned char b);
 
  /**

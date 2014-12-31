@@ -36,20 +36,96 @@
 
 #define RTC_HOOK_BIT				14
 
+/** @defgroup rtc RTC
+ * @{
+ *
+ * Module that handle everything that is related to Real Time Clock
+ *
+ */
+
+/**
+ * @brief
+ *
+ * @param hook_id
+ * @param PIE
+ * @param AIE
+ * @param UIE
+ *
+ * @return
+ */
 int rtc_subscribe_int(unsigned *hook_id, bool PIE, bool AIE, bool UIE);
 
+/**
+ * @brief
+ *
+ * @param regs
+ *
+ * @return
+ */
 int rtc_get_config(unsigned long regs[]);
 
+/**
+ * @brief
+ *
+ * @param hour
+ * @param min
+ * @param sec
+ *
+ * @return
+ */
 int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec);
 
+/**
+ * @brief
+ *
+ * @param dia
+ * @param mes
+ * @param ano
+ *
+ * @return
+ */
 int rtc_get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano);
 
+/**
+ * @brief
+ *
+ * @param hour
+ * @param min
+ * @param sec
+ *
+ * @return
+ */
 int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec);
 
+/**
+ * @brief
+ *
+ * @param n
+ *
+ * @return
+ */
 int rtc_set_delta_alarm(unsigned n);
 
+/**
+ * @brief
+ *
+ * @param PIE
+ * @param AIE
+ * @param UIE
+ *
+ * @return
+ */
 int rtc_int_handler(bool *PIE, bool *AIE, bool *UIE);
 
+/**
+ * @brief
+ *
+ * @param hook_id
+ *
+ * @return
+ */
 int rtc_unsubscribe_int(unsigned hook_id);
 
+
+/** @} end of rtc */
 #endif
