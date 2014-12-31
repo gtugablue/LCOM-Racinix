@@ -62,7 +62,9 @@
 #define RACINIX_SERIAL_PROTO_TRACK_MANUAL						"MNL" // MNL <num_points> <x1> <y1> <x2> <y2> ... <xn> <yn>
 #define RACINIX_SERIAL_PROTO_END_RACE							"END_RACE" // END_RACE
 
-// States
+
+/** @name States of the game */
+/** @{ */
 enum
 {
 	RACINIX_STATE_MAIN_MENU,
@@ -71,23 +73,27 @@ enum
 	RACINIX_STATE_ERROR,
 	RACINIX_STATE_END
 };
+/** @} end of click location info */
 
-// Main menu states
+/** @name Main menu states */
+/** @{ */
 enum
 {
 	RACINIX_STATE_MAIN_MENU_BASE,
 	RACINIX_STATE_MAIN_MENU_PICK_TRACK,
 	RACINIX_STATE_MAIN_MENU_CREDITS
 };
+/** @} end of Main menu states */
 
-// Track design states
+/** @name States of the track design */
+/** @{ */
 enum
 {
-	// TODO
 	RACINIX_STATE_TRACK_DESIGN_NEW,
 	RACINIX_STATE_TRACK_DESIGN_DESIGNING,
 	RACINIX_STATE_TRACK_DESIGN_MOVING
 };
+/** @} end of States of the track design */
 
 int racinix_start();
 

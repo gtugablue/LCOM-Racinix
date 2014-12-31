@@ -60,8 +60,8 @@ font_t *font_load(const char* folder);
  * @param font struct of the font
  * @param string string that is written
  * @param height height of the font
- * @param x x axis coordinate of the position of the top left corner of the font
- * @param y y axis coordinate of the position of the top left corner of the font
+ * @param x x coordinate of the position of the top left corner of the font
+ * @param y y coordinate of the position of the top left corner of the font
  * @param font_alignment_t :: font_alignment_t
  * @param color color of the font
  * @param shade number of pixels to the right and down where it will put the shade
