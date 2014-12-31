@@ -22,9 +22,8 @@ static bool serial_port;
 static ad_t *ad;
 
 // Bitmaps
-static bitmap_t *background;
-static bitmap_t *mouse_cursor;
-static bitmap_t *logo;
+static bitmap_t *bitmap_background;
+static bitmap_t *bitmap_mouse_cursor;
 static bitmap_t *bitmap_red_car;
 static bitmap_t *bitmap_blue_car;
 static bitmap_t *bitmap_credits;
@@ -61,9 +60,8 @@ int racinix_start()
 
 	// Initialize pointers to NULL so that in case of error the program is terminated properly.
 	race = NULL;
-	background = NULL;
-	mouse_cursor = NULL;
-	logo = NULL;
+	bitmap_background = NULL;
+	bitmap_mouse_cursor = NULL;
 	bitmap_red_car = NULL;
 	bitmap_blue_car = NULL;
 	bitmap_credits = NULL;
@@ -71,23 +69,16 @@ int racinix_start()
 	font_impact = NULL;
 	ad = NULL;
 
-	background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
-	if (background == NULL)
+	bitmap_background = bitmap_load(RACINIX_FOLDER_IMAGES "background.bmp");
+	if (bitmap_background == NULL)
 	{
 		return 1;
 	}
-	mouse_cursor = bitmap_load(RACINIX_FOLDER_IMAGES "cursor.bmp");
-	if (mouse_cursor == NULL)
+	bitmap_mouse_cursor = bitmap_load(RACINIX_FOLDER_IMAGES "cursor.bmp");
+	if (bitmap_mouse_cursor == NULL)
 	{
 		return 1;
 	}
-
-	logo = bitmap_load(RACINIX_FOLDER_IMAGES "logo.bmp");
-	if (logo == NULL)
-	{
-		return 1;
-	}
-
 	bitmap_red_car = bitmap_load(RACINIX_FOLDER_IMAGES "red_car.bmp");
 	if (bitmap_red_car == NULL)
 	{
@@ -146,9 +137,8 @@ int racinix_start()
 int racinix_exit()
 {
 	race_delete(race);
-	bitmap_delete(background);
-	bitmap_delete(mouse_cursor);
-	bitmap_delete(logo);
+	bitmap_delete(bitmap_background);
+	bitmap_delete(bitmap_mouse_cursor);
 	bitmap_delete(bitmap_red_car);
 	bitmap_delete(bitmap_blue_car);
 	bitmap_delete(bitmap_speedometer);
@@ -1009,15 +999,16 @@ void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet)
 void racinix_draw_mouse()
 {
 	vg_swap_buffer();
-	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, mouse_cursor);
+	vg_draw_mouse((int)mouse_position.x, (int)mouse_position.y, bitmap_mouse_cursor);
 	vg_swap_mouse_buffer();
 }
 
 void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[])
 {
-	bitmap_draw(background, 0, 0);
-	// Show logo
-	bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
+	bitmap_draw(bitmap_background, 0, 0);
+
+	// Logo incorporated in the background image for efficiency purposes
+	//bitmap_draw_alpha(logo, (vmi.XResolution - logo->bitmap_information_header.width) / 2, (vmi.YResolution / 2 - logo->bitmap_information_header.height) / 2, VIDEO_GR_64K_TRANSPARENT);
 
 	size_t i;
 	for (i = 0; i < RACINIX_MAIN_MENU_NUM_BTN; ++i)
