@@ -298,10 +298,13 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 
-	vector2D_t vehicle2_velocity = vectorRotate(vectorCreate(vehicle2->speed, 0), vehicle2->heading);
-	vector2D_t Fprojected = vectorMultiply(vehicle2_velocity, vectorNorm(F) * cos(vectorAngle(vehicle2_velocity, F)));
-	if (vectorNorm(Fprojected) < 1000)
-		vehicle2->speed += sqrt(vectorNorm(Fprojected));
+	vector2D_t vehicle2_unit_velocity = vectorRotate(vectorCreate(1, 0), vehicle2->heading);
+	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, vectorNorm(F) * cos(vectorAngle(vehicle2_unit_velocity, F)));
+	if (vectorNorm(Fprojected) < 10000)
+	{
+		vehicle->speed -= vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
+		vehicle2->speed += vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
+	}
 
 	vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
 }
@@ -332,7 +335,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 {
 	if (vehicle_limits_collision.left)
 	{
-		vehicle->heading -= (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		vehicle->heading -= (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_LIMITS_COLLISION_FRICTION;
 		vehicle_calculate_axle_position(vehicle);
 		vehicle_update_position(vehicle);
 		vehicle_calculate_wheel_position(vehicle);
@@ -340,7 +343,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 	if (vehicle_limits_collision.right)
 	{
-		vehicle->heading += (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		vehicle->heading += (VEHICLE_STEER * vehicle->length * sin(vehicle->heading)) / VEHICLE_LIMITS_COLLISION_FRICTION;
 		vehicle_calculate_axle_position(vehicle);
 		vehicle_update_position(vehicle);
 		vehicle_calculate_wheel_position(vehicle);
@@ -348,7 +351,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 	if (vehicle_limits_collision.top)
 	{
-		vehicle->heading += (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		vehicle->heading += (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_LIMITS_COLLISION_FRICTION;
 		vehicle_calculate_axle_position(vehicle);
 		vehicle_update_position(vehicle);
 		vehicle_calculate_wheel_position(vehicle);
@@ -356,7 +359,7 @@ void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition
 	}
 	if (vehicle_limits_collision.bottom)
 	{
-		vehicle->heading -= (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_COLLISION_FRICTION;
+		vehicle->heading -= (VEHICLE_STEER * vehicle->length * cos(vehicle->heading)) / VEHICLE_LIMITS_COLLISION_FRICTION;
 		vehicle_calculate_axle_position(vehicle);
 		vehicle_update_position(vehicle);
 		vehicle_calculate_wheel_position(vehicle);

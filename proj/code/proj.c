@@ -11,6 +11,8 @@
 
 #define BIT(n) (0x01<<(n))
 
+static unsigned char *root_folder;
+
 static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
 static race_t *race;
@@ -33,7 +35,7 @@ static bitmap_t *bitmap_speedometer;
 // Fonts
 static font_t *font_impact;
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
 
 	/* Initialize service */
 	sef_startup();
