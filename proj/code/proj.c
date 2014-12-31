@@ -11,8 +11,6 @@
 
 #define BIT(n) (0x01<<(n))
 
-static unsigned char *root_folder;
-
 static vector2D_t mouse_position;
 static vbe_mode_info_t vmi;
 static race_t *race;
