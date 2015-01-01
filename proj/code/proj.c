@@ -227,10 +227,6 @@ int racinix_dispatcher()
 				if (msg.NOTIFY_ARG & BIT(timer_hook_bit)) {
 					if ((fps_counter = racinix_timer_int_handler()) != -1)
 					{
-						if (racinix_serial_int_handler()) // Sometimes VMWare stops sending interrupts for no reason...
-						{
-							return 1;
-						}
 						if (racinix_event_handler(RACINIX_EVENT_NEW_FRAME, fps_counter) == RACINIX_STATE_END)
 						{
 							break;
@@ -268,6 +264,18 @@ int racinix_dispatcher()
 					if (racinix_serial_int_handler())
 					{
 						break;
+					}
+
+					// Subscribe again due to a bug with VMWare serial port emulation that causes it to stop generating interrupts
+					serial_hook_id = SERIAL_HOOK_BIT;
+					if (serial_subscribe_int(&serial_hook_id, RACINIX_SERIAL_PORT_NUMBER, RACINIX_SERIAL_TRIGGER_LEVEL) == -1)
+					{
+						return 1;
+					}
+
+					if (serial_set(RACINIX_SERIAL_PORT_NUMBER, RACINIX_SERIAL_NUM_BITS, RACINIX_SERIAL_NUM_STOP_BITS, RACINIX_SERIAL_PARITY, RACINIX_SERIAL_BAUD_RATE))
+					{
+						return 1;
 					}
 				}
 				// RTC
