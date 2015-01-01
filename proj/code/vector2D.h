@@ -19,110 +19,118 @@ typedef struct
 } vector2D_t;
 
 /**
- * @brief
+ * @brief Creates the vector
  *
- * @param x
- * @param y
+ * @param x x coordinate of the vector
+ * @param y y coordinate of the vector
  *
- * @return
+ * @return The vector created
  */
 vector2D_t vectorCreate(double x, double y);
 
 /**
- * @brief
+ * @brief Calculate distance between vectors
  *
- * @param vector1
- * @param vector2
+ * @param vector1 vector1 info (coordinates)
+ * @param vector2 vector2 info (coordinates)
  *
- * @return
+ * @return The distance between two vectors given
  */
 double vectorDistance(vector2D_t vector1, vector2D_t vector2);
 
 /**
- * @brief
+ * @brief Add a vector
  *
- * @param vector1
- * @param vector2
+ * Add a vector to another vector (sum)
  *
- * @return
+ * @param vector1 vector1 info
+ * @param vector2 vector2 info
+ *
+ * @return Resulting vector of the sum
  */
 vector2D_t vectorAdd(vector2D_t vector1, vector2D_t vector2);
 
 /**
- * @brief
+ * @brief Subtract a vector
  *
- * @param vector1
- * @param vector2
+ * Subtract a vector to another vector (subtraction)
  *
- * @return
+ * @param vector1 vector1 info
+ * @param vector2 vector2 info
+ *
+ * @return Resulting vector of the subtraction
  */
 vector2D_t vectorSubtract(vector2D_t vector1, vector2D_t vector2);
 
 /**
- * @brief
+ * @brief Multiply a vector
  *
- * @param vector
- * @param factor
+ * Multiply a vector by a factor (multiplication)
  *
- * @return
+ * @param vector vector inf
+ * @param factor factor that will multiply with the vector
+ *
+ * @return Resulting vector of the multiplication
  */
 vector2D_t vectorMultiply(vector2D_t vector, double factor);
 
 /**
- * @brief
+ * @brief Divides a vector
  *
- * @param vector
- * @param factor
+ * Divides a vector by a factor
  *
- * @return
+ * @param vector vector info
+ * @param factor factor that will divide by the vector given
+ *
+ * @return Resulting vector
  */
 vector2D_t vectorDivide(vector2D_t vector, double factor);
 
 /**
- * @brief
+ * @brief Rotates the vector
  *
- * @param vector
- * @param degrees
+ * @param vector vector info
+ * @param degrees degrees by which the vector will rotate
  *
- * @return
+ * @return Resulting vector
  */
 vector2D_t vectorRotate(vector2D_t vector, double degrees);
 
 /**
- * @brief
+ * @brief Calculate the normal of the vector
  *
- * @param vector
+ * @param vector vector info
  *
- * @return
+ * @return Return the normal
  */
 double vectorNorm(vector2D_t vector);
 
 /**
- * @brief
+ * @brief Calculate the angle between two vectors
  *
- * @param vector1
- * @param vector2
+ * @param vector1 vector1 info
+ * @param vector2 vector2 info
  *
- * @return
+ * @return Return the angle
  */
 double vectorAngle(vector2D_t vector1, vector2D_t vector2);
 
 /**
- * @brief
+ * @brief Calculate the scalar product of the two vectors
  *
- * @param vector1
- * @param vector2
+ * @param vector1 vector1 info
+ * @param vector2 vector2 info
  *
- * @return
+ * @return Return the scalar product
  */
 double vectorScalarProduct(vector2D_t vector1, vector2D_t vector2);
 
 // Dot product between vector1 and a vector perpendicular to vector2
 /**
- * @brief
+ * @brief Calculate the perpendicular dot from the vector
  *
- * @param vector1
- * @param vector2
+ * @param vector1 vector1 info
+ * @param vector2 vector2 info
  *
  * @return
  */
@@ -131,19 +139,19 @@ double vectorPerpendicularDotProduct(vector2D_t vector1, vector2D_t vector2);
 /**
  * @brief
  *
- * @param vector
+ * @param vector vector info
  */
 void vectorNormalize(vector2D_t* vector);
 
 /**
- * @brief
+ * @brief Calculates if the point is in the retangle
  *
- * @param top_left_corner
- * @param width
- * @param height
+ * @param top_left_corner the top left corner of the vector
+ * @param width width of the retangle
+ * @param height height of the retangle
  * @param point
  *
- * @return
+ * @return Return true on sucess, false otherwise
  */
 bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point);
 
