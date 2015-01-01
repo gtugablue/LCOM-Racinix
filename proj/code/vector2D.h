@@ -132,26 +132,26 @@ double vectorScalarProduct(vector2D_t vector1, vector2D_t vector2);
  * @param vector1 vector1 info
  * @param vector2 vector2 info
  *
- * @return
+ * @return Return dot product between vector1 and a vector perpendicular to vector2
  */
 double vectorPerpendicularDotProduct(vector2D_t vector1, vector2D_t vector2);
 
 /**
- * @brief
+ * @brief Put the vector's norm to 1
  *
  * @param vector vector info
  */
 void vectorNormalize(vector2D_t* vector);
 
 /**
- * @brief Calculates if the point is in the retangle
+ * @brief Calculates if the point is in the rectangle
  *
- * @param top_left_corner the top left corner of the vector
- * @param width width of the retangle
- * @param height height of the retangle
- * @param point
+ * @param top_left_corner the top left corner of the rectangle
+ * @param width width of the rectangle
+ * @param height height of the rectangle
+ * @param point point that will be compared
  *
- * @return Return true on sucess, false otherwise
+ * @return Return true on success, false otherwise
  */
 bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, unsigned height, vector2D_t point);
 
