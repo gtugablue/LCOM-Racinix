@@ -29,7 +29,7 @@ typedef struct
 /**
  * @brief Checks if a given interruption is a response to a command
  *
- * @params interruption data read from the output buffer after the
+ * @param interruption data read from the output buffer after the
  *  interruption occured
  *
  * @return Return 0 upon success and non-zero otherwise

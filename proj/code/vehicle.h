@@ -97,74 +97,76 @@ typedef union
 
 // Creates the vehicle and scales the bitmap according to its size (for efficiency purposes)
 /**
- * @brief
+ * @brief Vehicle constructor
  *
- * @param width
- * @param length
- * @param position
- * @param heading
- * @param bitmap
- * @param vehicle_keys
- * @param checkpoint_color
+ * @param width width that is given to the vehicle
+ * @param length length of the vehicle
+ * @param position position that the vehicle will have
+ * @param heading direction where the car is turned
+ * @param bitmap the bitmap that the vehicle will embody
+ * @param vehicle_keys the keys to control the vehicle
+ * @param checkpoint_color the color of the checkpoint that will match to this vehicle
  *
- * @return
+ * @return A pointer to the vehicle on sucess, NULL otherwise
  */
 vehicle_t *vehicle_create(double width, double length, const vector2D_t *position, double heading, bitmap_t *bitmap, vehicle_keys_t vehicle_keys, uint16_t checkpoint_color);
 
 /**
- * @brief
+ * @brief Update the car
  *
- * @param vehicle
- * @param track
- * @param vmi_p
- * @param delta_time
- * @param drag
+ * Updates the position and everything that has to do with the car when one condition changes
+ *
+ * @param vehicle the vehicle that will be updated
+ * @param track the track where the vehicle is
+ * @param vmi_p the video mode information
+ * @param delta_time the time a key was pressed	to later do the rate to see how much did the user want to update the car (velocity, steering,...)
+ * @param drag the drag that the speed will suffer
  */
 void vehicle_tick(vehicle_t *vehicle, track_t *track, vbe_mode_info_t *vmi_p, double delta_time, double drag);
 
 /**
- * @brief
+ * @brief Updates the steering of the vehicle
  *
- * @param vehicle
- * @param delta_time
+ * @param vehicle the vehicle that will be updated
+ * @param delta_time the time a key was pressed to turn the vehicle
  */
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time);
 
 /**
- * @brief
+ * @brief Updates the speed of the vehicle
  *
- * @param vehicle
- * @param delta_time
+ * @param vehicle the vehicle that will be updated
+ * @param delta_time the time a key was pressed update the speed (increase or decrease)
  * @param drag
  */
 void vehicle_update_speed(vehicle_t *vehicle, double delta_time, double drag);
 
 /**
- * @brief
+ * @brief Updates the axles of the vehicle
  *
- * @param vehicle
- * @param delta_time
+ * @param vehicle the vehicle that will be updated
+ * @param delta_time the time during which the axles are updated
  */
 void vehicle_update_axles(vehicle_t *vehicle, double delta_time);
 
 /**
- * @brief
+ * @brief Updates the position of the vehicle
  *
- * @param vehicle
+ * @param vehicle the vehicle that will be updated
  */
 void vehicle_update_position(vehicle_t *vehicle);
 
 /**
- * @brief
+ * @brief Updates the direction where the car is turned
  *
- * @param vehicle
+ * @param vehicle the vehicle that will be updated
  */
 void vehicle_update_heading(vehicle_t *vehicle);
 
 /**
- * @brief
+ * @brief Calculates the axle position
  *
- * @param vehicle
+ * @param vehicle vehicle info
  */
 void vehicle_calculate_axle_position(vehicle_t *vehicle);
 
@@ -182,89 +184,94 @@ void vehicle_calculate_axle_position(vehicle_t *vehicle);
 void vehicle_calculate_wheel_position(vehicle_t *vehicle);
 
 /**
- * @brief
+ * @brief Checks limits collision
  *
- * @param vehicle
- * @param width
- * @param height
+ * checks if the car has collided with the limits of the screen
  *
- * @return
+ * @param vehicle vehicle information
+ * @param width width of the vehicle
+ * @param height height of the vehicle
+ *
+ * @return the vehicle limits collision
  */
 vehicle_limits_collision_t vehicle_check_limits_collision(vehicle_t *vehicle, unsigned width, unsigned height);
 
 /**
- * @brief
+ * @brief Handles the behavior car when it has collided with the screen limits
  *
- * @param vehicle
- * @param oldPosition
- * @param vehicle_limits_collision
- * @param width
- * @param height
+ * @param vehicle vehicle info
+ * @param oldPosition the previous position of the vehicle (before the collision)
+ * @param vehicle_limits_collision the vehicle collision with the limits
+ * @param width widht of the vehicle
+ * @param height height of the vehicle
  */
 void vehicle_limits_collision_handler(vehicle_t *vehicle, vector2D_t oldPosition, vehicle_limits_collision_t vehicle_limits_collision, unsigned width, unsigned height);
 
 /**
- * @brief
+ * @brief Checks if the vehicle has collided
  *
- * @param vehicle
- * @param vehicle2
+ * Checks if the vehicle has collided with another vehicle
+ *
+ * @param vehicle info of the first vehicle
+ * @param vehicle2 info of the second vehicle
  *
  * @return
  */
 int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2);
 
 /**
- * @brief
+ * @brief Handles the vehicle collision
  *
- * @param vehicle
- * @param wheel_ID
- * @param vehicle2
+ * In case of collision, handles the behavior of the car
+ *
+ * @param vehicle info of the first vehicle
+ * @param wheel_ID the id of the wheel (to know which wheel it is)
+ * @param vehicle2 info of the second vehicle
  *
  */
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2);
 
 /**
- * @brief
+ * @brief Move away the vehicle to stop collide
  *
- * @param vehicle
- * @param wheel_ID
- * @param vehicle2
+ * @param vehicle info of the first vehicle
+ * @param wheel_ID id of the wheel
+ * @param vehicle2 info of the second vehicle
  */
 void vehicle_vehicle_collision_handler_position_fix(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2);
 
 /**
- * @brief
+ * @brief Check if the vehicle has collided with the checkpoint
  *
- * @param vehicle
- * @param track
+ * @param vehicle vehicle info
+ * @param track track info
  *
- * @return
+ * @return Return true on sucess, false otherwise
  */
 bool vehicle_check_checkpoint_collision(vehicle_t *vehicle, track_t *track);
 
 /**
- * @brief
+ * @brief Handles the behavior of the vehicle if it has collided with the checkpoint
  *
- * @param vehicle
- * @param track
+ * @param vehicle vehicle info
+ * @param track track info (where the car is)
  *
  */
 void vehicle_checkpoint_collision_handler(vehicle_t *vehicle, track_t *track);
 
 /**
- * @brief
+ * @brief Draws the vehicle
  *
- * @param vehicle
+ * @param vehicle vehicle info
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int vehicle_draw(vehicle_t *vehicle);
 
 /**
- * @brief
+ * @brief Deletes the vehicle
  *
- * @param vehicle
- *
+ * @param vehicle vehicle info
  */
 void vehicle_delete(vehicle_t *vehicle);
 
