@@ -42,7 +42,9 @@ int main(int argc, char *argv[]) {
 
 	if (racinix_start())
 	{
+		racinix_exit();
 		printf("Racinix: An error occurred and the program was stopped.\n");
+		return 1;
 	}
 
 	racinix_exit();
