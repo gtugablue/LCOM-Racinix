@@ -92,8 +92,8 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 /**
  * @brief
  *
- * @param race
- * @param port_number
+ * @param race race info
+ * @param port_number serial port number
  * @param seed
  * @param host
  *
@@ -102,23 +102,23 @@ race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitm
 void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool host);
 
 /**
- * @brief
+ * @brief Starts the race
  *
- * @param race
+ * @param race race info
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int race_start(race_t *race);
 
 /**
- * @brief
+ * @brief Updates the status of the race
  *
- * @param race
- * @param delta_time
- * @param fps
+ * @param race race info
+ * @param delta_time the time during which it will check for updates, that it will implement in the specific frame
+ * @param fps frames per second
  *
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int race_tick(race_t *race, double delta_time, unsigned fps);
 
@@ -127,7 +127,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps);
  *
  * @param race
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int race_serial_receive(race_t *race);
 
@@ -136,16 +136,14 @@ int race_serial_receive(race_t *race);
  *
  * @param race
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int race_serial_transmit_ready_state(race_t *race);
 
 /**
- * @brief
+ * @brief Deletes the race (specified)
  *
  * @param race
- *
- * @return
  */
 void race_delete(race_t *race);
 
