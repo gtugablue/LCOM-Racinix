@@ -46,7 +46,7 @@
 /**
  * @brief Subscribes RTC interrupts
  *
- * @param hook_id
+ * @param hook_id the memory address where the hook_id will be stored
  * @param PIE
  * @param AIE
  * @param UIE
@@ -58,7 +58,7 @@ int rtc_subscribe_int(unsigned *hook_id, bool PIE, bool AIE, bool UIE);
 /**
  * @brief Get the configuration of the regs
  *
- * @param regs the regs that will be written/read
+ * @param regs the array where it will store the configurations
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -122,7 +122,7 @@ int rtc_int_handler(bool *PIE, bool *AIE, bool *UIE);
 /**
  * @brief Unsubscribes the RTC interrupts
  *
- * @param hook_id
+ * @param hook_id the memory address where the hook_id will be stored
  *
  * @return Return 0 upon success, non-zero otherwise
  */
