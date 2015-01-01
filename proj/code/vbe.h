@@ -181,13 +181,13 @@ typedef struct {
 int vbe_get_mode_info(unsigned short mode, vbe_mode_info_t *vmi_p);
 
 /**
- * @brief
+ * @brief Funtion that give us the video mode info
  *
- * @param vib_p
- * @param video_modes
- * @param num_video_modes
+ * @param vib_p where it will store the info block
+ * @param video_modes address where it store the video mode array
+ * @param num_video_modes address where it store the number of video modes
  *
- * @return
+ * @return 0 upon sucess, non-zero otherwise
  */
 int vbe_get_info_block(vbe_info_block_t *vib_p, uint16_t **video_modes, unsigned *num_video_modes);
 
