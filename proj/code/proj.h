@@ -128,7 +128,7 @@ int racinix_dispatcher();
 /**
  * @brief Handle the event (that is given as argument)
  *
- * @param event event to be analyzed
+ * @param event event to be handled
  * @param var more_variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
@@ -138,7 +138,7 @@ int racinix_event_handler(int event, ...);
 /**
  * @brief Handle the main menu and everything that it involves
  *
- * @param event event to be analyzed
+ * @param event event to be handled
  * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
@@ -148,7 +148,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args);
 /**
  * @brief Handle the race and everything that it involves
  *
- * @param event event to be analyzed
+ * @param event event to be handled
  * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
@@ -158,7 +158,7 @@ int racinix_race_event_handler(int event, va_list *var_args);
 /**
  * @brief Handle the design of the track event
  *
- * @param event event to be analyzed
+ * @param event event to be handled
  * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise

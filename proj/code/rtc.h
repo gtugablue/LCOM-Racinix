@@ -47,9 +47,9 @@
  * @brief Subscribes RTC interrupts
  *
  * @param hook_id the memory address where the hook_id will be stored
- * @param PIE
- * @param AIE
- * @param UIE
+ * @param PIE BIT 6 of register B
+ * @param AIE BIT 5 of register B
+ * @param UIE BIT 4 of register B
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -109,11 +109,11 @@ int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec);
 int rtc_set_delta_alarm(unsigned n);
 
 /**
- * @brief
+ * @brief Handle the interrupts of the RTC
  *
- * @param PIE
- * @param AIE
- * @param UIE
+ * @param PIE address to BIT 6 of register B
+ * @param AIE address to BIT 5 of register B
+ * @param UIE address to BIT 4 of register B
  *
  * @return Return 0 upon success, non-zero otherwise
  */
