@@ -69,7 +69,7 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 int serial_get_num_queued_strings(unsigned char port_number);
 
 /**
- * @brief Handle the interrupts of the serial port
+ * @brief Handle interrupts of the serial port
  *
  * @param port_number number of the serial port
  *

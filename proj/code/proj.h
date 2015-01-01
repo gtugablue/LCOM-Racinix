@@ -189,7 +189,7 @@ int racinix_timer_int_handler();
 /**
  * @brief Handle the mouse interrupts
  *
- * @param mouse_data_packet
+ * @param mouse_data_packet the data packet of the mouse
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -217,9 +217,11 @@ int racinix_rtc_int_handler();
 int racinix_rtc_reprogram_alarm();
 
 /**
- * @brief
+ * @brief Read the strings from the serial port
  *
- * @param string
+ * Read the strings from the serial port and if it was NEW_RACE starts the race through the serial port
+ *
+ * @param string string to be received
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -228,7 +230,7 @@ int racinix_main_menu_serial_receive(char *string);
 /**
  * @brief Update the mouse (on the screen)
  *
- * @param mouse_data_packet
+ * @param mouse_data_packet the data packet of the mouse
  */
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
@@ -240,8 +242,8 @@ void racinix_draw_mouse();
 /**
  * @brief Draw the menu
  *
- * @param button_ID
- * @param buttons
+ * @param button_ID button ID that is selected (whit the mouse on top of it)
+ * @param buttons address to an array of buttons
  */
 void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 
@@ -255,9 +257,9 @@ void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 int racinix_serial_transmit_track_control_points(track_t *track);
 
 /**
- * @brief
+ * @brief Return the button id where the mouse is hovered
  *
- * @param buttons
+ * @param buttons address to an array of buttons
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -281,7 +283,7 @@ unsigned racinix_read_ads(const char *file, char *ads[]);
 unsigned long racinix_generate_seed();
 
 /**
- * @brief
+ * @brief Gets the folder of the project root
  *
  * @return Return 0 upon success, non-zero otherwise
  */
