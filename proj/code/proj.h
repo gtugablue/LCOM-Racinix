@@ -139,7 +139,7 @@ int racinix_event_handler(int event, ...);
  * @brief Handle the main menu and everything that it involves
  *
  * @param event event to be handled
- * @param var_args variables related to the event
+ * @param *var_args address to the variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -149,7 +149,7 @@ int racinix_main_menu_event_handler(int event, va_list *var_args);
  * @brief Handle the race and everything that it involves
  *
  * @param event event to be handled
- * @param var_args variables related to the event
+ * @param *var_args address to the variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -159,7 +159,7 @@ int racinix_race_event_handler(int event, va_list *var_args);
  * @brief Handle the design of the track event
  *
  * @param event event to be handled
- * @param var_args variables related to the event
+ * @param *var_args address to the variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -168,7 +168,7 @@ int racinix_track_design_event_handler(int event, va_list *var_args);
 /**
  * @brief Updates the vehicle on the race
  *
- * @param vehicle vehicle info
+ * @param *vehicle address to the vehicle info
  */
 void racinix_update_vehicle(vehicle_t *vehicle);
 
@@ -189,7 +189,7 @@ int racinix_timer_int_handler();
 /**
  * @brief Handle the mouse interrupts
  *
- * @param mouse_data_packet the data packet of the mouse
+ * @param *mouse_data_packet where to write the packet, if it is ready
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -230,7 +230,7 @@ int racinix_main_menu_serial_receive(char *string);
 /**
  * @brief Update the mouse (on the screen)
  *
- * @param mouse_data_packet the data packet of the mouse
+ * @param *mouse_data_packet where to write the packet, if it is ready
  */
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
