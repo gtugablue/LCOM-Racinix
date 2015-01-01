@@ -44,65 +44,67 @@
  */
 
 /**
- * @brief
+ * @brief Subscribes RTC interrupts
  *
  * @param hook_id
  * @param PIE
  * @param AIE
  * @param UIE
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_subscribe_int(unsigned *hook_id, bool PIE, bool AIE, bool UIE);
 
 /**
- * @brief
+ * @brief Get the configuration of the regs
  *
- * @param regs
+ * @param regs the regs that will be written/read
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_get_config(unsigned long regs[]);
 
 /**
- * @brief
+ * @brief Get the time of the day
  *
- * @param hour
- * @param min
- * @param sec
+ * @param hour hour of the day
+ * @param min minutes of the day
+ * @param sec seconds of the day
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec);
 
 /**
- * @brief
+ * @brief Get the date
  *
- * @param dia
- * @param mes
- * @param ano
+ * @param dia day of the month
+ * @param mes month of the year
+ * @param ano year
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano);
 
 /**
- * @brief
+ * @brief Get the alarm
  *
- * @param hour
- * @param min
- * @param sec
+ * @param hour hour of the day
+ * @param min minutes of the day
+ * @param sec seconds of the day
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_get_alarm(unsigned long *hour, unsigned long *min, unsigned long *sec);
 
 /**
- * @brief
+ * @brief Sets the alarm on
  *
- * @param n
+ * Sets the alarm on n seconds from the current time of the day
  *
- * @return
+ * @param n the alarm will be set on when the time is a match to adding n to the current time of the day
+ *
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_set_delta_alarm(unsigned n);
 
@@ -113,16 +115,16 @@ int rtc_set_delta_alarm(unsigned n);
  * @param AIE
  * @param UIE
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_int_handler(bool *PIE, bool *AIE, bool *UIE);
 
 /**
- * @brief
+ * @brief Unsubscribes the RTC interrupts
  *
  * @param hook_id
  *
- * @return
+ * @return Return 0 upon success, non-zero otherwise
  */
 int rtc_unsubscribe_int(unsigned hook_id);
 

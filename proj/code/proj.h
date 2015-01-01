@@ -95,52 +95,196 @@ enum
 };
 /** @} end of States of the track design */
 
+/**
+ * @brief Start the program
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_start();
 
+
+/**
+ * @brief Exit the program
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_exit();
 
+
+/**
+ * @brief Starts the race
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_start_race();
 
+/**
+ * @brief
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_dispatcher();
 
+/**
+ * @brief Handle the event (that is given as argument)
+ *
+ * @param event
+ * @param ...
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_event_handler(int event, ...);
 
+/**
+ * @brief Handle the main menu and everything that it involves
+ *
+ * @param event
+ * @param var_args
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_main_menu_event_handler(int event, va_list *var_args);
 
+/**
+ * @brief Handle the race and everything that it involves
+ *
+ * @param event
+ * @param var_args
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_race_event_handler(int event, va_list *var_args);
 
+/**
+ * @brief Handle the design of the track event
+ *
+ * @param event
+ * @param var_args
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_track_design_event_handler(int event, va_list *var_args);
 
+/**
+ * @brief Updates the vehicle on the race
+ *
+ * @param vehicle vehicle info
+ */
 void racinix_update_vehicle(vehicle_t *vehicle);
 
+/**
+ * @brief Handle the keyboard interrupts
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_keyboard_int_handler();
 
+/**
+ * @brief Handle the timer interrupts
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_timer_int_handler();
 
+/**
+ * @brief Handle the mouse interrupts
+ *
+ * @param mouse_data_packet
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_mouse_int_handler(mouse_data_packet_t *mouse_data_packet);
 
+/**
+ * @brief Handle the serial port interrupts
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_serial_int_handler();
 
+/**
+ * @brief Handle the RTC interrupts
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_rtc_int_handler();
 
+/**
+ * @brief Reprograms the alarm of the RTC
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_rtc_reprogram_alarm();
 
+/**
+ * @brief
+ *
+ * @param string
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_main_menu_serial_receive(char *string);
 
+/**
+ * @brief Update the mouse (on the screen)
+ *
+ * @param mouse_data_packet
+ */
 void racinix_mouse_update(mouse_data_packet_t *mouse_data_packet);
 
+/**
+ * @brief Draw the mouse
+ */
 void racinix_draw_mouse();
 
+/**
+ * @brief Draw the menu
+ *
+ * @param button_ID
+ * @param buttons
+ */
 void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 
+/**
+ * @brief
+ *
+ * @param track
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 int racinix_serial_transmit_track_control_points(track_t *track);
 
+/**
+ * @brief
+ *
+ * @param buttons
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[]);
 
+/**
+ * @brief Read the ads (from RTC)
+ *
+ * @param file
+ * @param ads
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 unsigned racinix_read_ads(const char *file, char *ads[]);
 
+/**
+ * @brief Generates the seed
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 unsigned long racinix_generate_seed();
 
+/**
+ * @brief
+ *
+ * @return Return 0 upon success, non-zero otherwise
+ */
 const unsigned char *racinix_get_root_folder();
 
 // Events
