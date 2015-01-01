@@ -11,12 +11,18 @@
  *
  */
 
-
+/** @name Vector2D structure */
+/** @{
+ *
+ * Vector2D structure
+ */
 typedef struct
 {
 	double x;
 	double y;
 } vector2D_t;
+/** @} end of vector2D_t */
+
 
 /**
  * @brief Creates the vector
@@ -161,6 +167,7 @@ bool isPointInAxisAlignedRectangle(vector2D_t top_left_corner, unsigned width, u
  * @param polygon array of points defining a polygon
  * @param polygon_size number of edges of the polygon
  * @param point point to be tested
+ *
  * @return true if point is inside the polygon, false otherwise
  */
 bool isPointInPolygon(vector2D_t polygon[], unsigned polygon_size, vector2D_t point);
