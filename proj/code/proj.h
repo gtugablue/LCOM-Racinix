@@ -119,7 +119,7 @@ int racinix_exit();
 int racinix_start_race();
 
 /**
- * @brief
+ * @brief Dispatches the events
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -128,8 +128,8 @@ int racinix_dispatcher();
 /**
  * @brief Handle the event (that is given as argument)
  *
- * @param event
- * @param ...
+ * @param event event to be analyzed
+ * @param var more_variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -138,8 +138,8 @@ int racinix_event_handler(int event, ...);
 /**
  * @brief Handle the main menu and everything that it involves
  *
- * @param event
- * @param var_args
+ * @param event event to be analyzed
+ * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -148,8 +148,8 @@ int racinix_main_menu_event_handler(int event, va_list *var_args);
 /**
  * @brief Handle the race and everything that it involves
  *
- * @param event
- * @param var_args
+ * @param event event to be analyzed
+ * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -158,8 +158,8 @@ int racinix_race_event_handler(int event, va_list *var_args);
 /**
  * @brief Handle the design of the track event
  *
- * @param event
- * @param var_args
+ * @param event event to be analyzed
+ * @param var_args variables related to the event
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -246,9 +246,9 @@ void racinix_draw_mouse();
 void racinix_draw_menu(size_t button_ID, const unsigned char *buttons[]);
 
 /**
- * @brief
+ * @brief Transmits the control points when it's in serial port
  *
- * @param track
+ * @param track track info
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -266,8 +266,8 @@ unsigned racinix_main_menu_get_hovered_button(const unsigned char *buttons[]);
 /**
  * @brief Read the ads (from RTC)
  *
- * @param file
- * @param ads
+ * @param file address to the file
+ * @param ads address to an array of the ads
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -288,6 +288,8 @@ unsigned long racinix_generate_seed();
 const unsigned char *racinix_get_root_folder();
 
 // Events
+/** @name Events */
+/** @{ */
 enum
 {
 	RACINIX_EVENT_KEYSTROKE, // int key, bool pressed
@@ -297,8 +299,12 @@ enum
 	RACINIX_EVENT_NEW_FRAME, // unsigned fps
 	RACINIX_EVENT_SERIAL_RECEIVE // char *string
 };
+/** @} end of Events */
+
 
 // Main menu buttons
+/** @name Main menu buttons */
+/** @{ */
 enum
 {
 	RACINIX_MAIN_MENU_BUTTON_1_PLAYER,
@@ -307,5 +313,6 @@ enum
 	RACINIX_MAIN_MENU_BUTTON_CREDITS,
 	RACINIX_MAIN_MENU_BUTTON_EXIT
 };
+/** @} end of Main menu buttons */
 
 #endif
