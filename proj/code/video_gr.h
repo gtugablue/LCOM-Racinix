@@ -151,7 +151,7 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 /**
  * @brief Draw the mouse
  *
- *  Draw the mouse with a specified bitmap that is loaded after
+ * Draw the mouse with a specified bitmap that is loaded after
  *
  * @param x horizontal coordinate of the bitmap which will be loaded
  * @param y vertical coordinate of the bitmap which will be loaded
@@ -160,46 +160,37 @@ int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
 
 /**
- * @brief
+ * @brief Read the struct from vbe mode info
  *
- *
- * @return
- */
-int vg_box_blur();
-
-/**
- * @brief
- *
- * @return
+ * @return Returns a pointer to vbe mode info
  */
 vbe_mode_info_t *vg_get_vbe_mode_info();
 
 /**
- * @brief
- *
+ * @brief Get the address to the double buffer
  */
 void *vg_get_double_buffer();
 
 /**
- * @brief
+ * @brief Exchande the double buffer for the mouse buffer
  *
  */
 void vg_swap_buffer();
 
 /**
- * @brief
+ * @brief Exchande the mouse buffer for the video mem
  *
  */
 void vg_swap_mouse_buffer();
 
 /**
- * @brief
+ * @brief Convert every component to rgb 16bits
  *
- * @param r
- * @param g
- * @param b
+ * @param r red component
+ * @param g green component
+ * @param b blue component
  *
- * @return
+ * @return Returns color code
  */
 uint16_t rgb(unsigned char r, unsigned char g, unsigned char b);
 
