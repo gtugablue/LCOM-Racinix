@@ -59,13 +59,13 @@ int vg_fill(uint16_t color);
 inline int vg_set_pixel(unsigned long x, unsigned long y, uint16_t color);
 
 /**
- * @brief
+ * @brief Sets input pixel of mouse with input color
  *
- * @param x
- * @param y
- * @param color
+ * @param x horizontal coordinate, starts at 0 (leftmost pixel)
+ * @param y vertical coordinate, starts at 0 (top pixel)
+ * @param color color to set the pixel
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 inline int vg_set_mouse_pixel(unsigned long x, unsigned long y, uint16_t color);
 
@@ -97,15 +97,17 @@ inline long vg_get_pixel(unsigned long x, unsigned long y);
 int vg_draw_line(long xi, long yi, long xf, long yf, long color);
 
 /**
- * @brief
+ * @brief Draw the retangle with a specified color and end points
  *
- * @param x
- * @param y
- * @param width
- * @param height
- * @param color
+ * Draws a retangle with the specified end points and the input color, by writing to VRAM
  *
- * @return
+ * @param x horizontal coordinate of "first" endpoint, starts at 0 (leftmost pixel)
+ * @param y vertical coordinate of "first" endpoint, starts at 0 (top pixel)
+ * @param width width of the retangle
+ * @param height height of the retangle
+ * @param color color of the retangle to draw
+ *
+ * @return 0 upon success, non-zero upon failure
  */
 int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, unsigned long height, uint16_t color);
 
@@ -121,35 +123,39 @@ int vg_draw_rectangle(unsigned long x, unsigned long y, unsigned long width, uns
 int vg_draw_circle(unsigned long x, unsigned long y, unsigned long radius, unsigned long color);
 
 /**
- * @brief
+ * @brief Draw a pixmap
  *
- * @param x
- * @param y
- * @param pixmap
- * @param width
- * @param height
+ * @param x horizontal coordinate of the pixmap
+ * @param y vertical coordinate of the pixmap
+ * @param pixmap the pixmap which will be drawn
+ * @param width width of the pixmap
+ * @param height height of the pixmap
  *
- * @return
+ * @return 0 upon success, non-zero otherwise
  */
 int vg_draw_pixmap(unsigned long x, unsigned long y, uint16_t *pixmap, unsigned short width, unsigned short height);
 
 /**
- * @brief
+ * @brief Draw a polygon
  *
- * @param polygon
- * @param n
- * @param color
+ * Draw a polygon with a specified color
+ *
+ * @param polygon the polygon that will be drawn
+ * @param n 					XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ * @param color color that the polygon will have
  *
  * @return
  */
 int vg_draw_polygon(vector2D_t polygon[], unsigned n, unsigned long color);
 
 /**
- * @brief
+ * @brief Draw the mouse
  *
- * @param x
- * @param y
- * @param bitmap
+ *  Draw the mouse with a specified bitmap that is loaded after
+ *
+ * @param x horizontal coordinate of the bitmap which will be loaded
+ * @param y vertical coordinate of the bitmap which will be loaded
+ * @param bitmap the bitmap that will be loaded
  */
 void vg_draw_mouse(unsigned long x, unsigned long y, bitmap_t *bitmap);
 
