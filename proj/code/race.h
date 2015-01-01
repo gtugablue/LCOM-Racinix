@@ -90,14 +90,12 @@ enum
 race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, bitmap_t* bitmap_speedometer, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 /**
- * @brief
+ * @brief se corrida for porta serie por modo porta serie --> passar a classe race estes parametros pa dzer qual a porta a usar
  *
  * @param race race info
  * @param port_number serial port number
- * @param seed
- * @param host
- *
- * @return
+ * @param seed seed of the track
+ * @param host say if the user is the host or the guest
  */
 void race_set_serial_port_info(race_t *race, unsigned port_number, long seed, bool host);
 
@@ -123,18 +121,20 @@ int race_start(race_t *race);
 int race_tick(race_t *race, double delta_time, unsigned fps);
 
 /**
- * @brief
+ * @brief Receives the data from the serial port
  *
- * @param race
+ * Receives and work with the data from the serial port
+ *
+ * @param race race info
  *
  * @return Return 0 upon success, non-zero otherwise
  */
 int race_serial_receive(race_t *race);
 
 /**
- * @brief
+ * @brief esta funçao host cria jogo, e funçao manda ready para o guest para começar o jogo
  *
- * @param race
+ * @param race race info
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -143,7 +143,7 @@ int race_serial_transmit_ready_state(race_t *race);
 /**
  * @brief Deletes the race (specified)
  *
- * @param race
+ * @param race race info
  */
 void race_delete(race_t *race);
 
