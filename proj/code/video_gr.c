@@ -305,11 +305,11 @@ void vg_swap_mouse_buffer()
 
 uint16_t rgb(unsigned char r, unsigned char g, unsigned char b)
 {
-	uint16_t rgb = 0x0;
-	rgb |= (r * (1 << vbe_mode_info.RedMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.RedFieldPosition;
-	rgb |= (g * (1 << vbe_mode_info.GreenMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.GreenFieldPosition;
-	rgb |= (b * (1 << vbe_mode_info.BlueMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.BlueFieldPosition;
-	return rgb;
+	uint16_t c = 0x0;
+	c |= (r * (1 << vbe_mode_info.RedMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.RedFieldPosition;
+	c |= (g * (1 << vbe_mode_info.GreenMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.GreenFieldPosition;
+	c |= (b * (1 << vbe_mode_info.BlueMaskSize) / VIDEO_GR_RGB_MAX) << vbe_mode_info.BlueFieldPosition;
+	return c;
 }
 
 int vg_exit() {
