@@ -20,7 +20,7 @@
  *
  * @param hook_id the memory address where the hook_id will be stored
  * @param port_number the number of the serial port
- * @param trigger_level  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ * @param trigger_level the number of characters in the reception
  *
  * @return Return hook_id upon success, -1 upon failure
  */
@@ -30,10 +30,10 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
  * @brief Change the serial port configurations
  *
  * @param port_number number of the serial port
- * @param bits
- * @param stop
- * @param parity
- * @param rate
+ * @param bits the number of bits per character
+ * @param stop the number of stop bits
+ * @param parity the parity
+ * @param rate the bit-rate
  *
  * @return Return 0 on success, non-zero otherwise
  */
