@@ -18,7 +18,7 @@
 /**
  * @brief Subscribes the serial interrupts
  *
- * @param hook_id the memory address where the hook_id will be stored
+ * @param *hook_id the memory address where the hook_id will be stored
  * @param port_number the number of the serial port
  * @param trigger_level the number of characters in the reception
  *
@@ -81,7 +81,7 @@ int serial_int_handler(unsigned char port_number);
  * @brief Transmits strings in polled mode
  *
  * @param port_number number of the serial port
- * @param string string to be transmitted
+ * @param *string address to the string to be transmitted
  *
  * @return Return 0 on success, non-zero otherwise
  */

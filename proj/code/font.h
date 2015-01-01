@@ -57,8 +57,8 @@ font_t *font_load(const char* folder);
 /**
  * @brief Shows the string of the font
  *
- * @param font struct of the font
- * @param string string that is written
+ * @param font address to the struct of the font
+ * @param string address to the string that is written
  * @param height height of the font
  * @param x x coordinate of the position of the top left corner of the font
  * @param y y coordinate of the position of the top left corner of the font
@@ -71,8 +71,8 @@ void font_show_string(font_t *font, const unsigned char *string, unsigned height
 /**
  * @brief Shows the string of the font
  *
- * @param font struct of the font
- * @param string string that is written
+ * @param font address to the struct of the font
+ * @param string address to the string that is written
  * @param height height of the font
  *
  * @return The width of the string
@@ -82,7 +82,7 @@ unsigned font_calculate_string_width(font_t *font, const unsigned char *string, 
 /**
  * @brief Delete the font
  *
- * @param font struct of the font
+ * @param font address to the struct of the font
  */
 void font_delete(font_t *font);
 

@@ -46,7 +46,7 @@
 /**
  * @brief Subscribes RTC interrupts
  *
- * @param hook_id the memory address where the hook_id will be stored
+ * @param *hook_id the memory address where the hook_id will be stored
  * @param PIE BIT 6 of register B
  * @param AIE BIT 5 of register B
  * @param UIE BIT 4 of register B
@@ -67,9 +67,9 @@ int rtc_get_config(unsigned long regs[]);
 /**
  * @brief Get the time of the day
  *
- * @param hour hour of the day
- * @param min minutes of the day
- * @param sec seconds of the day
+ * @param hour address to the hour of the day
+ * @param min address to the minutes of the day
+ * @param sec address to the seconds of the day
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -78,9 +78,9 @@ int rtc_get_time(unsigned long *hour, unsigned long *min, unsigned long *sec);
 /**
  * @brief Get the date
  *
- * @param dia day of the month
- * @param mes month of the year
- * @param ano year
+ * @param dia address to the day of the month
+ * @param mes address to the month of the year
+ * @param ano address to the year
  *
  * @return Return 0 upon success, non-zero otherwise
  */
@@ -89,9 +89,9 @@ int rtc_get_date(unsigned long *dia, unsigned long *mes, unsigned long *ano);
 /**
  * @brief Get the alarm
  *
- * @param hour hour of the day
- * @param min minutes of the day
- * @param sec seconds of the day
+ * @param hour address to the hour of the day
+ * @param min address to the minutes of the day
+ * @param sec address to the seconds of the day
  *
  * @return Return 0 upon success, non-zero otherwise
  */

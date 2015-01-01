@@ -90,7 +90,7 @@ enum
 race_t *race_create(track_t *track, unsigned num_players, bool serial_port, bitmap_t **vehicle_bitmaps, bitmap_t* bitmap_speedometer, vehicle_keys_t *vehicle_keys, uint16_t *vehicle_colors, double freeze_time, unsigned num_laps, vbe_mode_info_t *vbe_mode_info, font_t *font);
 
 /**
- * @brief se corrida for porta serie por modo porta serie --> passar a classe race estes parametros pa dzer qual a porta a usar
+ * @brief Say the serial port to use in the race
  *
  * @param race race info
  * @param port_number serial port number
@@ -132,7 +132,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps);
 int race_serial_receive(race_t *race);
 
 /**
- * @brief esta funçao host cria jogo, e funçao manda ready para o guest para começar o jogo
+ * @brief This function sends the ready status to the guest to start the game (when the host is ready)
  *
  * @param race race info
  *
