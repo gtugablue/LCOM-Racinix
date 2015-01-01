@@ -16,94 +16,94 @@
  */
 
 /**
- * @brief
+ * @brief Subscribes the serial interrupts
  *
- * @param hook_id
- * @param port_number
- * @param trigger_level
+ * @param hook_id the memory address where the hook_id will be stored
+ * @param port_number the number of the serial port
+ * @param trigger_level  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
  *
- * @return
+ * @return Return hook_id upon success, -1 upon failure
  */
 int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned char trigger_level);
 
 /**
- * @brief
+ * @brief Change the serial port configurations
  *
- * @param port_number
+ * @param port_number number of the serial port
  * @param bits
  * @param stop
  * @param parity
  * @param rate
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_set(unsigned char port_number, unsigned long bits, unsigned long stop, long parity, unsigned long rate);
 
 /**
- * @brief
+ * @brief Transmits strings in interruption mode
  *
- * @param port_number
- * @param string
+ * @param port_number number of the serial port
+ * @param string string to be transmitted
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *string);
 
 /**
- * @brief
+ * @brief Receives strings in interruption mode
  *
- * @param port_number
- * @param string
+ * @param port_number number of the serial port
+ * @param string string to be received
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_interrupt_receive_string(unsigned char port_number, unsigned char **string);
 
 /**
- * @brief
+ * @brief Calculate the number of strings in queue ready to be read
  *
- * @param port_number
+ * @param port_number number of the serial port
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_get_num_queued_strings(unsigned char port_number);
 
 /**
- * @brief
+ * @brief Handle the interrupts of the serial port
  *
- * @param port_number
+ * @param port_number number of the serial port
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_int_handler(unsigned char port_number);
 
 /**
- * @brief
+ * @brief Transmits strings in polled mode
  *
- * @param port_number
- * @param string
+ * @param port_number number of the serial port
+ * @param string string to be transmitted
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_polled_transmit_string(unsigned char port_number, unsigned char *string);
 
 /**
- * @brief
+ * @brief Receives strings in polled mode
  *
- * @param port_number
- * @param string
+ * @param port_number number of the serial port
+ * @param string string to be received
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_polled_receive_string(unsigned char port_number, unsigned char **string);
 
 /**
- * @brief
+ * @brief Unsubscribe serial port interrupts
  *
- * @param hook_id
- * @param port_number
+ * @param hook_id the memory address where the hook_id will be stored
+ * @param port_number number of the serial port
  *
- * @return
+ * @return Return 0 on success, non-zero otherwise
  */
 int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number);
 
