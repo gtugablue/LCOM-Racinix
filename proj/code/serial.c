@@ -11,10 +11,13 @@
 #define WORD_MSB(x)			((x) >> 8)
 #define WORD_LSB(x)			((x) & 0xFF)
 
-static queue_t *serial_transmit_queue[SERIAL_NUM_PORTS] = { NULL };
-static queue_t *serial_receive_queue[SERIAL_NUM_PORTS] = { NULL };
+static queue_t *serial_transmit_queue[SERIAL_NUM_PORTS] = { NULL }; // Char queue
+static queue_t *serial_receive_queue[SERIAL_NUM_PORTS] = { NULL }; // Char queue
+static queue_t *serial_receive_ready_queue[SERIAL_NUM_PORTS] = { NULL }; // String queue
 
-static unsigned num_queued_strings[SERIAL_NUM_PORTS] = { 0 };
+static unsigned num_queued_strings[SERIAL_NUM_PORTS];
+static unsigned num_ready_strings[SERIAL_NUM_PORTS];
+static bool corrupted_string;
 
 static int serial_port_number_to_address(unsigned char port_number);
 static int serial_port_number_to_irq_line(unsigned char port_number);
@@ -22,6 +25,7 @@ static int serial_polled_transmit_char(int base_address, unsigned char character
 static int serial_polled_receive_char(int base_address, unsigned long *character);
 static int serial_clear_UART_receive_queue(unsigned char port_number);
 static int serial_clear_transmit_queue(unsigned char port_number);
+static int serial_update_receive_ready_queue(unsigned char port_number);
 
 int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned char trigger_level)
 {
@@ -65,7 +69,17 @@ int serial_subscribe_int(unsigned *hook_id, unsigned char port_number, unsigned 
 		{
 			return -1;
 		}
-
+		if ((serial_receive_ready_queue[port_number] = queue_create()) == NULL)
+		{
+			return -1;
+		}
+		size_t i;
+		for (i = 0; i < SERIAL_NUM_PORTS; ++i)
+		{
+			num_queued_strings[i] = 0;
+			num_ready_strings[i] = 0;
+		}
+		corrupted_string = false;
 		return hook_bit;
 	}
 	return -1;
@@ -170,7 +184,6 @@ int serial_interrupt_transmit_string(unsigned char port_number, unsigned char *s
 	{
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -182,30 +195,16 @@ int serial_interrupt_receive_string(unsigned char port_number, unsigned char **s
 		return 1;
 	}
 
-	--port_number;
-	unsigned char *character;
-	int i = -1;
-	*string = NULL;
-	do
-	{
-		++i;
-		if ((*string = realloc(*string, (i + 1) * sizeof(**string))) == NULL)
-		{
-			return 1;
-		}
-		character = queue_pop(serial_receive_queue[port_number]);
-		(*string)[i] = *character;
-		free(character);
-	} while ((*string)[i] != SERIAL_STRING_TERMINATION_CHAR);
-	--num_queued_strings[port_number];
+	*string = queue_pop(serial_receive_ready_queue[port_number - 1]);
+	--num_ready_strings[port_number - 1];
 	return 0;
 }
 
-int serial_get_num_queued_strings(unsigned char port_number)
+int serial_get_num_ready_strings(unsigned char port_number)
 {
 	--port_number;
 	if (port_number > SERIAL_NUM_PORTS - 1) return -1;
-	else return num_queued_strings[port_number];
+	else return num_ready_strings[port_number];
 }
 
 int serial_int_handler(unsigned char port_number)
@@ -236,10 +235,9 @@ int serial_int_handler(unsigned char port_number)
 		}
 		case 1: // Transmitter Empty
 			// Reset method: reading IIR or writing to THR
-			printf("---- Interrupt: Transmitter Empty ----\n");
+			//printf("---- Interrupt: Transmitter Empty ----\n");
 			if (serial_clear_transmit_queue(port_number))
 			{
-				//printf("---- SERIAL ERROR 1!!!! ----\n");
 				return 1;
 			}
 			break;
@@ -249,18 +247,28 @@ int serial_int_handler(unsigned char port_number)
 		case 4: // Character Timeout Indication
 			// Reset method: reading RBR or receiving new start bit
 			//printf("---- Interrupt: Character Timeout Indication ----\n");
-			if (serial_clear_UART_receive_queue(port_number))
+		{
+			int result = serial_clear_UART_receive_queue(port_number);
+			if (result == -1)
 			{
-				//printf("---- SERIAL ERROR 2!!!! ----\n");
+				corrupted_string = true;
+			}
+			else if (result != 0)
+			{
 				return 1;
 			}
 			break;
+		}
 		case 3: // Line Status
 		{
 			// Reset method: reading LSR
 			//printf("---- Interrupt: Line Status ----\n");
 			unsigned long lsr;
 			if (sys_inb(base_address + UART_REGISTER_LSR, &lsr)) return 1;
+			if (lsr & (BIT(UART_REGISTER_LSR_OVERRUN_ERROR_BIT) | BIT(UART_REGISTER_LSR_PARITY_ERROR_BIT) | BIT(UART_REGISTER_LSR_FRAMING_ERROR_BIT)))
+			{
+				corrupted_string = true;
+			}
 			break;
 		}
 		default:
@@ -270,7 +278,6 @@ int serial_int_handler(unsigned char port_number)
 		if (sys_inb(base_address + UART_REGISTER_IIR, &iir)) return 1;
 		//printf("iir: 0x%X\n", iir);
 	}
-
 	return 0;
 }
 
@@ -331,6 +338,8 @@ int serial_unsubscribe_int(unsigned hook_id, unsigned char port_number)
 	serial_transmit_queue[port_number] = NULL;
 	queue_delete(serial_receive_queue[port_number]);
 	serial_receive_queue[port_number] = NULL;
+	queue_delete(serial_receive_ready_queue[port_number]);
+	serial_receive_ready_queue[port_number] = NULL;
 
 	// Tell Minix we don't want to subscribe the interrupts anymore
 	if (sys_irqrmpolicy(&hook_id) == OK)
@@ -472,6 +481,50 @@ static int serial_clear_UART_receive_queue(unsigned char port_number)
 		{
 			free(character);
 			return 1;
+		}
+	}
+	if (serial_update_receive_ready_queue(port_number + 1))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+static int serial_update_receive_ready_queue(unsigned char port_number)
+{
+	--port_number;
+	unsigned char *character;
+	unsigned char *string;
+	int i;
+	while(num_queued_strings[port_number] > 0)
+	{
+		i = -1;
+		string = NULL;
+		do
+		{
+			++i;
+			if ((string = realloc(string, (i + 1) * sizeof(*string))) == NULL)
+			{
+				return 1;
+			}
+			character = queue_pop(serial_receive_queue[port_number]);
+			string[i] = *character;
+			free(character);
+		} while (string[i] != SERIAL_STRING_TERMINATION_CHAR);
+		--num_queued_strings[port_number];
+
+		if (corrupted_string)
+		{
+			free(string);
+			corrupted_string = false;
+		}
+		else
+		{
+			if (!queue_push(serial_receive_ready_queue[port_number], string))
+			{
+				return 1;
+			}
+			++num_ready_strings[port_number];
 		}
 	}
 	return 0;

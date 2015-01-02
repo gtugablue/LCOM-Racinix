@@ -126,10 +126,8 @@ int race_tick(race_t *race, double delta_time, unsigned fps);
  * Receives and work with the data from the serial port
  *
  * @param race race info
- *
- * @return Return 0 upon success, non-zero otherwise
  */
-int race_serial_receive(race_t *race);
+void race_serial_receive(race_t *race);
 
 /**
  * @brief This function sends the ready status to the guest to start the game (when the host is ready)

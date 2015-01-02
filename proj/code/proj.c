@@ -802,7 +802,7 @@ int racinix_serial_int_handler()
 		return 1;
 	}
 	unsigned char *string;
-	while (serial_get_num_queued_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
+	while (serial_get_num_ready_strings(RACINIX_SERIAL_PORT_NUMBER) > 0)
 	{
 		if (serial_interrupt_receive_string(RACINIX_SERIAL_PORT_NUMBER, &string))
 		{
@@ -957,13 +957,13 @@ int racinix_race_serial_receive(char *string)
 	char *token;
 	if ((token = strtok(string, RACE_SERIAL_PROTO_TOKEN)) == NULL)
 	{
-		return RACINIX_STATE_ERROR;
+		return RACINIX_STATE_RACE;
 	}
 	if (strcmp(token, RACINIX_SERIAL_PROTO_RACE) == 0) // RACE
 	{
-		if (race->serial_port && race_serial_receive(race))
+		if (race->serial_port)
 		{
-			return RACINIX_STATE_ERROR;
+			race_serial_receive(race);
 		}
 	}
 	else if (strcmp(token, RACINIX_SERIAL_PROTO_END_RACE) == 0) // END_RACE
