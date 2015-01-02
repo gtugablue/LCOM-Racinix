@@ -63,6 +63,14 @@
 #define RACINIX_SERIAL_PROTO_END_RACE							"END_RACE" // END_RACE
 
 
+/** @defgroup proj Proj
+ * @{
+ *
+ * Module that create and control everything that is related to the project
+ *
+ */
+
+
 /** @name States of the game */
 /** @{ */
 enum
@@ -316,5 +324,6 @@ enum
 	RACINIX_MAIN_MENU_BUTTON_EXIT
 };
 /** @} end of Main menu buttons */
+/** @} end of rtc */
 
 #endif
