@@ -47,9 +47,7 @@ queue_t *queue_create();
 unsigned queue_size(queue_t* queue);
 
 /**
- * @brief Set a queue empty
- *
- * Sets a queue_size of the given queue to zero
+ * @brief Sees if the queue size is zero
  *
  * @param queue the queue that will be worked
  *
