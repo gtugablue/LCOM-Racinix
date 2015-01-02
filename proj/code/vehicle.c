@@ -273,8 +273,6 @@ int vehicle_check_vehicle_collision(vehicle_t *vehicle, vehicle_t *vehicle2)
 
 void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, vehicle_t *vehicle2)
 {
-	// TODO
-
 	// Torque = r x F
 	vector2D_t r = vectorSubtract(vehicle->wheels[wheel_ID], vehicle2->position);
 	vector2D_t F = vectorRotate(vectorMultiply(vectorCreate(1, 0), vehicle->speed), vehicle->heading);
@@ -282,13 +280,15 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 	vehicle->heading -= VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 	vehicle2->heading += VEHICLE_VEHICLE_COLLISION_MOMENTUM_FACTOR * (torque / vectorNorm(r));
 
+	vector2D_t vehicle_unit_velocity = vectorRotate(vectorCreate(1, 0), vehicle->heading);
 	vector2D_t vehicle2_unit_velocity = vectorRotate(vectorCreate(1, 0), vehicle2->heading);
-	double angle = atan2(vehicle2_unit_velocity.y - F.y, vehicle2_unit_velocity.x - F.x);
-	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, fabs(vehicle2->speed - vehicle->speed) * vectorNorm(F) * cos(angle));
+	double angle_cos = cos(atan2(vehicle2_unit_velocity.y, vehicle2_unit_velocity.x) - atan2(vehicle_unit_velocity.y, vehicle_unit_velocity.x));
+	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, vehicle2->speed - vehicle->speed * vectorNorm(F) * angle_cos);
+	double angle_signum = (angle_cos > 0) - (angle_cos < 0);
 	if (vectorNorm(Fprojected) < 10000)
 	{
-		vehicle->speed -= vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
-		vehicle2->speed += vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
+		vehicle->speed -= angle_signum * vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
+		vehicle2->speed += angle_signum * vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
 	}
 
 	vehicle_vehicle_collision_handler_position_fix(vehicle, wheel_ID, vehicle2);
