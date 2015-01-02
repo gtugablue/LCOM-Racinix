@@ -63,7 +63,7 @@
 #define RACINIX_SERIAL_PROTO_END_RACE							"END_RACE" // END_RACE
 
 
-/** @defgroup proj Proj
+/** @defgroup racinix Racinix
  * @{
  *
  * Module that create and control everything that is related to the project
