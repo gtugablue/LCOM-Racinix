@@ -63,10 +63,10 @@ typedef struct
 /** @{ */
 enum
 {
-	RACE_STATE_WAITING,
-	RACE_STATE_FREEZETIME,
-	RACE_STATE_RACING,
-	RACE_STATE_END
+	RACE_STATE_WAITING,		//status when it's waiting for the other user
+	RACE_STATE_FREEZETIME,	//status when isn't doing anything
+	RACE_STATE_RACING,		//status when it's racing
+	RACE_STATE_END			//status when it's ending the race
 };
 /** @} end of Race states */
 
