@@ -324,6 +324,6 @@ enum
 	RACINIX_MAIN_MENU_BUTTON_EXIT
 };
 /** @} end of Main menu buttons */
-/** @} end of rtc */
+/** @} end of proj */
 
 #endif
