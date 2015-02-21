@@ -143,52 +143,52 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 		else
 		{
 			race_show_countdown(race);
+
 			// Update vehicles
-			if (race->serial_port)
+			if (race->serial_port && race->host)
 			{
-				race_update_vehicle(race, race->vehicles[0], delta_time);
-				vehicle_draw(race->vehicles[1]);
-				if (race->host)
+				if (race_serial_transmit(race))
 				{
-					if (race_serial_transmit(race))
-					{
-						return 1;
-					}
+					return 1;
 				}
 			}
-			else
+			for (i = 0; i < race->num_players; ++i)
 			{
-				for (i = 0; i < race->num_players; ++i)
-				{
-					race_update_vehicle(race, race->vehicles[i], delta_time);
-				}
-
+				race_update_vehicle(race, race->vehicles[i], delta_time);
 			}
 
 			// Vehicle-vehicle collision
-							unsigned wheel_ID;
-							size_t j;
-							for (i = 0; i < race->num_players; ++i)
-							{
-								for (j = 0; j < race->num_players; ++j)
-								{
-									if (i != j)
-									{
-										wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
-										if (wheel_ID != -1)
-										{
-											printf("boom\n");
-											vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
-										}
-									}
-								}
-							}
+			unsigned wheel_ID;
+			size_t j;
+			for (i = 0; i < race->num_players; ++i)
+			{
+				for (j = 0; j < race->num_players; ++j)
+				{
+					if (i != j)
+					{
+						printf("i: %d, j: %d\n", i, j);
+						wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
+						if (wheel_ID != -1)
+						{
+							printf("collision!\n");
+							vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
+						}
+					}
+				}
+			}
 
 			race_show_speedometers(race);
 
 			race_update_first(race);
 		}
 		race->time += delta_time;
+
+		size_t i;
+		for (i = 0; i < race->num_players; ++i)
+		{
+			vehicle_draw(race->vehicles[i]);
+		}
+
 		break;
 	}
 	case RACE_STATE_END:

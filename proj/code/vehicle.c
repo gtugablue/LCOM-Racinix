@@ -47,8 +47,6 @@ void vehicle_tick(vehicle_t *vehicle, track_t *track, vbe_mode_info_t *vmi_p, do
 	{
 		vehicle_checkpoint_collision_handler(vehicle, track);
 	}
-
-	vehicle_draw(vehicle);
 }
 
 void vehicle_update_steering(vehicle_t *vehicle, double delta_time)
