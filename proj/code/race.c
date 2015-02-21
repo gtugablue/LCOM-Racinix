@@ -162,25 +162,25 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 				{
 					race_update_vehicle(race, race->vehicles[i], delta_time);
 				}
-
-				// Vehicle-vehicle collision
-				unsigned wheel_ID;
-				size_t j;
-				for (i = 0; i < race->num_players; ++i)
-				{
-					for (j = 0; j < race->num_players; ++j)
-					{
-						if (i != j)
-						{
-							wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
-							if (wheel_ID != -1)
-							{
-								vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
-							}
-						}
-					}
-				}
 			}
+
+			// Vehicle-vehicle collision
+							unsigned wheel_ID;
+							size_t j;
+							for (i = 0; i < race->num_players; ++i)
+							{
+								for (j = 0; j < race->num_players; ++j)
+								{
+									if (i != j)
+									{
+										wheel_ID = vehicle_check_vehicle_collision(race->vehicles[i], race->vehicles[j]);
+										if (wheel_ID != -1)
+										{
+											vehicle_vehicle_collision_handler(race->vehicles[i], wheel_ID, race->vehicles[j]);
+										}
+									}
+								}
+							}
 
 			race_show_speedometers(race);
 
