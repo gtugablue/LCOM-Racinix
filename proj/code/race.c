@@ -162,6 +162,7 @@ int race_tick(race_t *race, double delta_time, unsigned fps)
 				{
 					race_update_vehicle(race, race->vehicles[i], delta_time);
 				}
+
 			}
 
 			// Vehicle-vehicle collision
