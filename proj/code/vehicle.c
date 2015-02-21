@@ -283,11 +283,11 @@ void vehicle_vehicle_collision_handler(vehicle_t *vehicle, unsigned wheel_ID, ve
 	double angle_cos = cos(atan2(vehicle2_unit_velocity.y, vehicle2_unit_velocity.x) - atan2(vehicle_unit_velocity.y, vehicle_unit_velocity.x));
 	vector2D_t Fprojected = vectorMultiply(vehicle2_unit_velocity, vehicle2->speed - vehicle->speed * vectorNorm(F) * angle_cos);
 	double angle_signum = (angle_cos > 0) - (angle_cos < 0);
-	//if (vectorNorm(Fprojected) < 10000)
-	//{
+	if (vectorNorm(Fprojected) < 10000)
+	{
 		vehicle->speed -= angle_signum * vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
 		vehicle2->speed += angle_signum * vectorNorm(Fprojected) / VEHICLE_VEHICLE_COLLISION_FRICTION;
-	//}
+	}
 
 	vehicle_vehicle_collision_handler_position_fix(vehicle2, wheel_ID, vehicle);
 }
