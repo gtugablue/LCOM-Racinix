@@ -4,8 +4,8 @@ COMPILER_TYPE= gnu
 
 CC=gcc
 
-PROG=	proj
-SRCS=	proj.c vbe.c video_gr.c vector2D.c queue.c vehicle.c kbc.c keyboard.c timer.c
+PROG=	lab1
+SRCS=	lab1.c video_txt.c
 
 CCFLAGS= -Wall
 
