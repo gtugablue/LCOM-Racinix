@@ -1,5 +1,7 @@
 .text
 
+// Fills an array of wide-characters with a constant wide character.
+// As of 2015-08-08, wmemset(3) does the same job (http://man7.org/linux/man-pages/man3/wmemset.3.html).
 .globl _memset16
 _memset16: // uint16_t *ptr, uint16_t value, size_t num
 	pushl	%ebp
